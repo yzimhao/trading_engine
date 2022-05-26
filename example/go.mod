@@ -2,7 +2,7 @@ module example
 
 go 1.15
 
-replace github.com/yzimhao/trading_engine => ../../trading-engine
+replace github.com/yzimhao/trading_engine => ../../trading_engine
 
 require (
 	github.com/gin-gonic/gin v1.7.7
