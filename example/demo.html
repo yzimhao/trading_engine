@@ -6,6 +6,26 @@
     <title>预览demo</title>
     <link rel="stylesheet" type="text/css" href="//www.layuicdn.com/layui/css/layui.css" />
   </head>
+  
+  <script id="depth-ask-tpl" type="text/html">
+
+    <tr><th colspan="2" style="text-align:center;">委托</th></tr>
+    <tr><th width="40%">价格</th><th>数量</th></tr>
+    
+    {%#  layui.each(d, function(index, item){ %}
+    <tr>
+        <td>{% item[0] %}</td><td>{% item[1] %}</td>
+    </tr>
+    {%#  }); %} 
+  </script>
+
+  <script id="depth-bid-tpl" type="text/html">
+    {%#  layui.each(d, function(index, item){ %}
+    <tr>
+        <td width="40%">{% item[0] %}</td><td>{% item[1] %}</td>
+    </tr>
+    {%#  }); %}
+  </script>
 
   <body>
     <div class="main ">
@@ -17,18 +37,7 @@
                     <tr>
                         <td>0.11</td><td>100</td>
                     </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
+                    
                 </table>
             </div>
 
@@ -84,18 +93,6 @@
                     <tr>
                         <td width="40%">0.11</td><td>100</td>
                     </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
                 </table>
             </div>
         </div>
@@ -107,15 +104,18 @@
     <script src="//www.layuicdn.com/layui/layui.js"></script>
     <!--您的Layui代码start-->
     <script type="text/javascript">
-    layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element'], function() {
+    layui.use(['laydate', 'layer', 'table', 'element', 'laytpl'], function() {
       var laydate = layui.laydate //日期
-      ,laypage = layui.laypage //分页
       ,layer = layui.layer //弹层
       ,table = layui.table //表格
-      ,carousel = layui.carousel //轮播
-      ,upload = layui.upload //上传
       ,$ =layui.$
+      ,laytpl = layui.laytpl
       ,element = layui.element; //元素操作 等等...
+
+      laytpl.config({
+            open: '{%',
+            close: '%}'
+        });
 
       /*layer弹出一个示例*/
       //   layer.msg('Hello World');
@@ -125,7 +125,7 @@
           var price = $("input[name='price']").val();
           var quantity = $("input[name='quantity']").val();
           $.ajax({
-              url:"/new_order",
+              url:"/api/new_order",
               type: "post",
               dataType: "json",
               contentType : "application/json",
@@ -140,7 +140,53 @@
           });
       });
       
-        
+       
+      
+
+
+
+      var socket = function(){
+            if (window["WebSocket"]) {
+                var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
+                conn = new WebSocket(protocol +"//" + document.location.host + "/ws");
+                conn.onclose = function (evt) {
+                    layer.msg("<b>WebSocket Connection closed</b>");
+                    setTimeout(function(){
+                        socket();
+                    }, 5e3);
+                };
+                conn.onmessage = function (evt) {
+                    var messages = evt.data.split('\n');
+                    for (var i = 0; i < messages.length; i++) {
+                        var data = JSON.parse(messages[i]);
+                        if (data.tag == "depth") {
+                            var info = data.data;
+                            var askTpl = $("#depth-ask-tpl").html()
+                                , askView = $(".depth-ask")
+                                , bidTpl = $("#depth-bid-tpl").html()
+                                , bidView = $(".depth-bid");
+
+                            
+                            laytpl(askTpl).render(info.ask.reverse(), function (html) {
+                                askView.html(html);
+                            });
+                            laytpl(bidTpl).render(info.bid.reverse(), function (html) {
+                                bidView.html(html);
+                            });
+                            
+
+
+                        }else if(data.tag == "trade_log") {
+                            
+                        }
+                    }
+                };
+            } else {
+                layer.msg("<b>Your browser does not support WebSockets.</b>");
+            }
+        };
+        socket();
+
     });
     </script>
   </body>
