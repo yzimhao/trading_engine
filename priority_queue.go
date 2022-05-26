@@ -51,9 +51,8 @@ func NewQueue() *OrderQueue {
 	heap.Init(&pq)
 
 	queue := OrderQueue{
-		pq:    &pq,
-		m:     make(map[string]*QueueItem),
-		depth: make([][2]string, 0),
+		pq: &pq,
+		m:  make(map[string]*QueueItem),
 	}
 
 	//flush depth
@@ -77,8 +76,8 @@ func (o *OrderQueue) GetDepth() [][2]string {
 func (o *OrderQueue) flushDepth() {
 
 	sortMap := func(m map[string]string) [][2]string {
-		var res [][2]string
-		var keys []string
+		res := [][2]string{}
+		keys := []string{}
 		for k, _ := range m {
 			keys = append(keys, k)
 		}

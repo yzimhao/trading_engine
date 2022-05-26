@@ -25,8 +25,8 @@ func main() {
 		b := bidQueue.GetDepth()
 
 		c.JSON(200, gin.H{
-			"asks": a,
-			"bids": b,
+			"ask": a,
+			"bid": b,
 		})
 	})
 
