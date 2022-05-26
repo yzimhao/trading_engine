@@ -12,4 +12,4 @@
 
 
 #### example
-  [简单例子](#https://github.com/yzimhao/trading_engine/tree/master/example)
+  <a href="example">使用案例</a>
