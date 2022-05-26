@@ -2,6 +2,8 @@ package trading_engine
 
 import (
 	"container/heap"
+	"sync"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -12,6 +14,7 @@ type QueueItem interface {
 	SetIndex(index int)
 	GetUniqueId() string
 	GetPrice() decimal.Decimal
+	GetQuantity() decimal.Decimal
 }
 
 type PriorityQueue []QueueItem
@@ -46,15 +49,73 @@ func (pq *PriorityQueue) Push(x interface{}) {
 func NewQueue() *OrderQueue {
 	pq := make(PriorityQueue, 0)
 	heap.Init(&pq)
-	return &OrderQueue{
-		pq: &pq,
-		m:  make(map[string]*QueueItem),
+
+	queue := OrderQueue{
+		pq:    &pq,
+		m:     make(map[string]*QueueItem),
+		depth: make([][2]string, 0),
 	}
+
+	//flush depth
+	go queue.flushDepth()
+	return &queue
 }
 
 type OrderQueue struct {
 	pq *PriorityQueue
 	m  map[string]*QueueItem
+	sync.Mutex
+
+	depth [][2]string
+}
+
+func (o *OrderQueue) GetDepth() [][2]string {
+	return o.depth
+}
+
+//刷新深度数据
+func (o *OrderQueue) flushDepth() {
+
+	sortMap := func(m map[string]string) [][2]string {
+		var res [][2]string
+		var keys []string
+		for k, _ := range m {
+			keys = append(keys, k)
+		}
+
+		keys = quickSort(keys)
+		for _, k := range keys {
+			res = append(res, [2]string{k, m[k]})
+		}
+		return res
+	}
+
+	for {
+		o.Lock()
+
+		o.depth = [][2]string{}
+		depthMap := make(map[string]string)
+
+		for i := 0; i < o.pq.Len(); i++ {
+			item := (*o.pq)[i]
+			price := item.GetPrice().String()
+
+			qnt := item.GetQuantity()
+			if _, ok := depthMap[price]; !ok {
+				depthMap[price] = qnt.String()
+			} else {
+				old_qunantity, _ := decimal.NewFromString(depthMap[price])
+				qnt = old_qunantity.Add(qnt)
+				depthMap[price] = qnt.String()
+			}
+		}
+
+		//按价格排序map
+		o.depth = sortMap(depthMap)
+		o.Unlock()
+
+		time.Sleep(time.Millisecond * 20)
+	}
 }
 
 func (o *OrderQueue) Len() int {
@@ -62,6 +123,9 @@ func (o *OrderQueue) Len() int {
 }
 
 func (o *OrderQueue) Push(item QueueItem) (exist bool) {
+	o.Lock()
+	defer o.Unlock()
+
 	id := item.GetUniqueId()
 	if _, ok := o.m[id]; ok {
 		return true
@@ -93,6 +157,9 @@ func (o *OrderQueue) Top() QueueItem {
 }
 
 func (o *OrderQueue) Remove(id string) QueueItem {
+	o.Lock()
+	defer o.Unlock()
+
 	old, ok := o.m[id]
 	if !ok {
 		return nil

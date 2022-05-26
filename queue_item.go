@@ -28,6 +28,10 @@ func (o *Order) GetPrice() decimal.Decimal {
 	return o.price
 }
 
+func (o *Order) GetQuantity() decimal.Decimal {
+	return o.quantity
+}
+
 // 这个方法留在具体的 ask/bid 队列中实现
 // func (o *Order) Less() {}
 

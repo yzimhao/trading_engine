@@ -10,27 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOrderInterface(t *testing.T) {
-	// od := &Order{
-	// 	orderId:    "1",
-	// 	price:      decimal.NewFromFloat(1.1),
-	// 	quantity:   decimal.NewFromFloat(1.103981),
-	// 	createTime: 1,
-	// }
+var askQueue *OrderQueue
+var bidQueue *OrderQueue
 
-	// assert.Equal(t, "1", od.GetOrderId())
-	// assert.Equal(t, decimal.NewFromFloat(1.1), od.GetPrice())
-	// assert.Equal(t, decimal.NewFromFloat(1.103981), od.GetQuantity())
-
+func init() {
+	askQueue = NewQueue()
+	bidQueue = NewQueue()
 }
 
 func TestAskQueue(t *testing.T) {
-	askQueue := NewQueue()
+
 	askQueue.Push(NewAskItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
 	askQueue.Push(NewAskItem("2", decimal.NewFromFloat(0.99), decimal.NewFromFloat(10), 11111111))
 	askQueue.Push(NewAskItem("3", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
+	askQueue.Push(NewAskItem("5", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
 
-	assert.Equal(t, 3, askQueue.Len())
+	assert.Equal(t, 4, askQueue.Len())
 
 	//取出堆顶的一个元素
 	top := askQueue.Top()
@@ -48,12 +43,12 @@ func TestAskQueue(t *testing.T) {
 	//从队列里移除一个指定的订单号
 	remove := askQueue.Remove("4")
 	assert.Equal(t, "4", remove.GetUniqueId())
-	assert.Equal(t, 3, askQueue.Len())
+	assert.Equal(t, 4, askQueue.Len())
 
 }
 
 func TestBidQueue(t *testing.T) {
-	bidQueue := NewQueue()
+
 	bidQueue.Push(NewBidItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
 	bidQueue.Push(NewBidItem("2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1), 11111111))
 	bidQueue.Push(NewBidItem("3", decimal.NewFromFloat(2), decimal.NewFromFloat(1), 11111111))
@@ -73,6 +68,7 @@ func TestBidQueue(t *testing.T) {
 	remove := bidQueue.Remove("3")
 	assert.Equal(t, "3", remove.GetUniqueId())
 	assert.Equal(t, 3, bidQueue.Len())
+
 }
 
 func BenchmarkAskQueue(b *testing.B) {
