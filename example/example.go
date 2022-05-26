@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math/rand"
 	"strings"
 	"time"
 
@@ -16,7 +15,8 @@ var bidQueue *trading_engine.OrderQueue
 
 func main() {
 	g := gin.New()
-
+	gin.SetMode(gin.DebugMode)
+	g.LoadHTMLGlob("./*.html")
 	askQueue = trading_engine.NewQueue()
 	bidQueue = trading_engine.NewQueue()
 
@@ -41,27 +41,36 @@ func main() {
 		var param args
 		c.BindJSON(&param)
 
-		if param.OrderId == "" || param.Price == "" || param.Quantity == "" {
+		if param.Price == "" || param.Quantity == "" {
 			c.Abort()
 			return
 		}
 
-		rand.Seed(time.Now().Unix())
-		rand_price := rand.Float64()
+		// rand.Seed(time.Now().Unix())
+		// rand_price := rand.Float64()
 
 		if strings.ToLower(param.OrderType) == "ask" {
-			askOrder := trading_engine.NewAskItem(uuid.NewString(), decimal.NewFromFloat(rand_price).RoundBank(4), string2decimal("100"), time.Now().Unix())
+			askOrder := trading_engine.NewAskItem(uuid.NewString(), string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 			askQueue.Push(askOrder)
 		} else {
-			bidOrder := trading_engine.NewBidItem(uuid.NewString(), decimal.NewFromFloat(rand_price).RoundBank(4), string2decimal("100"), time.Now().Unix())
+			bidOrder := trading_engine.NewBidItem(uuid.NewString(), string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 			bidQueue.Push(bidOrder)
 		}
 
 		c.JSON(200, gin.H{
-			"ask_len": askQueue.Len(),
-			"bid_len": bidQueue.Len(),
+			"ok": true,
+			"data": gin.H{
+				"ask_len": askQueue.Len(),
+				"bid_len": bidQueue.Len(),
+			},
 		})
 	})
+
+	g.GET("/demo", func(c *gin.Context) {
+		c.HTML(200, "demo.html", nil)
+	})
+
+	//websocket
 
 	g.Run(":8080")
 }

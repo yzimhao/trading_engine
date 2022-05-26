@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8" />
+    <title>预览demo</title>
+    <link rel="stylesheet" type="text/css" href="//www.layuicdn.com/layui/css/layui.css" />
+  </head>
+
+  <body>
+    <div class="main ">
+        <div class="layui-row layui-col-space10">
+            <div class="layui-col-md4 ">
+                <table class="layui-table depth-ask">
+                    <tr><th colspan="2" style="text-align:center;">委托</th></tr>
+                    <tr><th width="40%">价格</th><th>数量</th></tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="layui-col-md4">
+                <table class="layui-table trade-log">
+                    <tr><th style="text-align: center;" colspan="3">成交记录</th></tr>
+                    <tr>
+                        <th>价格</th>
+                        <th>数量</th>
+                        <th>时间</th>
+                    </tr>
+                    <tr>
+                        <td>1.1</td>
+                        <td>100</td>
+                        <td>2022-05-28 11:20:20</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="layui-col-md4">
+                <div class="layui-card">
+                    <div class="layui-card-header">测试下单</div>
+                    <div class="layui-card-body">
+                        <form class="layui-form" onsubmit="return false">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">价格</label>
+                                <div class="layui-input-block">
+                                  <input type="text" name="price" required  lay-verify="required|number" placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
+                                </div>
+                              </div>
+                              <div class="layui-form-item">
+                                <label class="layui-form-label">数量</label>
+                                <div class="layui-input-inline">
+                                  <input type="text" name="quantity" required lay-verify="required|number" placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                </div>
+                              </div>
+
+                              <div class="layui-form-item">
+                                <div class="layui-input-block">
+                                  <button class="layui-btn layui-btn-danger opt sell">卖出</button>
+                                  <button class="layui-btn layui-btn-primary opt buy">买入</button>
+                                </div>
+                              </div>
+                        </form>
+                    </div>
+                  </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-space10">
+            <div class="layui-col-md4">
+                <table class="layui-table depth-bid">
+                    <tr>
+                        <td width="40%">0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                    <tr>
+                        <td>0.11</td><td>100</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    
+
+    <script src="//www.layuicdn.com/layui/layui.js"></script>
+    <!--您的Layui代码start-->
+    <script type="text/javascript">
+    layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element'], function() {
+      var laydate = layui.laydate //日期
+      ,laypage = layui.laypage //分页
+      ,layer = layui.layer //弹层
+      ,table = layui.table //表格
+      ,carousel = layui.carousel //轮播
+      ,upload = layui.upload //上传
+      ,$ =layui.$
+      ,element = layui.element; //元素操作 等等...
+
+      /*layer弹出一个示例*/
+      //   layer.msg('Hello World');
+
+      $(".opt").on("click", function(){
+          var type = $(this).hasClass("sell") ? "ask" : "bid";
+          var price = $("input[name='price']").val();
+          var quantity = $("input[name='quantity']").val();
+          $.ajax({
+              url:"/new_order",
+              type: "post",
+              dataType: "json",
+              contentType : "application/json",
+              data: JSON.stringify({
+                    order_type: type,
+                    price: price,
+                    quantity: quantity
+              }),
+              success: function(d){
+                layer.msg("下单"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
+              }
+          });
+      });
+      
+        
+    });
+    </script>
+  </body>
+
+</html>
