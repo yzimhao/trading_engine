@@ -21,6 +21,7 @@ var web *gin.Engine
 func main() {
 
 	gin.SetMode(gin.DebugMode)
+	trading_engine.SetPriceDigits(4)
 
 	startWeb()
 }

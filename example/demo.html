@@ -170,7 +170,7 @@
                             laytpl(askTpl).render(info.ask.reverse(), function (html) {
                                 askView.html(html);
                             });
-                            laytpl(bidTpl).render(info.bid.reverse(), function (html) {
+                            laytpl(bidTpl).render(info.bid, function (html) {
                                 bidView.html(html);
                             });
                             

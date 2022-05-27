@@ -45,6 +45,10 @@ func (a *AskItem) Less(other QueueItem) bool {
 	return (a.price.Cmp(other.(*AskItem).price) == -1) || (a.price.Cmp(other.(*AskItem).price) == 0 && a.createTime < other.(*AskItem).createTime)
 }
 
+func (a *AskItem) GetAskOrBid() string {
+	return "ask"
+}
+
 type BidItem struct {
 	Order
 }
@@ -53,6 +57,10 @@ func (a *BidItem) Less(other QueueItem) bool {
 	//价格优先，时间优先原则
 	//价格高的在最上面
 	return (a.price.Cmp(other.(*BidItem).price) == 1) || (a.price.Cmp(other.(*BidItem).price) == 0 && a.createTime < other.(*BidItem).createTime)
+}
+
+func (a *BidItem) GetAskOrBid() string {
+	return "bid"
 }
 
 func NewAskItem(id string, price, quantity decimal.Decimal, createTime int64) *AskItem {

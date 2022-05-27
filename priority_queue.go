@@ -9,12 +9,13 @@ import (
 )
 
 type QueueItem interface {
+	SetIndex(index int)
 	Less(item QueueItem) bool
 	GetIndex() int
-	SetIndex(index int)
 	GetUniqueId() string
 	GetPrice() decimal.Decimal
 	GetQuantity() decimal.Decimal
+	GetAskOrBid() string
 }
 
 type PriorityQueue []QueueItem
@@ -69,20 +70,29 @@ type OrderQueue struct {
 }
 
 func (o *OrderQueue) GetDepth() [][2]string {
-	return o.depth
+	o.Lock()
+	defer o.Unlock()
+
+	dp := o.depth
+	return dp
 }
 
 //刷新深度数据
 func (o *OrderQueue) flushDepth() {
 
-	sortMap := func(m map[string]string) [][2]string {
+	sortMap := func(m map[string]string, ask_bid string) [][2]string {
 		res := [][2]string{}
 		keys := []string{}
 		for k, _ := range m {
 			keys = append(keys, k)
 		}
 
-		keys = quickSort(keys)
+		if ask_bid == "ask" {
+			keys = quickSort(keys, "asc")
+		} else {
+			keys = quickSort(keys, "desc")
+		}
+
 		for _, k := range keys {
 			res = append(res, [2]string{k, m[k]})
 		}
@@ -95,24 +105,27 @@ func (o *OrderQueue) flushDepth() {
 		o.depth = [][2]string{}
 		depthMap := make(map[string]string)
 
-		for i := 0; i < o.pq.Len(); i++ {
-			item := (*o.pq)[i]
-			price := item.GetPrice().String()
+		if o.pq.Len() > 0 {
 
-			qnt := item.GetQuantity()
-			if _, ok := depthMap[price]; !ok {
-				depthMap[price] = qnt.String()
-			} else {
-				old_qunantity, _ := decimal.NewFromString(depthMap[price])
-				qnt = old_qunantity.Add(qnt)
-				depthMap[price] = qnt.String()
+			for i := 0; i < o.pq.Len(); i++ {
+				item := (*o.pq)[i]
+
+				price := formatDecimal(priceFormat, item.GetPrice())
+
+				qnt := item.GetQuantity()
+				if _, ok := depthMap[price]; !ok {
+					depthMap[price] = qnt.String()
+				} else {
+					old_qunantity, _ := decimal.NewFromString(depthMap[price])
+					qnt = old_qunantity.Add(qnt)
+					depthMap[price] = qnt.String()
+				}
 			}
+
+			//按价格排序map
+			o.depth = sortMap(depthMap, o.Top().GetAskOrBid())
 		}
-
-		//按价格排序map
-		o.depth = sortMap(depthMap)
 		o.Unlock()
-
 		time.Sleep(time.Millisecond * 20)
 	}
 }
