@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -40,6 +41,7 @@ func startWeb() {
 
 	web.GET("/api/depth", depth)
 	web.POST("/api/new_order", newOrder)
+	web.POST("/api/cancel_order", cancelOrder)
 
 	web.GET("/demo", func(c *gin.Context) {
 		c.HTML(200, "demo.html", nil)
@@ -116,6 +118,7 @@ func newOrder(c *gin.Context) {
 	type args struct {
 		OrderId    string `json:"order_id"`
 		OrderType  string `json:"order_type"`
+		PriceType  string `json:"price_type"`
 		Price      string `json:"price"`
 		Quantity   string `json:"quantity"`
 		CreateTime string `json:"create_time"`
@@ -136,10 +139,12 @@ func newOrder(c *gin.Context) {
 	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
 
 	if strings.ToLower(param.OrderType) == "ask" {
-		askOrder := trading_engine.NewAskItem(orderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		param.OrderId = fmt.Sprintf("a-%s", orderId)
+		askOrder := trading_engine.NewAskItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 		askQueue.Push(askOrder)
 	} else {
-		bidOrder := trading_engine.NewBidItem(orderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		param.OrderId = fmt.Sprintf("b-%s", orderId)
+		bidOrder := trading_engine.NewBidItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 		bidQueue.Push(bidOrder)
 	}
 
@@ -158,6 +163,36 @@ func newOrder(c *gin.Context) {
 			"ask_len": askQueue.Len(),
 			"bid_len": bidQueue.Len(),
 		},
+	})
+}
+
+func cancelOrder(c *gin.Context) {
+	type args struct {
+		OrderId string `json:"order_id"`
+	}
+
+	var param args
+	c.BindJSON(&param)
+
+	if param.OrderId == "" {
+		c.Abort()
+		return
+	}
+
+	askQueue.Remove(param.OrderId)
+	bidQueue.Remove(param.OrderId)
+
+	go func() {
+		msg := gin.H{
+			"tag":  "cancel_order",
+			"data": param,
+		}
+		msgByte, _ := json.Marshal(msg)
+		sendMsg <- []byte(msgByte)
+	}()
+
+	c.JSON(200, gin.H{
+		"ok": true,
 	})
 }
 

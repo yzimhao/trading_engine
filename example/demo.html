@@ -40,7 +40,7 @@
         <td>{% d.price %}</td>
         <td>{% d.quantity %}</td>
         <td>{% d.create_time %}</td>
-        <td class="cancel">撤单</td>
+        <td><a class="cancel" href="javascript:;">撤单</a></td>
     </tr>
   </script> 
 
@@ -82,6 +82,15 @@
                         <div class="layui-card-header"><b>测试下单</b></div>
                         <div class="layui-card-body">
                             <form class="layui-form" onsubmit="return false">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">订单类型</label>
+                                    <div class="layui-input-block">
+                                        <select name="price_type" lay-verify="">
+                                            <option value="limit">限价单</option>
+                                            <option value="market">市价单</option>
+                                        </select>   
+                                    </div>
+                                </div>
                                 <div class="layui-form-item">
                                     <label class="layui-form-label">价格</label>
                                     <div class="layui-input-block">
@@ -160,6 +169,7 @@
       $(".opt").on("click", function(){
           var type = $(this).hasClass("sell") ? "ask" : "bid";
           var price = $("input[name='price']").val();
+          var price_type = $("select[name='price_type']").val();
           var quantity = $("input[name='quantity']").val();
           $.ajax({
               url:"/api/new_order",
@@ -167,6 +177,7 @@
               dataType: "json",
               contentType : "application/json",
               data: JSON.stringify({
+                    price_type: price_type,
                     order_type: type,
                     price: price,
                     quantity: quantity
@@ -175,6 +186,25 @@
                 layer.msg("下单"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
               }
           });
+      });
+
+      $("body").on("click", ".cancel", function(){
+            var me = $(this);
+            $.ajax({
+                url:"/api/cancel_order",
+                type: "post",
+                dataType: "json",
+                contentType : "application/json",
+                data: JSON.stringify({
+                        order_id: me.parents("tr").attr("order-id")
+                }),
+                success: function(d){
+                    layer.msg("取消 "+ d.ok );
+                    if(d.ok){
+                        me.parents("tr").remove();
+                    }
+                }
+            });
       });
       
        
@@ -223,6 +253,10 @@
                                     $(".log-item").last().remove();
                                 }
                                 logView.after(html);
+
+                                //remove myorder
+                                $("tr[order-id='"+ data.data.AskOrderId +"']").remove();
+                                $("tr[order-id='"+ data.data.BidOrderId +"']").remove();
                             });
                         }else if(data.tag == "new_order") {
                             var myorderView = $(".myorder"),
