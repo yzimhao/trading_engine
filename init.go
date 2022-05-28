@@ -6,6 +6,13 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type PriceType string
+
+const (
+	PriceTypeLimit  PriceType = "limit_price"
+	PriceTypeMarket PriceType = "market_price"
+)
+
 var (
 	priceDigits    = 2
 	quantityDigits = 0
