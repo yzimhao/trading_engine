@@ -36,6 +36,9 @@ func TestAskQueue(t *testing.T) {
 	top = askQueue.Top()
 	assert.Equal(t, "4", top.GetUniqueId())
 
+	top.SetQuantity(decimal.NewFromFloat(10.01))
+	assert.Equal(t, "10.01", top.GetQuantity().String())
+
 	//取出队列最后一个插入的元素
 	// last := askQueue.Pop()
 	// assert.Equal(t, "4", last.GetUniqueId())

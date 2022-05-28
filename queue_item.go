@@ -20,6 +20,10 @@ func (o *Order) SetIndex(index int) {
 	o.index = index
 }
 
+func (o *Order) SetQuantity(qnt decimal.Decimal) {
+	o.quantity = qnt
+}
+
 func (o *Order) GetUniqueId() string {
 	return o.orderId
 }
@@ -30,6 +34,10 @@ func (o *Order) GetPrice() decimal.Decimal {
 
 func (o *Order) GetQuantity() decimal.Decimal {
 	return o.quantity
+}
+
+func (o *Order) GetCreateTime() int64 {
+	return o.createTime
 }
 
 // 这个方法留在具体的 ask/bid 队列中实现
@@ -63,18 +71,18 @@ func (a *BidItem) GetAskOrBid() string {
 	return "bid"
 }
 
-func NewAskItem(id string, price, quantity decimal.Decimal, createTime int64) *AskItem {
+func NewAskItem(uniqId string, price, quantity decimal.Decimal, createTime int64) *AskItem {
 	return &AskItem{Order{
-		orderId:    id,
+		orderId:    uniqId,
 		price:      price,
 		quantity:   quantity,
 		createTime: createTime,
 	}}
 }
 
-func NewBidItem(id string, price, quantity decimal.Decimal, createTime int64) *BidItem {
+func NewBidItem(uniqId string, price, quantity decimal.Decimal, createTime int64) *BidItem {
 	return &BidItem{Order{
-		orderId:    id,
+		orderId:    uniqId,
 		price:      price,
 		quantity:   quantity,
 		createTime: createTime,

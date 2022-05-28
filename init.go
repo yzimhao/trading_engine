@@ -14,9 +14,17 @@ var (
 	quantityFormat = "%." + fmt.Sprintf("%d", quantityDigits) + "f"
 )
 
+func FormatPrice2Str(price decimal.Decimal) string {
+	return formatDecimal(priceFormat, price)
+}
+
+func FormatQuantity2Str(quantity decimal.Decimal) string {
+	return formatDecimal(quantityFormat, quantity)
+}
+
 func formatDecimal(format string, d decimal.Decimal) string {
 	f, _ := d.Float64()
-	return fmt.Sprintf(priceFormat, f)
+	return fmt.Sprintf(format, f)
 }
 
 func quickSort(nums []string, asc_desc string) []string {

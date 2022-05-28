@@ -22,6 +22,7 @@ func main() {
 
 	gin.SetMode(gin.DebugMode)
 	trading_engine.SetPriceDigits(4)
+	trading_engine.SetQuantityDigits(0)
 
 	startWeb()
 }
@@ -32,8 +33,10 @@ func startWeb() {
 	askQueue = trading_engine.NewQueue()
 	bidQueue = trading_engine.NewQueue()
 	sendMsg = make(chan []byte, 100)
+	trading_engine.MatchingEngine(askQueue, bidQueue)
 
 	go pushDepth()
+	go watchTradeLog()
 
 	web.GET("/api/depth", depth)
 	web.POST("/api/new_order", newOrder)
@@ -77,6 +80,20 @@ func depth(c *gin.Context) {
 	})
 }
 
+func watchTradeLog() {
+	for {
+		select {
+		case log := <-trading_engine.ChTradeResult:
+			data := gin.H{
+				"tag":  "trade",
+				"data": log,
+			}
+			msg, _ := json.Marshal(data)
+			sendMsg <- []byte(msg)
+		}
+	}
+}
+
 func pushDepth() {
 	for {
 		ask := askQueue.GetDepth()
@@ -97,10 +114,11 @@ func pushDepth() {
 
 func newOrder(c *gin.Context) {
 	type args struct {
-		OrderId   string `json:"order_id"`
-		OrderType string `json:"order_type"`
-		Price     string `json:"price"`
-		Quantity  string `json:"quantity"`
+		OrderId    string `json:"order_id"`
+		OrderType  string `json:"order_type"`
+		Price      string `json:"price"`
+		Quantity   string `json:"quantity"`
+		CreateTime string `json:"create_time"`
 	}
 
 	var param args
@@ -111,16 +129,28 @@ func newOrder(c *gin.Context) {
 		return
 	}
 
-	// rand.Seed(time.Now().Unix())
-	// rand_price := rand.Float64()
+	orderId := uuid.NewString()
+	param.OrderId = orderId
+	param.Price = trading_engine.FormatPrice2Str(string2decimal(param.Price))
+	param.Quantity = trading_engine.FormatQuantity2Str(string2decimal(param.Quantity))
+	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
 
 	if strings.ToLower(param.OrderType) == "ask" {
-		askOrder := trading_engine.NewAskItem(uuid.NewString(), string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		askOrder := trading_engine.NewAskItem(orderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 		askQueue.Push(askOrder)
 	} else {
-		bidOrder := trading_engine.NewBidItem(uuid.NewString(), string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		bidOrder := trading_engine.NewBidItem(orderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
 		bidQueue.Push(bidOrder)
 	}
+
+	go func() {
+		msg := gin.H{
+			"tag":  "new_order",
+			"data": param,
+		}
+		msgByte, _ := json.Marshal(msg)
+		sendMsg <- []byte(msgByte)
+	}()
 
 	c.JSON(200, gin.H{
 		"ok": true,

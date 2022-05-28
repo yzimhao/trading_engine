@@ -10,11 +10,13 @@ import (
 
 type QueueItem interface {
 	SetIndex(index int)
+	SetQuantity(quantity decimal.Decimal)
 	Less(item QueueItem) bool
 	GetIndex() int
 	GetUniqueId() string
 	GetPrice() decimal.Decimal
 	GetQuantity() decimal.Decimal
+	GetCreateTime() int64
 	GetAskOrBid() string
 }
 
@@ -112,13 +114,11 @@ func (o *OrderQueue) flushDepth() {
 
 				price := formatDecimal(priceFormat, item.GetPrice())
 
-				qnt := item.GetQuantity()
 				if _, ok := depthMap[price]; !ok {
-					depthMap[price] = qnt.String()
+					depthMap[price] = formatDecimal(quantityFormat, item.GetQuantity())
 				} else {
 					old_qunantity, _ := decimal.NewFromString(depthMap[price])
-					qnt = old_qunantity.Add(qnt)
-					depthMap[price] = qnt.String()
+					depthMap[price] = formatDecimal(quantityFormat, old_qunantity.Add(item.GetQuantity()))
 				}
 			}
 
@@ -168,16 +168,16 @@ func (o *OrderQueue) Top() QueueItem {
 	return o.Get(0)
 }
 
-func (o *OrderQueue) Remove(id string) QueueItem {
+func (o *OrderQueue) Remove(uniqId string) QueueItem {
 	o.Lock()
 	defer o.Unlock()
 
-	old, ok := o.m[id]
+	old, ok := o.m[uniqId]
 	if !ok {
 		return nil
 	}
 
 	item := heap.Remove(o.pq, (*old).GetIndex())
-	delete(o.m, id)
+	delete(o.m, uniqId)
 	return item.(QueueItem)
 }

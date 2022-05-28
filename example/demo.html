@@ -27,18 +27,40 @@
     {%#  }); %}
   </script>
 
+  <script id="trade-log-tpl" type="text/html">
+    <tr class="log-item">
+        <td>{% d.TradePrice %}</td>
+        <td>{% d.TradeQuantity %}</td>
+        <td>{% d.TradeTime %}</td>
+    </tr>
+  </script>
+  
+  <script id="myorder-tpl" type="text/html">
+    <tr class="order-item" order-id="{% d.order_id%}">
+        <td>{% d.price %}</td>
+        <td>{% d.quantity %}</td>
+        <td>{% d.create_time %}</td>
+        <td class="cancel">撤单</td>
+    </tr>
+  </script> 
+
   <body>
     <div class="main ">
         <div class="layui-row layui-col-space10">
             <div class="layui-col-md4 ">
-                <table class="layui-table depth-ask">
-                    <tr><th colspan="2" style="text-align:center;">委托</th></tr>
-                    <tr><th width="40%">价格</th><th>数量</th></tr>
-                    <tr>
-                        <td>0.11</td><td>100</td>
-                    </tr>
-                    
-                </table>
+                <div class="layui-row layui-col-space5">
+                    <table class="layui-table depth-ask" style="background-color: #FFB800;">
+                        <tr><th colspan="2" style="text-align:center;">委托</th></tr>
+                        <tr><th width="40%">价格</th><th>数量</th></tr>
+                        <tr></tr>
+                    </table>
+                </div>
+
+                <div class="layui-row">
+                    <table class="layui-table depth-bid" style="background-color: #5FB878;">
+                        <tr></tr>
+                    </table>
+                </div>
             </div>
 
             <div class="layui-col-md4">
@@ -49,53 +71,61 @@
                         <th>数量</th>
                         <th>时间</th>
                     </tr>
-                    <tr>
-                        <td>1.1</td>
-                        <td>100</td>
-                        <td>2022-05-28 11:20:20</td>
-                    </tr>
+                    <tr class="log"></tr>
+                    
                 </table>
             </div>
 
             <div class="layui-col-md4">
-                <div class="layui-card">
-                    <div class="layui-card-header">测试下单</div>
-                    <div class="layui-card-body">
-                        <form class="layui-form" onsubmit="return false">
-                            <div class="layui-form-item">
-                                <label class="layui-form-label">价格</label>
-                                <div class="layui-input-block">
-                                  <input type="text" name="price" required  lay-verify="required|number" placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
+                <div class="layui-row">
+                    <div class="layui-card">
+                        <div class="layui-card-header"><b>测试下单</b></div>
+                        <div class="layui-card-body">
+                            <form class="layui-form" onsubmit="return false">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">价格</label>
+                                    <div class="layui-input-block">
+                                    <input type="text" name="price" required  lay-verify="required|number" placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
+                                    </div>
                                 </div>
-                              </div>
-                              <div class="layui-form-item">
-                                <label class="layui-form-label">数量</label>
-                                <div class="layui-input-inline">
-                                  <input type="text" name="quantity" required lay-verify="required|number" placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">数量</label>
+                                    <div class="layui-input-inline">
+                                    <input type="text" name="quantity" required lay-verify="required|number" placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                    </div>
                                 </div>
-                              </div>
 
-                              <div class="layui-form-item">
-                                <div class="layui-input-block">
-                                  <button class="layui-btn layui-btn-danger opt sell">卖出</button>
-                                  <button class="layui-btn layui-btn-primary opt buy">买入</button>
+                                <div class="layui-form-item">
+                                    <div class="layui-input-block">
+                                    <button class="layui-btn layui-btn-danger opt sell">卖出</button>
+                                    <button class="layui-btn layui-btn-primary opt buy">买入</button>
+                                    </div>
                                 </div>
-                              </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
-                  </div>
+                </div>
+                <div class="layui-row">
+                    <div class="layui-card">
+                        <div class="layui-card-header"><b>我的下单</b></div>
+                        <div class="layui-card-body">
+                            <table class="layui-table">
+                                <tr>
+                                    <th>价格</th>
+                                    <th>数量</th>
+                                    <th>时间</th>
+                                    <th>操作</th>
+                                </tr>
+                                <tr class="myorder"></tr>
+                                
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="layui-row layui-col-space10">
-            <div class="layui-col-md4">
-                <table class="layui-table depth-bid">
-                    <tr>
-                        <td width="40%">0.11</td><td>100</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
+        
     </div>
 
 
@@ -116,6 +146,13 @@
             open: '{%',
             close: '%}'
         });
+
+
+
+    function formatTime(t) {
+        var d = new Date(t);
+        return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+    }
 
       /*layer弹出一个示例*/
       //   layer.msg('Hello World');
@@ -141,7 +178,7 @@
       });
       
        
-      
+    
 
 
 
@@ -176,8 +213,28 @@
                             
 
 
-                        }else if(data.tag == "trade_log") {
+                        }else if(data.tag == "trade") {
+                            var logView = $(".trade-log .log"),
+                                logTpl = $("#trade-log-tpl").html();
                             
+                            data.data['TradeTime'] = formatTime(data.data.TradeTime);
+                            laytpl(logTpl).render(data.data, function (html) {
+                                if($(".log-item").length > 10) {
+                                    $(".log-item").last().remove();
+                                }
+                                logView.after(html);
+                            });
+                        }else if(data.tag == "new_order") {
+                            var myorderView = $(".myorder"),
+                                myorderTpl = $("#myorder-tpl").html();
+                            
+                            data.data['create_time'] = formatTime(data.data.create_time);
+                            laytpl(myorderTpl).render(data.data, function (html) {
+                                if($(".order-item").length > 30) {
+                                    $(".order-item").last().remove();
+                                }
+                                myorderView.after(html);
+                            });
                         }
                     }
                 };
