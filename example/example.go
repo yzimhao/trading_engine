@@ -84,11 +84,17 @@ func depth(c *gin.Context) {
 
 func watchTradeLog() {
 	for {
-		select {
-		case log := <-trading_engine.ChTradeResult:
+		if log, ok := <-trading_engine.ChTradeResult; ok {
 			data := gin.H{
-				"tag":  "trade",
-				"data": log,
+				"tag": "trade",
+				"data": gin.H{
+					"TradePrice":    trading_engine.FormatPrice2Str(log.TradePrice),
+					"TradeAmount":   trading_engine.FormatPrice2Str(log.TradeAmount),
+					"TradeQuantity": trading_engine.FormatQuantity2Str(log.TradeQuantity),
+					"TradeTime":     log.TradeTime,
+					"AskOrderId":    log.AskOrderId,
+					"BidOrderId":    log.BidOrderId,
+				},
 			}
 			msg, _ := json.Marshal(data)
 			sendMsg <- []byte(msg)

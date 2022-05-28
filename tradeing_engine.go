@@ -12,6 +12,7 @@ type TradeResult struct {
 	BidOrderId    string
 	TradeQuantity decimal.Decimal
 	TradePrice    decimal.Decimal
+	TradeAmount   decimal.Decimal
 	TradeTime     time.Time
 }
 
@@ -64,6 +65,7 @@ func MatchingEngine(askQ *OrderQueue, bidQ *OrderQueue) {
 					tradelog.TradeTime = time.Now()
 					tradelog.AskOrderId = askTop.GetUniqueId()
 					tradelog.BidOrderId = bidTop.GetUniqueId()
+					tradelog.TradeAmount = tradelog.TradeQuantity.Mul(tradelog.TradePrice)
 
 					//通知交易结果
 					logrus.Infof("tradelog: %+v", tradelog)

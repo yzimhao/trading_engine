@@ -31,6 +31,7 @@
     <tr class="log-item">
         <td>{% d.TradePrice %}</td>
         <td>{% d.TradeQuantity %}</td>
+        <td>{% d.TradeAmount %}</td>
         <td>{% d.TradeTime %}</td>
     </tr>
   </script>
@@ -65,10 +66,11 @@
 
             <div class="layui-col-md4">
                 <table class="layui-table trade-log">
-                    <tr><th style="text-align: center;" colspan="3">成交记录</th></tr>
+                    <tr><th style="text-align: center;" colspan="4">成交记录</th></tr>
                     <tr>
                         <th>价格</th>
                         <th>数量</th>
+                        <th>金额</th>
                         <th>时间</th>
                     </tr>
                     <tr class="log"></tr>
