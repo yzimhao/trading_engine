@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"strings"
 	"time"
@@ -21,14 +22,17 @@ var web *gin.Engine
 
 func main() {
 
+	port := flag.String("port", "8080", "port")
+	flag.Parse()
+
 	gin.SetMode(gin.DebugMode)
 	trading_engine.SetPriceDigits(4)
 	trading_engine.SetQuantityDigits(0)
 
-	startWeb()
+	startWeb(*port)
 }
 
-func startWeb() {
+func startWeb(port string) {
 	web = gin.New()
 	web.LoadHTMLGlob("./*.html")
 	askQueue = trading_engine.NewQueue()
@@ -69,7 +73,8 @@ func startWeb() {
 			})
 		})
 	}
-	web.Run(":8080")
+
+	web.Run(":" + port)
 }
 
 func depth(c *gin.Context) {

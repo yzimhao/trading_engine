@@ -6,11 +6,15 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type PriceType string
+type PriceType int
+type OrderSide int
 
 const (
-	PriceTypeLimit  PriceType = "limit_price"
-	PriceTypeMarket PriceType = "market_price"
+	PriceTypeLimit  PriceType = 0
+	PriceTypeMarket PriceType = 1
+
+	OrderSideBuy  OrderSide = 0
+	OrderSideSell OrderSide = 1
 )
 
 var (
