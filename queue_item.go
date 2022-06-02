@@ -53,8 +53,8 @@ func (a *AskItem) Less(other QueueItem) bool {
 	return (a.price.Cmp(other.(*AskItem).price) == -1) || (a.price.Cmp(other.(*AskItem).price) == 0 && a.createTime < other.(*AskItem).createTime)
 }
 
-func (a *AskItem) GetAskOrBid() string {
-	return "ask"
+func (a *AskItem) GetOrderSide() OrderSide {
+	return OrderSideSell
 }
 
 type BidItem struct {
@@ -67,8 +67,8 @@ func (a *BidItem) Less(other QueueItem) bool {
 	return (a.price.Cmp(other.(*BidItem).price) == 1) || (a.price.Cmp(other.(*BidItem).price) == 0 && a.createTime < other.(*BidItem).createTime)
 }
 
-func (a *BidItem) GetAskOrBid() string {
-	return "bid"
+func (a *BidItem) GetOrderSide() OrderSide {
+	return OrderSideBuy
 }
 
 func NewAskItem(uniqId string, price, quantity decimal.Decimal, createTime int64) *AskItem {

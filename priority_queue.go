@@ -17,7 +17,7 @@ type QueueItem interface {
 	GetPrice() decimal.Decimal
 	GetQuantity() decimal.Decimal
 	GetCreateTime() int64
-	GetAskOrBid() string
+	GetOrderSide() OrderSide
 }
 
 type PriorityQueue []QueueItem
@@ -89,14 +89,14 @@ func (o *OrderQueue) GetDepth(limit int) [][2]string {
 
 func (o *OrderQueue) setDepth() {
 
-	sortMap := func(m map[string]string, ask_bid string) [][2]string {
+	sortMap := func(m map[string]string, ask_bid OrderSide) [][2]string {
 		res := [][2]string{}
 		keys := []string{}
 		for k, _ := range m {
 			keys = append(keys, k)
 		}
 
-		if ask_bid == "ask" {
+		if ask_bid == OrderSideSell {
 			keys = quickSort(keys, "asc")
 		} else {
 			keys = quickSort(keys, "desc")
@@ -130,7 +130,7 @@ func (o *OrderQueue) setDepth() {
 			}
 
 			//按价格排序map
-			o.depth = sortMap(depthMap, o.Top().GetAskOrBid())
+			o.depth = sortMap(depthMap, o.Top().GetOrderSide())
 		}
 		o.Unlock()
 		time.Sleep(time.Millisecond * 20)

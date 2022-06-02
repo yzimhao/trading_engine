@@ -25,6 +25,7 @@ func main() {
 	flag.Parse()
 	gin.SetMode(gin.DebugMode)
 
+	trading_engine.Debug = false
 	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 6)
 
 	startWeb(*port)
@@ -146,12 +147,14 @@ func newOrder(c *gin.Context) {
 	if strings.ToLower(param.OrderType) == "ask" {
 		param.OrderId = fmt.Sprintf("a-%s", orderId)
 		item := trading_engine.NewAskItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+		// btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+		btcusdt.ChNewOrder <- item
 
 	} else {
 		param.OrderId = fmt.Sprintf("b-%s", orderId)
 		item := trading_engine.NewBidItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
+		// btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
+		btcusdt.ChNewOrder <- item
 	}
 
 	go func() {

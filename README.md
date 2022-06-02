@@ -25,12 +25,12 @@
   //卖单 
   orderId = fmt.Sprintf("a-%s", orderId)
   item := trading_engine.NewAskItem(orderId, string2decimal(price), string2decimal(quantity), time.Now().Unix())
-  btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+  btcusdt.ChNewOrder <- item
 
   //买单
   orderId = fmt.Sprintf("b-%s", orderId)
   item := trading_engine.NewBidItem(orderId, string2decimal(price), string2decimal(quantity), time.Now().Unix())
-  btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
+  btcusdt.ChNewOrder <- item
 
   //获取深度, 参数为深度获取的个数 ["1.0001", "19960"] => [价格，数量]
   ask := btcusdt.GetAskDepth(10)
