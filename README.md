@@ -18,6 +18,7 @@
 #### 接入流程
 ```
   var btcusdt *trading_engine.TradePair
+  //初始化交易对，需要设置价格、数量的小数点位数，对外展示数据的时候用来格式化数字用
   btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 6)
 
   //买卖订单号最好做一个区分，方便识别订单
