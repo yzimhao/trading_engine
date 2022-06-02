@@ -60,8 +60,7 @@ func NewQueue(priceDigit, quantityDigit int) *OrderQueue {
 		quantityDigit: quantityDigit,
 	}
 
-	//flush depth
-	go queue.flushDepth()
+	go queue.setDepth()
 	return &queue
 }
 
@@ -75,16 +74,20 @@ type OrderQueue struct {
 	depth         [][2]string
 }
 
-func (o *OrderQueue) GetDepth() [][2]string {
+func (o *OrderQueue) GetDepth(limit int) [][2]string {
 	o.Lock()
 	defer o.Unlock()
 
-	dp := o.depth
+	max := len(o.depth)
+	if limit <= 0 || limit > max {
+		limit = max
+	}
+
+	dp := o.depth[0:limit]
 	return dp
 }
 
-//刷新深度数据
-func (o *OrderQueue) flushDepth() {
+func (o *OrderQueue) setDepth() {
 
 	sortMap := func(m map[string]string, ask_bid string) [][2]string {
 		res := [][2]string{}
@@ -116,13 +119,13 @@ func (o *OrderQueue) flushDepth() {
 			for i := 0; i < o.pq.Len(); i++ {
 				item := (*o.pq)[i]
 
-				price := formatDecimal2String(item.GetPrice(), o.priceDigit)
+				price := FormatDecimal2String(item.GetPrice(), o.priceDigit)
 
 				if _, ok := depthMap[price]; !ok {
-					depthMap[price] = formatDecimal2String(item.GetQuantity(), o.quantityDigit)
+					depthMap[price] = FormatDecimal2String(item.GetQuantity(), o.quantityDigit)
 				} else {
 					old_qunantity, _ := decimal.NewFromString(depthMap[price])
-					depthMap[price] = formatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
+					depthMap[price] = FormatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
 				}
 			}
 

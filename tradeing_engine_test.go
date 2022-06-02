@@ -23,7 +23,7 @@ func TestTradeFunc(t *testing.T) {
 	assert.Equal(t, "uid1", btcusdt.bidQueue.Top().GetUniqueId())
 
 	time.Sleep(time.Duration(100) * time.Millisecond)
-	a := btcusdt.GetBidDepth()
+	a := btcusdt.GetBidDepth(0)
 	stra, _ := json.Marshal(a)
 	fmt.Println(string(stra))
 

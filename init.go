@@ -17,7 +17,7 @@ const (
 	OrderSideSell OrderSide = 1
 )
 
-func formatDecimal2String(d decimal.Decimal, digit int) string {
+func FormatDecimal2String(d decimal.Decimal, digit int) string {
 	f, _ := d.Float64()
 	format := "%." + fmt.Sprintf("%d", digit) + "f"
 	return fmt.Sprintf(format, f)

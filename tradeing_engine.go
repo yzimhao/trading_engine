@@ -22,6 +22,9 @@ type TradePair struct {
 	BidDepth      [][2]string
 	ChTradeResult chan TradeResult
 
+	PriceDigit    int
+	QuantityDigit int
+
 	askQueue *OrderQueue
 	bidQueue *OrderQueue
 }
@@ -31,6 +34,9 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 		Symbol:        symbol,
 		ChTradeResult: make(chan TradeResult, 100),
 
+		PriceDigit:    priceDigit,
+		QuantityDigit: quantityDigit,
+
 		askQueue: NewQueue(priceDigit, quantityDigit),
 		bidQueue: NewQueue(priceDigit, quantityDigit),
 	}
@@ -39,6 +45,7 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 }
 
 func (t *TradePair) PushNewOrder(side OrderSide, order QueueItem) {
+	//todo 先将新订单和对手单比较，能否成交，不能成交的才放入队列
 	if side == OrderSideSell {
 		t.askQueue.Push(order)
 	} else {
@@ -46,12 +53,30 @@ func (t *TradePair) PushNewOrder(side OrderSide, order QueueItem) {
 	}
 }
 
-func (t *TradePair) GetAskDepth() [][2]string {
-	return t.askQueue.GetDepth()
+func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
+	//todo 最好根据订单编号知道是买单还是卖单，方便直接查找到相应的队列，从中删除
+	if side == OrderSideSell {
+		t.askQueue.Remove(uniq)
+	} else {
+		t.bidQueue.Remove(uniq)
+	}
+	//todo 删除成功后需要发送通知
 }
 
-func (t *TradePair) GetBidDepth() [][2]string {
-	return t.bidQueue.GetDepth()
+func (t *TradePair) GetAskDepth(limit int) [][2]string {
+	return t.askQueue.GetDepth(limit)
+}
+
+func (t *TradePair) GetBidDepth(limit int) [][2]string {
+	return t.bidQueue.GetDepth(limit)
+}
+
+func (t *TradePair) AskLen() int {
+	return t.askQueue.Len()
+}
+
+func (t *TradePair) BidLen() int {
+	return t.bidQueue.Len()
 }
 
 func (t *TradePair) matching() {

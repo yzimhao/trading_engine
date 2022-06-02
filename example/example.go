@@ -15,19 +15,17 @@ import (
 	"github.com/yzimhao/trading_engine"
 )
 
-var askQueue *trading_engine.OrderQueue
-var bidQueue *trading_engine.OrderQueue
 var sendMsg chan []byte
 var web *gin.Engine
+var btcusdt *trading_engine.TradePair
 
 func main() {
 
 	port := flag.String("port", "8080", "port")
 	flag.Parse()
-
 	gin.SetMode(gin.DebugMode)
-	trading_engine.SetPriceDigits(4)
-	trading_engine.SetQuantityDigits(0)
+
+	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 6)
 
 	startWeb(*port)
 }
@@ -35,10 +33,8 @@ func main() {
 func startWeb(port string) {
 	web = gin.New()
 	web.LoadHTMLGlob("./*.html")
-	askQueue = trading_engine.NewQueue()
-	bidQueue = trading_engine.NewQueue()
+
 	sendMsg = make(chan []byte, 100)
-	trading_engine.MatchingEngine(askQueue, bidQueue)
 
 	go pushDepth()
 	go watchTradeLog()
@@ -78,8 +74,8 @@ func startWeb(port string) {
 }
 
 func depth(c *gin.Context) {
-	a := askQueue.GetDepth()
-	b := bidQueue.GetDepth()
+	a := btcusdt.GetAskDepth(10)
+	b := btcusdt.GetBidDepth(10)
 
 	c.JSON(200, gin.H{
 		"ask": a,
@@ -89,13 +85,13 @@ func depth(c *gin.Context) {
 
 func watchTradeLog() {
 	for {
-		if log, ok := <-trading_engine.ChTradeResult; ok {
+		if log, ok := <-btcusdt.ChTradeResult; ok {
 			data := gin.H{
 				"tag": "trade",
 				"data": gin.H{
-					"TradePrice":    trading_engine.FormatPrice2Str(log.TradePrice),
-					"TradeAmount":   trading_engine.FormatPrice2Str(log.TradeAmount),
-					"TradeQuantity": trading_engine.FormatQuantity2Str(log.TradeQuantity),
+					"TradePrice":    trading_engine.FormatDecimal2String(log.TradePrice, btcusdt.PriceDigit),
+					"TradeAmount":   trading_engine.FormatDecimal2String(log.TradeAmount, btcusdt.PriceDigit),
+					"TradeQuantity": trading_engine.FormatDecimal2String(log.TradeQuantity, btcusdt.QuantityDigit),
 					"TradeTime":     log.TradeTime,
 					"AskOrderId":    log.AskOrderId,
 					"BidOrderId":    log.BidOrderId,
@@ -109,8 +105,8 @@ func watchTradeLog() {
 
 func pushDepth() {
 	for {
-		ask := askQueue.GetDepth()
-		bid := bidQueue.GetDepth()
+		ask := btcusdt.GetAskDepth(10)
+		bid := btcusdt.GetBidDepth(10)
 		data := gin.H{
 			"tag": "depth",
 			"data": gin.H{
@@ -145,18 +141,17 @@ func newOrder(c *gin.Context) {
 
 	orderId := uuid.NewString()
 	param.OrderId = orderId
-	param.Price = trading_engine.FormatPrice2Str(string2decimal(param.Price))
-	param.Quantity = trading_engine.FormatQuantity2Str(string2decimal(param.Quantity))
 	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
 
 	if strings.ToLower(param.OrderType) == "ask" {
 		param.OrderId = fmt.Sprintf("a-%s", orderId)
-		askOrder := trading_engine.NewAskItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		askQueue.Push(askOrder)
+		item := trading_engine.NewAskItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+
 	} else {
 		param.OrderId = fmt.Sprintf("b-%s", orderId)
-		bidOrder := trading_engine.NewBidItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		bidQueue.Push(bidOrder)
+		item := trading_engine.NewBidItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
+		btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
 	}
 
 	go func() {
@@ -171,8 +166,8 @@ func newOrder(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"ok": true,
 		"data": gin.H{
-			"ask_len": askQueue.Len(),
-			"bid_len": bidQueue.Len(),
+			"ask_len": btcusdt.AskLen(),
+			"bid_len": btcusdt.BidLen(),
 		},
 	})
 }
@@ -189,9 +184,11 @@ func cancelOrder(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	askQueue.Remove(param.OrderId)
-	bidQueue.Remove(param.OrderId)
+	if strings.HasPrefix(param.OrderId, "a-") {
+		btcusdt.CancelOrder(trading_engine.OrderSideSell, param.OrderId)
+	} else {
+		btcusdt.CancelOrder(trading_engine.OrderSideBuy, param.OrderId)
+	}
 
 	go func() {
 		msg := gin.H{
