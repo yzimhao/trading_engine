@@ -18,8 +18,6 @@ type TradeResult struct {
 
 type TradePair struct {
 	Symbol        string
-	AskDepth      [][2]string
-	BidDepth      [][2]string
 	ChTradeResult chan TradeResult
 
 	PriceDigit    int

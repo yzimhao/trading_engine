@@ -2,7 +2,6 @@ package trading_engine
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -25,7 +24,7 @@ func TestTradeFunc(t *testing.T) {
 	time.Sleep(time.Duration(100) * time.Millisecond)
 	a := btcusdt.GetBidDepth(0)
 	stra, _ := json.Marshal(a)
-	fmt.Println(string(stra))
+	assert.Equal(t, "[[\"1.10\",\"1\"]]", string(stra))
 
 	btcusdt.PushNewOrder(OrderSideSell, NewAskItem("uid2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1.2), 1112))
 	assert.Equal(t, 1, btcusdt.askQueue.Len())
