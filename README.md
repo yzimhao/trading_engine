@@ -10,20 +10,49 @@
   - [ ] 支持市价单
 
 
-#### 委托深度http接口数据预览
+####
 ```
-{
-  "ask": [
-    ["1.0001", "19960"],
-    ["1.0000", "10"]
-  ],
-  "bid": [
-    ["0.9999", "20"],
-    ["0.9998", "20"]
-  ]
-}
+  go get github.com/yzimhao/trading_engine
 ```
-["1.0001", "19960"] => [价格，数量]
+
+#### 接入流程
+```
+  var btcusdt *trading_engine.TradePair
+  btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 6)
+
+  //买卖订单号最好做一个区分，方便识别订单
+  //卖单 
+  orderId = fmt.Sprintf("a-%s", orderId)
+  item := trading_engine.NewAskItem(orderId, string2decimal(price), string2decimal(quantity), time.Now().Unix())
+  btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+
+  //买单
+  orderId = fmt.Sprintf("b-%s", orderId)
+  item := trading_engine.NewBidItem(orderId, string2decimal(price), string2decimal(quantity), time.Now().Unix())
+  btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
+
+  //获取深度, 参数为深度获取的个数 ["1.0001", "19960"] => [价格，数量]
+  ask := btcusdt.GetAskDepth(10)
+  bid := btcusdt.GetBidDepth(10)
+
+
+  //买卖双方价格成交后会chan通知，监听如下
+  for {
+    if log, ok := <-btcusdt.ChTradeResult; ok {
+      //其他通知，通知结算逻辑...
+      ...
+    }
+  }
+
+  //取消订单
+  if strings.HasPrefix(orderId, "a-") {
+    btcusdt.CancelOrder(trading_engine.OrderSideSell, orderId)
+  } else {
+    btcusdt.CancelOrder(trading_engine.OrderSideBuy, orderId)
+  }
+
+```  
+
 
 
 #### example
