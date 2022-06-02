@@ -49,13 +49,15 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	*pq = append(*pq, x.(QueueItem))
 }
 
-func NewQueue() *OrderQueue {
+func NewQueue(priceDigit, quantityDigit int) *OrderQueue {
 	pq := make(PriorityQueue, 0)
 	heap.Init(&pq)
 
 	queue := OrderQueue{
-		pq: &pq,
-		m:  make(map[string]*QueueItem),
+		pq:            &pq,
+		m:             make(map[string]*QueueItem),
+		priceDigit:    priceDigit,
+		quantityDigit: quantityDigit,
 	}
 
 	//flush depth
@@ -68,7 +70,9 @@ type OrderQueue struct {
 	m  map[string]*QueueItem
 	sync.Mutex
 
-	depth [][2]string
+	priceDigit    int
+	quantityDigit int
+	depth         [][2]string
 }
 
 func (o *OrderQueue) GetDepth() [][2]string {
@@ -112,13 +116,13 @@ func (o *OrderQueue) flushDepth() {
 			for i := 0; i < o.pq.Len(); i++ {
 				item := (*o.pq)[i]
 
-				price := formatDecimal(priceFormat, item.GetPrice())
+				price := formatDecimal2String(item.GetPrice(), o.priceDigit)
 
 				if _, ok := depthMap[price]; !ok {
-					depthMap[price] = formatDecimal(quantityFormat, item.GetQuantity())
+					depthMap[price] = formatDecimal2String(item.GetQuantity(), o.quantityDigit)
 				} else {
 					old_qunantity, _ := decimal.NewFromString(depthMap[price])
-					depthMap[price] = formatDecimal(quantityFormat, old_qunantity.Add(item.GetQuantity()))
+					depthMap[price] = formatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
 				}
 			}
 

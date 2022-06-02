@@ -17,24 +17,9 @@ const (
 	OrderSideSell OrderSide = 1
 )
 
-var (
-	priceDigits    = 2
-	quantityDigits = 0
-
-	priceFormat    = "%." + fmt.Sprintf("%d", priceDigits) + "f"
-	quantityFormat = "%." + fmt.Sprintf("%d", quantityDigits) + "f"
-)
-
-func FormatPrice2Str(price decimal.Decimal) string {
-	return formatDecimal(priceFormat, price)
-}
-
-func FormatQuantity2Str(quantity decimal.Decimal) string {
-	return formatDecimal(quantityFormat, quantity)
-}
-
-func formatDecimal(format string, d decimal.Decimal) string {
+func formatDecimal2String(d decimal.Decimal, digit int) string {
 	f, _ := d.Float64()
+	format := "%." + fmt.Sprintf("%d", digit) + "f"
 	return fmt.Sprintf(format, f)
 }
 

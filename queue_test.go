@@ -14,8 +14,8 @@ var askQueue *OrderQueue
 var bidQueue *OrderQueue
 
 func init() {
-	askQueue = NewQueue()
-	bidQueue = NewQueue()
+	askQueue = NewQueue(2, 0)
+	bidQueue = NewQueue(2, 0)
 }
 
 func TestAskQueue(t *testing.T) {
@@ -75,7 +75,7 @@ func TestBidQueue(t *testing.T) {
 }
 
 func BenchmarkAskQueue(b *testing.B) {
-	askQueue := NewQueue()
+	askQueue := NewQueue(2, 0)
 	rand.Seed(time.Now().Unix())
 
 	for i := 0; i < b.N; i++ {
