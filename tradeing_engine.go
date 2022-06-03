@@ -79,29 +79,32 @@ func (t *TradePair) matching() {
 		for {
 			select {
 			case newOrder := <-t.ChNewOrder:
-				func() {
-					logrus.Warnf("%s new order: %+v", t.Symbol, newOrder)
-					if newOrder.GetPriceType() == PriceTypeLimit {
-						if newOrder.GetOrderSide() == OrderSideSell {
-							t.askQueue.Push(newOrder)
-						} else {
-							t.bidQueue.Push(newOrder)
-						}
-					} else {
-						//市价单处理
-						if newOrder.GetOrderSide() == OrderSideSell {
-							t.doMarketSell(newOrder)
-						} else {
-							t.doMarketBuy(newOrder)
-						}
-					}
-				}()
+				t.doNewOrder(newOrder)
 			default:
 				t.doLimitOrder()
 			}
 
 		}
 	}()
+}
+
+func (t *TradePair) doNewOrder(newOrder QueueItem) {
+	logrus.Infof("%s new order: %+v", t.Symbol, newOrder)
+	if newOrder.GetPriceType() == PriceTypeLimit {
+		if newOrder.GetOrderSide() == OrderSideSell {
+			t.askQueue.Push(newOrder)
+		} else {
+			t.bidQueue.Push(newOrder)
+		}
+	} else {
+		//市价单处理
+		if newOrder.GetOrderSide() == OrderSideSell {
+			t.doMarketSell(newOrder)
+		} else {
+			t.doMarketBuy(newOrder)
+		}
+	}
+
 }
 
 func (t *TradePair) doLimitOrder() {
