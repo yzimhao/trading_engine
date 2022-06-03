@@ -129,15 +129,25 @@ func newOrder(c *gin.Context) {
 		PriceType  string `json:"price_type"`
 		Price      string `json:"price"`
 		Quantity   string `json:"quantity"`
+		Amount     string `json:"amount"`
 		CreateTime string `json:"create_time"`
 	}
 
 	var param args
 	c.BindJSON(&param)
 
-	if param.Price == "" || param.Quantity == "" {
-		c.Abort()
-		return
+	var pt trading_engine.PriceType
+	if param.PriceType == "market" {
+		param.Price = "0"
+		pt = trading_engine.PriceTypeMarket
+		if param.Amount != "" {
+			pt = trading_engine.PriceTypeMarketAmount
+		} else if param.Quantity != "" {
+			pt = trading_engine.PriceTypeMarketQuantity
+		}
+	} else {
+		pt = trading_engine.PriceTypeLimit
+		param.Amount = "0"
 	}
 
 	orderId := uuid.NewString()
@@ -146,14 +156,14 @@ func newOrder(c *gin.Context) {
 
 	if strings.ToLower(param.OrderType) == "ask" {
 		param.OrderId = fmt.Sprintf("a-%s", orderId)
-		item := trading_engine.NewAskItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		// btcusdt.PushNewOrder(trading_engine.OrderSideSell, item)
+		item := trading_engine.NewAskItem(pt, param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), string2decimal(param.Amount), time.Now().Unix())
+		// btcusdt.PushNewOrder(item)
 		btcusdt.ChNewOrder <- item
 
 	} else {
 		param.OrderId = fmt.Sprintf("b-%s", orderId)
-		item := trading_engine.NewBidItem(param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), time.Now().Unix())
-		// btcusdt.PushNewOrder(trading_engine.OrderSideBuy, item)
+		item := trading_engine.NewBidItem(pt, param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), string2decimal(param.Amount), time.Now().Unix())
+		// btcusdt.PushNewOrder(item)
 		btcusdt.ChNewOrder <- item
 	}
 

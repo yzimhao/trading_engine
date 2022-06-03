@@ -18,6 +18,8 @@ type QueueItem interface {
 	GetQuantity() decimal.Decimal
 	GetCreateTime() int64
 	GetOrderSide() OrderSide
+	GetPriceType() PriceType
+	GetAmount() decimal.Decimal //订单金额，在市价订单的时候生效，限价单不需要这个字段
 }
 
 type PriorityQueue []QueueItem
