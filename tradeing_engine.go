@@ -31,8 +31,8 @@ type TradePair struct {
 func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 	t := &TradePair{
 		Symbol:        symbol,
-		ChTradeResult: make(chan TradeResult, 100),
-		ChNewOrder:    make(chan QueueItem, 100),
+		ChTradeResult: make(chan TradeResult, 10),
+		ChNewOrder:    make(chan QueueItem),
 
 		PriceDigit:    priceDigit,
 		QuantityDigit: quantityDigit,
@@ -42,6 +42,10 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 	}
 	t.matching()
 	return t
+}
+
+func (t *TradePair) PushNewOrder(item QueueItem) {
+	t.ChNewOrder <- item
 }
 
 func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
