@@ -38,8 +38,10 @@
   
   <script id="myorder-tpl" type="text/html">
     <tr class="order-item" order-id="{% d.order_id%}">
+        <td>{% d.price_type %}</td>
         <td>{% d.price %}</td>
         <td>{% d.quantity %}</td>
+        <td>{% d.amount %}</td>
         <td>{% d.create_time %}</td>
         <td><a class="cancel" href="javascript:;">撤单</a></td>
     </tr>
@@ -87,22 +89,40 @@
                                 <div class="layui-form-item">
                                     <label class="layui-form-label">订单类型</label>
                                     <div class="layui-input-block">
-                                        <select name="price_type" lay-verify="">
+                                        <select name="price_type" lay-filter="price_type">
                                             <option value="limit">限价单</option>
-                                            <option value="market" disabled>市价单</option>
+                                            <option value="market">市价单</option>
                                         </select>   
                                     </div>
                                 </div>
-                                <div class="layui-form-item">
+
+                                <div class="layui-form-item item-market-type" style="display: none;">
+                                    <label class="layui-form-label"></label>
+                                    <div class="layui-input-block">
+                                        <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量" checked>
+                                        <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item item-price">
                                     <label class="layui-form-label">价格</label>
                                     <div class="layui-input-block">
                                     <input type="text" name="price" required  lay-verify="required|number" placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
                                     </div>
                                 </div>
-                                <div class="layui-form-item">
+                                
+                                
+                                <div class="layui-form-item item-quantity">
                                     <label class="layui-form-label">数量</label>
                                     <div class="layui-input-inline">
                                     <input type="text" name="quantity" required lay-verify="required|number" placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                    </div>
+                                </div>
+
+                                <div class="layui-form-item item-amount" style="display: none;">
+                                    <label class="layui-form-label">金额</label>
+                                    <div class="layui-input-inline">
+                                    <input type="text" name="amount" required lay-verify="required|number" placeholder="交易金额" autocomplete="off" class="layui-input" value="1000.00">
                                     </div>
                                 </div>
 
@@ -122,8 +142,10 @@
                         <div class="layui-card-body">
                             <table class="layui-table">
                                 <tr>
+                                    <th>类型</th>
                                     <th>价格</th>
                                     <th>数量</th>
+                                    <th>金额</th>
                                     <th>时间</th>
                                     <th>操作</th>
                                 </tr>
@@ -145,12 +167,13 @@
     <script src="//www.layuicdn.com/layui/layui.js"></script>
     <!--您的Layui代码start-->
     <script type="text/javascript">
-    layui.use(['laydate', 'layer', 'table', 'element', 'laytpl'], function() {
+    layui.use(['laydate', 'layer', 'table', 'element', 'laytpl', 'form'], function() {
       var laydate = layui.laydate //日期
       ,layer = layui.layer //弹层
       ,table = layui.table //表格
       ,$ =layui.$
       ,laytpl = layui.laytpl
+      ,form = layui.form
       ,element = layui.element; //元素操作 等等...
 
       laytpl.config({
@@ -170,20 +193,34 @@
 
       $(".opt").on("click", function(){
           var type = $(this).hasClass("sell") ? "ask" : "bid";
-          var price = $("input[name='price']").val();
           var price_type = $("select[name='price_type']").val();
-          var quantity = $("input[name='quantity']").val();
+          var mtype = $("input[name='mtype']:checked").val();
+          
           $.ajax({
               url:"/api/new_order",
               type: "post",
               dataType: "json",
               contentType : "application/json",
-              data: JSON.stringify({
+              data: function(){
+                var data = {
                     price_type: price_type,
                     order_type: type,
-                    price: price,
-                    quantity: quantity
-              }),
+                };
+
+                if (price_type == "market") {
+                    if(mtype == "q") {
+                        data.quantity = $("input[name='quantity']").val();
+                    } else {
+                        data.amount = $("input[name='amount']").val();
+                    }
+                }else{
+                    data.price = $("input[name='price']").val();
+                    data.quantity = $("input[name='quantity']").val();
+                }
+
+                console.log(data);
+                return JSON.stringify(data)
+              }(),
               success: function(d){
                 layer.msg("下单"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
               }
@@ -208,6 +245,31 @@
                 }
             });
       });
+
+      
+      form.on('select(price_type)', function(data){
+        if(data.value=="limit"){
+            $(".item-price").show();
+            $(".item-quantity").show();
+            $(".item-amount").hide();
+            $(".item-market-type").hide();
+        }else if(data.value=="market"){
+            $(".item-price").hide();
+            $(".item-market-type").show();
+        }
+        form.render('select');
+      });
+      form.on('radio(market-type)', function(data){
+          if(data.value =="q"){
+            $(".item-quantity").show();
+            $(".item-amount").hide();
+          }else{
+            $(".item-quantity").hide();
+            $(".item-amount").show();
+          }
+      });
+      
+
       
        
     

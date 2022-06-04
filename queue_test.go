@@ -20,10 +20,10 @@ func init() {
 
 func TestAskQueue(t *testing.T) {
 
-	askQueue.Push(NewAskItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
-	askQueue.Push(NewAskItem("2", decimal.NewFromFloat(0.99), decimal.NewFromFloat(10), 11111111))
-	askQueue.Push(NewAskItem("3", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
-	askQueue.Push(NewAskItem("5", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
+	askQueue.Push(NewAskLimitItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
+	askQueue.Push(NewAskLimitItem("2", decimal.NewFromFloat(0.99), decimal.NewFromFloat(10), 11111111))
+	askQueue.Push(NewAskLimitItem("3", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
+	askQueue.Push(NewAskLimitItem("5", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
 
 	assert.Equal(t, 4, askQueue.Len())
 
@@ -32,7 +32,7 @@ func TestAskQueue(t *testing.T) {
 	assert.Equal(t, "2", top.GetUniqueId())
 
 	//重新插入一个低价订单，重新获取堆顶的item
-	askQueue.Push(NewAskItem("4", decimal.NewFromFloat(0.01), decimal.NewFromFloat(10), 11111111))
+	askQueue.Push(NewAskLimitItem("4", decimal.NewFromFloat(0.01), decimal.NewFromFloat(10), 11111111))
 	top = askQueue.Top()
 	assert.Equal(t, "4", top.GetUniqueId())
 
@@ -52,9 +52,9 @@ func TestAskQueue(t *testing.T) {
 
 func TestBidQueue(t *testing.T) {
 
-	bidQueue.Push(NewBidItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
-	bidQueue.Push(NewBidItem("2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1), 11111111))
-	bidQueue.Push(NewBidItem("3", decimal.NewFromFloat(2), decimal.NewFromFloat(1), 11111111))
+	bidQueue.Push(NewBidLimitItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
+	bidQueue.Push(NewBidLimitItem("2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1), 11111111))
+	bidQueue.Push(NewBidLimitItem("3", decimal.NewFromFloat(2), decimal.NewFromFloat(1), 11111111))
 
 	assert.Equal(t, 3, bidQueue.Len())
 
@@ -63,7 +63,7 @@ func TestBidQueue(t *testing.T) {
 	assert.Equal(t, "3", top.GetUniqueId())
 
 	//重新插入一个高价订单，重新获取堆顶的item
-	bidQueue.Push(NewBidItem("4", decimal.NewFromFloat(10.01), decimal.NewFromFloat(10), 11111111))
+	bidQueue.Push(NewBidLimitItem("4", decimal.NewFromFloat(10.01), decimal.NewFromFloat(10), 11111111))
 	top = bidQueue.Top()
 	assert.Equal(t, "4", top.GetUniqueId())
 
@@ -82,6 +82,6 @@ func BenchmarkAskQueue(b *testing.B) {
 		id := uuid.New().String()
 		price := decimal.NewFromFloat(float64(rand.Intn(1000)) / 100)
 		quantity := decimal.NewFromFloat(float64(rand.Intn(10000)) / 100)
-		askQueue.Push(NewAskItem(id, price, quantity, time.Now().Unix()))
+		askQueue.Push(NewAskLimitItem(id, price, quantity, time.Now().Unix()))
 	}
 }

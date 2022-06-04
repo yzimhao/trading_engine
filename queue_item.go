@@ -10,6 +10,9 @@ type Order struct {
 	quantity   decimal.Decimal
 	createTime int64
 	index      int
+
+	priceType PriceType
+	amount    decimal.Decimal
 }
 
 func (o *Order) GetIndex() int {
@@ -38,6 +41,13 @@ func (o *Order) GetQuantity() decimal.Decimal {
 
 func (o *Order) GetCreateTime() int64 {
 	return o.createTime
+}
+
+func (o *Order) GetPriceType() PriceType {
+	return o.priceType
+}
+func (o *Order) GetAmount() decimal.Decimal {
+	return o.amount
 }
 
 // 这个方法留在具体的 ask/bid 队列中实现
@@ -71,20 +81,50 @@ func (a *BidItem) GetOrderSide() OrderSide {
 	return OrderSideBuy
 }
 
-func NewAskItem(uniqId string, price, quantity decimal.Decimal, createTime int64) *AskItem {
-	return &AskItem{Order{
-		orderId:    uniqId,
-		price:      price,
-		quantity:   quantity,
-		createTime: createTime,
-	}}
+func NewAskItem(pt PriceType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *AskItem {
+	return &AskItem{
+		Order: Order{
+			orderId:    uniqId,
+			price:      price,
+			quantity:   quantity,
+			createTime: createTime,
+			priceType:  pt,
+			amount:     amount,
+		},
+	}
 }
 
-func NewBidItem(uniqId string, price, quantity decimal.Decimal, createTime int64) *BidItem {
-	return &BidItem{Order{
-		orderId:    uniqId,
-		price:      price,
-		quantity:   quantity,
-		createTime: createTime,
-	}}
+func NewAskLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+}
+
+func NewAskMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+}
+func NewAskMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
+}
+
+func NewBidItem(pt PriceType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *BidItem {
+	return &BidItem{
+		Order: Order{
+			orderId:    uniqId,
+			price:      price,
+			quantity:   quantity,
+			createTime: createTime,
+			priceType:  pt,
+			amount:     amount,
+		}}
+}
+
+func NewBidLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+}
+
+func NewBidMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+}
+
+func NewBidMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
 }

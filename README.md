@@ -15,7 +15,7 @@
   go get github.com/yzimhao/trading_engine
 ```
 
-#### 接入流程
+#### 接入方法介绍
 ```
   var btcusdt *trading_engine.TradePair
   //初始化交易对，需要设置价格、数量的小数点位数，对外展示数据的时候用来格式化数字用
