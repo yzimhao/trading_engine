@@ -38,8 +38,10 @@
   
   <script id="myorder-tpl" type="text/html">
     <tr class="order-item" order-id="{% d.order_id%}">
+        <td>{% d.price_type %}</td>
         <td>{% d.price %}</td>
         <td>{% d.quantity %}</td>
+        <td>{% d.amount %}</td>
         <td>{% d.create_time %}</td>
         <td><a class="cancel" href="javascript:;">撤单</a></td>
     </tr>
@@ -140,8 +142,10 @@
                         <div class="layui-card-body">
                             <table class="layui-table">
                                 <tr>
+                                    <th>类型</th>
                                     <th>价格</th>
                                     <th>数量</th>
+                                    <th>金额</th>
                                     <th>时间</th>
                                     <th>操作</th>
                                 </tr>

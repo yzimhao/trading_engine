@@ -17,9 +17,10 @@ type TradeResult struct {
 }
 
 type TradePair struct {
-	Symbol        string
-	ChTradeResult chan TradeResult
-	ChNewOrder    chan QueueItem
+	Symbol         string
+	ChTradeResult  chan TradeResult
+	ChNewOrder     chan QueueItem
+	ChCancelResult chan string
 
 	PriceDigit    int
 	QuantityDigit int
@@ -30,9 +31,10 @@ type TradePair struct {
 
 func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 	t := &TradePair{
-		Symbol:        symbol,
-		ChTradeResult: make(chan TradeResult, 10),
-		ChNewOrder:    make(chan QueueItem),
+		Symbol:         symbol,
+		ChTradeResult:  make(chan TradeResult, 10),
+		ChNewOrder:     make(chan QueueItem),
+		ChCancelResult: make(chan string),
 
 		PriceDigit:    priceDigit,
 		QuantityDigit: quantityDigit,
@@ -45,7 +47,8 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 }
 
 func (t *TradePair) PushNewOrder(item QueueItem) {
-	t.ChNewOrder <- item
+	// t.ChNewOrder <- item
+	t.doNewOrder(item)
 }
 
 func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
@@ -130,30 +133,23 @@ func (t *TradePair) doLimitOrder() {
 		}()
 
 		if bidTop.GetPrice().Cmp(askTop.GetPrice()) >= 0 {
-			tradelog := TradeResult{}
-
+			curTradeQty := decimal.Zero
+			curTradePrice := decimal.Zero
 			if bidTop.GetQuantity().Cmp(askTop.GetQuantity()) >= 0 {
-				tradelog.TradeQuantity = askTop.GetQuantity()
+				curTradeQty = askTop.GetQuantity()
 			} else if bidTop.GetQuantity().Cmp(askTop.GetQuantity()) == -1 {
-				tradelog.TradeQuantity = bidTop.GetQuantity()
+				curTradeQty = bidTop.GetQuantity()
 			}
-			askTop.SetQuantity(askTop.GetQuantity().Sub(tradelog.TradeQuantity))
-			bidTop.SetQuantity(bidTop.GetQuantity().Sub(tradelog.TradeQuantity))
+			askTop.SetQuantity(askTop.GetQuantity().Sub(curTradeQty))
+			bidTop.SetQuantity(bidTop.GetQuantity().Sub(curTradeQty))
 
 			if askTop.GetCreateTime() >= bidTop.GetCreateTime() {
-				tradelog.TradePrice = bidTop.GetPrice()
+				curTradePrice = bidTop.GetPrice()
 			} else {
-				tradelog.TradePrice = askTop.GetPrice()
+				curTradePrice = askTop.GetPrice()
 			}
 
-			tradelog.TradeTime = time.Now()
-			tradelog.AskOrderId = askTop.GetUniqueId()
-			tradelog.BidOrderId = bidTop.GetUniqueId()
-			tradelog.TradeAmount = tradelog.TradeQuantity.Mul(tradelog.TradePrice)
-
-			//通知交易结果
-			logrus.Infof("%s limit tradelog: %+v", t.Symbol, tradelog)
-			t.ChTradeResult <- tradelog
+			t.sendTradeResultNotify(askTop, bidTop, curTradePrice, curTradeQty)
 			return true
 		} else {
 			return false
@@ -175,7 +171,6 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 	//tradeAmount := decimal.Zero
 
 	for {
-		tradelog := TradeResult{}
 		if t.askQueue.Len() == 0 {
 			//对手盘为空，直接退出，取消当前市价单
 			break
@@ -199,18 +194,10 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 					ask.SetQuantity(ask.GetQuantity().Sub(curTradeQuantity))
 				}
 
-				tradelog.AskOrderId = ask.GetUniqueId()
-				tradelog.BidOrderId = item.GetUniqueId()
-				tradelog.TradeQuantity = curTradeQuantity
-				tradelog.TradePrice = ask.GetPrice()
-				tradelog.TradeTime = time.Now()
-				tradelog.TradeAmount = curTradeQuantity.Mul(tradelog.TradePrice)
-
+				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQuantity)
 				tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
-				logrus.Infof("%s market tradelog: %+v", t.Symbol, tradelog)
-				t.ChTradeResult <- tradelog
 				return true
 			} else if item.GetPriceType() == PriceTypeMarketAmount {
 				//todo 市价按成交金额成交
@@ -222,7 +209,8 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 		if !ok {
 			//不能成交了 bid剩下的未成交数量需要撤单
 			if item.GetPriceType() == PriceTypeMarketQuantity && item.GetQuantity().Cmp(decimal.Zero) > 0 {
-				//todo 发取消订单通知
+				//发取消订单通知
+				t.ChCancelResult <- item.GetUniqueId()
 			}
 			break
 		}
@@ -234,7 +222,6 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 	//tradeAmount := decimal.Zero
 
 	for {
-		tradelog := TradeResult{}
 		if t.bidQueue.Len() == 0 {
 			//对手盘为空，直接退出，取消当前市价单
 			break
@@ -258,18 +245,10 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 					bid.SetQuantity(bid.GetQuantity().Sub(curTradeQuantity))
 				}
 
-				tradelog.AskOrderId = item.GetUniqueId()
-				tradelog.BidOrderId = bid.GetUniqueId()
-				tradelog.TradeQuantity = curTradeQuantity
-				tradelog.TradePrice = bid.GetPrice()
-				tradelog.TradeTime = time.Now()
-				tradelog.TradeAmount = curTradeQuantity.Mul(tradelog.TradePrice)
-
+				t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity)
 				tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
-				logrus.Infof("%s market tradelog: %+v", t.Symbol, tradelog)
-				t.ChTradeResult <- tradelog
 				return true
 			} else if item.GetPriceType() == PriceTypeMarketAmount {
 				//todo 市价按成交金额成交
@@ -281,10 +260,24 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 		if !ok {
 			//不能成交了 bid剩下的未成交数量需要撤单
 			if item.GetPriceType() == PriceTypeMarketQuantity && item.GetQuantity().Cmp(decimal.Zero) > 0 {
-				//todo 发取消订单通知
+				//发取消订单通知
+				t.ChCancelResult <- item.GetUniqueId()
 			}
 			break
 		}
 
 	}
+}
+
+func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty decimal.Decimal) {
+	tradelog := TradeResult{}
+	tradelog.AskOrderId = ask.GetUniqueId()
+	tradelog.BidOrderId = bid.GetUniqueId()
+	tradelog.TradeQuantity = tradeQty
+	tradelog.TradePrice = bid.GetPrice()
+	tradelog.TradeTime = time.Now()
+	tradelog.TradeAmount = tradeQty.Mul(price)
+
+	logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
+	t.ChTradeResult <- tradelog
 }

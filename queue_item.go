@@ -94,6 +94,17 @@ func NewAskItem(pt PriceType, uniqId string, price, quantity, amount decimal.Dec
 	}
 }
 
+func NewAskLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+}
+
+func NewAskMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+}
+func NewAskMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
+}
+
 func NewBidItem(pt PriceType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *BidItem {
 	return &BidItem{
 		Order: Order{
@@ -104,4 +115,16 @@ func NewBidItem(pt PriceType, uniqId string, price, quantity, amount decimal.Dec
 			priceType:  pt,
 			amount:     amount,
 		}}
+}
+
+func NewBidLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+}
+
+func NewBidMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+}
+
+func NewBidMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
 }

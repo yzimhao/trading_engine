@@ -86,21 +86,36 @@ func depth(c *gin.Context) {
 
 func watchTradeLog() {
 	for {
-		if log, ok := <-btcusdt.ChTradeResult; ok {
+		select {
+		case log, ok := <-btcusdt.ChTradeResult:
+			if ok {
+				data := gin.H{
+					"tag": "trade",
+					"data": gin.H{
+						"TradePrice":    trading_engine.FormatDecimal2String(log.TradePrice, btcusdt.PriceDigit),
+						"TradeAmount":   log.TradeAmount.String(),
+						"TradeQuantity": trading_engine.FormatDecimal2String(log.TradeQuantity, btcusdt.QuantityDigit),
+						"TradeTime":     log.TradeTime,
+						"AskOrderId":    log.AskOrderId,
+						"BidOrderId":    log.BidOrderId,
+					},
+				}
+				msg, _ := json.Marshal(data)
+				sendMsg <- []byte(msg)
+			}
+		case cancelOrderId := <-btcusdt.ChCancelResult:
 			data := gin.H{
-				"tag": "trade",
+				"tag": "cancel_order",
 				"data": gin.H{
-					"TradePrice":    trading_engine.FormatDecimal2String(log.TradePrice, btcusdt.PriceDigit),
-					"TradeAmount":   log.TradeAmount.String(),
-					"TradeQuantity": trading_engine.FormatDecimal2String(log.TradeQuantity, btcusdt.QuantityDigit),
-					"TradeTime":     log.TradeTime,
-					"AskOrderId":    log.AskOrderId,
-					"BidOrderId":    log.BidOrderId,
+					"OrderId": cancelOrderId,
 				},
 			}
 			msg, _ := json.Marshal(data)
 			sendMsg <- []byte(msg)
+		default:
+			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
+
 	}
 }
 
@@ -136,6 +151,10 @@ func newOrder(c *gin.Context) {
 	var param args
 	c.BindJSON(&param)
 
+	orderId := uuid.NewString()
+	param.OrderId = orderId
+	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
+
 	var pt trading_engine.PriceType
 	if param.PriceType == "market" {
 		param.Price = "0"
@@ -150,20 +169,14 @@ func newOrder(c *gin.Context) {
 		param.Amount = "0"
 	}
 
-	orderId := uuid.NewString()
-	param.OrderId = orderId
-	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
-
 	if strings.ToLower(param.OrderType) == "ask" {
 		param.OrderId = fmt.Sprintf("a-%s", orderId)
 		item := trading_engine.NewAskItem(pt, param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), string2decimal(param.Amount), time.Now().Unix())
-		// btcusdt.PushNewOrder(item)
 		btcusdt.ChNewOrder <- item
 
 	} else {
 		param.OrderId = fmt.Sprintf("b-%s", orderId)
 		item := trading_engine.NewBidItem(pt, param.OrderId, string2decimal(param.Price), string2decimal(param.Quantity), string2decimal(param.Amount), time.Now().Unix())
-		// btcusdt.PushNewOrder(item)
 		btcusdt.ChNewOrder <- item
 	}
 
