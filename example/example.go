@@ -207,11 +207,11 @@ func testOrder(c *gin.Context) {
 			orderId := uuid.NewString()
 			if op == "ask" {
 				orderId = fmt.Sprintf("a-%s", orderId)
-				item := trading_engine.NewAskLimitItem(orderId, randDecimal(11, 20), randDecimal(20, 100), time.Now().Unix())
+				item := trading_engine.NewAskLimitItem(orderId, randDecimal(20, 50), randDecimal(20, 100), time.Now().Unix())
 				btcusdt.ChNewOrder <- item
 			} else {
 				orderId = fmt.Sprintf("b-%s", orderId)
-				item := trading_engine.NewBidLimitItem(orderId, randDecimal(1, 10), randDecimal(20, 100), time.Now().Unix())
+				item := trading_engine.NewBidLimitItem(orderId, randDecimal(1, 20), randDecimal(20, 100), time.Now().Unix())
 				btcusdt.ChNewOrder <- item
 			}
 
