@@ -58,7 +58,8 @@ func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
 	} else {
 		t.bidQueue.Remove(uniq)
 	}
-	//todo 删除成功后需要发送通知
+	//删除成功后需要发送通知
+	t.ChCancelResult <- uniq
 }
 
 func (t *TradePair) GetAskDepth(limit int) [][2]string {
