@@ -92,9 +92,9 @@ func watchTradeLog() {
 				data := gin.H{
 					"tag": "trade",
 					"data": gin.H{
-						"TradePrice":    trading_engine.FormatDecimal2String(log.TradePrice, btcusdt.PriceDigit),
+						"TradePrice":    btcusdt.Price2String(log.TradePrice),
 						"TradeAmount":   log.TradeAmount.String(),
-						"TradeQuantity": trading_engine.FormatDecimal2String(log.TradeQuantity, btcusdt.QuantityDigit),
+						"TradeQuantity": btcusdt.Qty2String(log.TradeQuantity),
 						"TradeTime":     log.TradeTime,
 						"AskOrderId":    log.AskOrderId,
 						"BidOrderId":    log.BidOrderId,

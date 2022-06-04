@@ -22,8 +22,8 @@ type TradePair struct {
 	ChNewOrder     chan QueueItem
 	ChCancelResult chan string
 
-	PriceDigit    int
-	QuantityDigit int
+	priceDigit    int
+	quantityDigit int
 
 	askQueue *OrderQueue
 	bidQueue *OrderQueue
@@ -36,8 +36,8 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 		ChNewOrder:     make(chan QueueItem),
 		ChCancelResult: make(chan string),
 
-		PriceDigit:    priceDigit,
-		QuantityDigit: quantityDigit,
+		priceDigit:    priceDigit,
+		quantityDigit: quantityDigit,
 
 		askQueue: NewQueue(priceDigit, quantityDigit),
 		bidQueue: NewQueue(priceDigit, quantityDigit),
