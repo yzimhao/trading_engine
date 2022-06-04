@@ -1,5 +1,11 @@
 package wss
 
+import (
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
+)
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -14,6 +20,11 @@ type Hub struct {
 
 	// Unregister requests from clients.
 	unregister chan *Client
+}
+
+type msgBody struct {
+	Tag  string      `json:"tag"`
+	Data interface{} `json:"data"`
 }
 
 func NewHub() *Hub {
@@ -40,14 +51,33 @@ func (h *Hub) Run() {
 				close(client.send)
 			}
 		case message := <-h.broadcast:
-			for client := range h.clients {
-				select {
-				case client.send <- message:
-				default:
-					close(client.send)
-					delete(h.clients, client)
+			var body msgBody
+			err := json.Unmarshal(message, &body)
+			if err != nil {
+				msgHash := md5String(message)
+				for client := range h.clients {
+
+					if _, ok := client.lastMsgHash[body.Tag]; ok {
+						if client.lastMsgHash[body.Tag] == msgHash {
+							continue
+						}
+					}
+					client.lastMsgHash[body.Tag] = msgHash
+
+					select {
+					case client.send <- message:
+					default:
+						close(client.send)
+						delete(h.clients, client)
+					}
 				}
 			}
 		}
 	}
+}
+
+func md5String(str []byte) string {
+	hasher := md5.New()
+	hasher.Write(str)
+	return hex.EncodeToString(hasher.Sum(nil))
 }

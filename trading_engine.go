@@ -83,7 +83,7 @@ func (t *TradePair) matching() {
 		for {
 			select {
 			case newOrder := <-t.ChNewOrder:
-				t.doNewOrder(newOrder)
+				go t.doNewOrder(newOrder)
 			default:
 				t.doLimitOrder()
 			}

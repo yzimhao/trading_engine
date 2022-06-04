@@ -45,6 +45,8 @@ type Client struct {
 	// The websocket connection.
 	conn *websocket.Conn
 
+	lastMsgHash map[string]string
+
 	// Buffered channel of outbound messages.
 	send chan []byte
 }
@@ -128,7 +130,12 @@ func ServeWs(c *gin.Context) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: HHub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{
+		hub:         HHub,
+		conn:        conn,
+		send:        make(chan []byte, 256),
+		lastMsgHash: make(map[string]string),
+	}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

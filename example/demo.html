@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="layui-row layui-col-space5">
-                    <div class="latest-price" style="text-align: center; color:red;">1.9</div>
+                    <div class="latest-price" style="text-align: center; color:red;">-</div>
                 </div>
 
                 <div class="layui-row layui-col-space5">
@@ -140,10 +140,16 @@
 
                                 <div class="layui-form-item">
                                     <div class="layui-input-block">
-                                    <button class="layui-btn layui-btn-danger opt sell">卖出</button>
-                                    <button class="layui-btn layui-btn-primary opt buy">买入</button>
+                                        <button class="layui-btn layui-btn-danger opt sell">卖出</button>
+                                        <button class="layui-btn layui-btn-primary opt buy">买入</button>
                                     </div>
                                 </div>
+
+                                <div class="layui-form-item">
+                                    <div class="layui-input-block">
+                                        <button class="layui-btn layui-btn-normal test-rand sell">随机卖10单</button>
+                                        <button class="layui-btn layui-btn-normal test-rand buy">随机买10单</button>
+                                    </div>
                             </form>
                         </div>
                     </div>
@@ -237,6 +243,25 @@
                 layer.msg("下单"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
               }
           });
+      });
+
+      $(".test-rand").on("click", function(){
+          var op_type = "ask", me = $(this);
+          if($(this).hasClass("buy")) {
+            op_type = "bid";
+          }
+
+          me.attr("disabled", true);
+
+          $.ajax({
+                url:"/api/test_rand?op_type="+ op_type,
+                type: "get",
+                success: function(d){
+                    layer.msg("操作"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
+                    me.attr("disabled", false);
+                }
+            });
+
       });
 
       $("body").on("click", ".cancel", function(){

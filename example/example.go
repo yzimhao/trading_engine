@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -43,6 +44,7 @@ func startWeb(port string) {
 	web.GET("/api/depth", depth)
 	web.POST("/api/new_order", newOrder)
 	web.POST("/api/cancel_order", cancelOrder)
+	web.GET("/api/test_rand", testOrder)
 
 	web.GET("/demo", func(c *gin.Context) {
 		c.HTML(200, "demo.html", nil)
@@ -101,7 +103,7 @@ func watchTradeLog() {
 
 				sendMessage("trade", gin.H{
 					"TradePrice":    btcusdt.Price2String(log.TradePrice),
-					"TradeAmount":   log.TradeAmount.String(),
+					"TradeAmount":   btcusdt.Price2String(log.TradeAmount),
 					"TradeQuantity": btcusdt.Qty2String(log.TradeQuantity),
 					"TradeTime":     log.TradeTime,
 					"AskOrderId":    log.AskOrderId,
@@ -134,8 +136,8 @@ func pushDepth() {
 			"ask": ask,
 			"bid": bid,
 		})
-		time.Sleep(time.Duration(500) * time.Millisecond)
 
+		time.Sleep(time.Duration(150) * time.Millisecond)
 	}
 }
 
@@ -193,6 +195,38 @@ func newOrder(c *gin.Context) {
 	})
 }
 
+func testOrder(c *gin.Context) {
+	op := strings.ToLower(c.Query("op_type"))
+	if op != "ask" {
+		op = "bid"
+	}
+
+	func() {
+		cnt := 10
+		for i := 0; i < cnt; i++ {
+			orderId := uuid.NewString()
+			if op == "ask" {
+				orderId = fmt.Sprintf("a-%s", orderId)
+				item := trading_engine.NewAskLimitItem(orderId, randDecimal(11, 20), randDecimal(20, 100), time.Now().Unix())
+				btcusdt.ChNewOrder <- item
+			} else {
+				orderId = fmt.Sprintf("b-%s", orderId)
+				item := trading_engine.NewBidLimitItem(orderId, randDecimal(1, 10), randDecimal(20, 100), time.Now().Unix())
+				btcusdt.ChNewOrder <- item
+			}
+
+		}
+	}()
+
+	c.JSON(200, gin.H{
+		"ok": true,
+		"data": gin.H{
+			"ask_len": btcusdt.AskLen(),
+			"bid_len": btcusdt.BidLen(),
+		},
+	})
+}
+
 func cancelOrder(c *gin.Context) {
 	type args struct {
 		OrderId string `json:"order_id"`
@@ -220,5 +254,12 @@ func cancelOrder(c *gin.Context) {
 
 func string2decimal(a string) decimal.Decimal {
 	d, _ := decimal.NewFromString(a)
+	return d
+}
+
+func randDecimal(min, max int64) decimal.Decimal {
+	rand.Seed(time.Now().UnixNano())
+
+	d := decimal.New(rand.Int63n(max-min)+min, 0)
 	return d
 }
