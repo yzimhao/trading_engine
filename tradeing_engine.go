@@ -167,7 +167,7 @@ func (t *TradePair) doLimitOrder() {
 }
 
 func (t *TradePair) doMarketBuy(item QueueItem) {
-	tradeQuantity := decimal.Zero
+	//tradeQuantity := decimal.Zero
 	//tradeAmount := decimal.Zero
 
 	for {
@@ -195,7 +195,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 				}
 
 				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQuantity)
-				tradeQuantity = tradeQuantity.Add(curTradeQuantity)
+				// tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
 				return true
@@ -218,7 +218,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 	}
 }
 func (t *TradePair) doMarketSell(item QueueItem) {
-	tradeQuantity := decimal.Zero
+	// tradeQuantity := decimal.Zero
 	//tradeAmount := decimal.Zero
 
 	for {
@@ -246,7 +246,7 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				}
 
 				t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity)
-				tradeQuantity = tradeQuantity.Add(curTradeQuantity)
+				// tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
 				return true
@@ -274,7 +274,7 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	tradelog.AskOrderId = ask.GetUniqueId()
 	tradelog.BidOrderId = bid.GetUniqueId()
 	tradelog.TradeQuantity = tradeQty
-	tradelog.TradePrice = bid.GetPrice()
+	tradelog.TradePrice = price
 	tradelog.TradeTime = time.Now()
 	tradelog.TradeAmount = tradeQty.Mul(price)
 
