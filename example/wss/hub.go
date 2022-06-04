@@ -53,7 +53,7 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			var body msgBody
 			err := json.Unmarshal(message, &body)
-			if err != nil {
+			if err == nil {
 				msgHash := md5String(message)
 				for client := range h.clients {
 
