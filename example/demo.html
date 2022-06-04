@@ -68,6 +68,10 @@
                 </div>
 
                 <div class="layui-row layui-col-space5">
+                    <div class="latest-price" style="text-align: center; color:red;">1.9</div>
+                </div>
+
+                <div class="layui-row layui-col-space5">
                     <table class="layui-table depth-bid" style="background-color: #5FB878;">
                         <tr></tr>
                     </table>
@@ -313,8 +317,6 @@
                                 bidView.html(html);
                             });
                             
-
-
                         }else if(data.tag == "trade") {
                             var logView = $(".trade-log .log"),
                                 logTpl = $("#trade-log-tpl").html();
@@ -341,6 +343,8 @@
                                 }
                                 myorderView.after(html);
                             });
+                        }else if(data.tag =="latest_price"){
+                            $(".latest-price").html(data.data.latest_price);
                         }
                     }
                 };

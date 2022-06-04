@@ -84,34 +84,40 @@ func depth(c *gin.Context) {
 	})
 }
 
+func sendMessage(tag string, data interface{}) {
+	msg := gin.H{
+		"tag":  tag,
+		"data": data,
+	}
+	msgByte, _ := json.Marshal(msg)
+	sendMsg <- []byte(msgByte)
+}
+
 func watchTradeLog() {
 	for {
 		select {
 		case log, ok := <-btcusdt.ChTradeResult:
 			if ok {
-				data := gin.H{
-					"tag": "trade",
-					"data": gin.H{
-						"TradePrice":    btcusdt.Price2String(log.TradePrice),
-						"TradeAmount":   log.TradeAmount.String(),
-						"TradeQuantity": btcusdt.Qty2String(log.TradeQuantity),
-						"TradeTime":     log.TradeTime,
-						"AskOrderId":    log.AskOrderId,
-						"BidOrderId":    log.BidOrderId,
-					},
-				}
-				msg, _ := json.Marshal(data)
-				sendMsg <- []byte(msg)
+
+				sendMessage("trade", gin.H{
+					"TradePrice":    btcusdt.Price2String(log.TradePrice),
+					"TradeAmount":   log.TradeAmount.String(),
+					"TradeQuantity": btcusdt.Qty2String(log.TradeQuantity),
+					"TradeTime":     log.TradeTime,
+					"AskOrderId":    log.AskOrderId,
+					"BidOrderId":    log.BidOrderId,
+				})
+
+				//latest price
+				sendMessage("latest_price", gin.H{
+					"latest_price": btcusdt.Price2String(log.TradePrice),
+				})
+
 			}
 		case cancelOrderId := <-btcusdt.ChCancelResult:
-			data := gin.H{
-				"tag": "cancel_order",
-				"data": gin.H{
-					"OrderId": cancelOrderId,
-				},
-			}
-			msg, _ := json.Marshal(data)
-			sendMsg <- []byte(msg)
+			sendMessage("cancel_order", gin.H{
+				"OrderId": cancelOrderId,
+			})
 		default:
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
@@ -123,15 +129,11 @@ func pushDepth() {
 	for {
 		ask := btcusdt.GetAskDepth(10)
 		bid := btcusdt.GetBidDepth(10)
-		data := gin.H{
-			"tag": "depth",
-			"data": gin.H{
-				"ask": ask,
-				"bid": bid,
-			},
-		}
-		msg, _ := json.Marshal(data)
-		sendMsg <- []byte(msg)
+
+		sendMessage("depth", gin.H{
+			"ask": ask,
+			"bid": bid,
+		})
 		time.Sleep(time.Duration(500) * time.Millisecond)
 
 	}
@@ -180,14 +182,7 @@ func newOrder(c *gin.Context) {
 		btcusdt.ChNewOrder <- item
 	}
 
-	go func() {
-		msg := gin.H{
-			"tag":  "new_order",
-			"data": param,
-		}
-		msgByte, _ := json.Marshal(msg)
-		sendMsg <- []byte(msgByte)
-	}()
+	go sendMessage("new_order", param)
 
 	c.JSON(200, gin.H{
 		"ok": true,
@@ -216,14 +211,7 @@ func cancelOrder(c *gin.Context) {
 		btcusdt.CancelOrder(trading_engine.OrderSideBuy, param.OrderId)
 	}
 
-	go func() {
-		msg := gin.H{
-			"tag":  "cancel_order",
-			"data": param,
-		}
-		msgByte, _ := json.Marshal(msg)
-		sendMsg <- []byte(msgByte)
-	}()
+	go sendMessage("cancel_order", param)
 
 	c.JSON(200, gin.H{
 		"ok": true,
