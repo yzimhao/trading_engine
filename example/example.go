@@ -27,7 +27,7 @@ func main() {
 	gin.SetMode(gin.DebugMode)
 
 	trading_engine.Debug = false
-	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 6)
+	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 0)
 
 	startWeb(*port)
 }
