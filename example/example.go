@@ -159,18 +159,51 @@ func newOrder(c *gin.Context) {
 	param.OrderId = orderId
 	param.CreateTime = time.Now().Format("2006-01-02 15:04:05")
 
+	amount := string2decimal(param.Amount)
+	price := string2decimal(param.Price)
+	quantity := string2decimal(param.Quantity)
+
 	var pt trading_engine.PriceType
 	if param.PriceType == "market" {
 		param.Price = "0"
 		pt = trading_engine.PriceTypeMarket
 		if param.Amount != "" {
 			pt = trading_engine.PriceTypeMarketAmount
+			if amount.Cmp(decimal.NewFromFloat(100000000)) > 0 || amount.Cmp(decimal.Zero) <= 0 {
+				c.JSON(200, gin.H{
+					"ok":    false,
+					"error": "金额必须大于0，且不能超过 100000000",
+				})
+				return
+			}
+
 		} else if param.Quantity != "" {
 			pt = trading_engine.PriceTypeMarketQuantity
+			if quantity.Cmp(decimal.NewFromFloat(100000000)) > 0 || quantity.Cmp(decimal.Zero) <= 0 {
+				c.JSON(200, gin.H{
+					"ok":    false,
+					"error": "数量必须大于0，且不能超过 100000000",
+				})
+				return
+			}
 		}
 	} else {
 		pt = trading_engine.PriceTypeLimit
 		param.Amount = "0"
+		if price.Cmp(decimal.NewFromFloat(100000000)) > 0 || price.Cmp(decimal.Zero) < 0 {
+			c.JSON(200, gin.H{
+				"ok":    false,
+				"error": "价格必须大于等于0，且不能超过 100000000",
+			})
+			return
+		}
+		if quantity.Cmp(decimal.NewFromFloat(100000000)) > 0 || quantity.Cmp(decimal.Zero) <= 0 {
+			c.JSON(200, gin.H{
+				"ok":    false,
+				"error": "数量必须大于0，且不能超过 100000000",
+			})
+			return
+		}
 	}
 
 	if strings.ToLower(param.OrderType) == "ask" {
