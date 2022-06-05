@@ -376,10 +376,38 @@
             });
 
 
+            $().ready(function(){
+                $.get("/api/trade_log", function (d) {
+                    if (d.ok) {
+                        console.log(d);
+                        $(".latest-price").html(d.data.latest_price);
+
+                        var recent_log = d.data.trade_log;
+                        for(var i=0; i<recent_log.length; i++){
+                            rendertradelog(recent_log[i]);
+                        }
+
+                    }
+                });
+            });
 
 
+            function rendertradelog(data) {
+                var logView = $(".trade-log .log"),
+                    logTpl = $("#trade-log-tpl").html();
 
+                data['TradeTime'] = formatTime(data.TradeTime);
+                laytpl(logTpl).render(data, function (html) {
+                    if ($(".log-item").length > 10) {
+                        $(".log-item").last().remove();
+                    }
+                    logView.after(html);
 
+                    //remove myorder
+                    $("tr[order-id='" + data.AskOrderId + "']").remove();
+                    $("tr[order-id='" + data.BidOrderId + "']").remove();
+                });
+            }
 
 
             var socket = function () {
@@ -412,20 +440,8 @@
                                 });
 
                             } else if (data.tag == "trade") {
-                                var logView = $(".trade-log .log"),
-                                    logTpl = $("#trade-log-tpl").html();
-
-                                data.data['TradeTime'] = formatTime(data.data.TradeTime);
-                                laytpl(logTpl).render(data.data, function (html) {
-                                    if ($(".log-item").length > 10) {
-                                        $(".log-item").last().remove();
-                                    }
-                                    logView.after(html);
-
-                                    //remove myorder
-                                    $("tr[order-id='" + data.data.AskOrderId + "']").remove();
-                                    $("tr[order-id='" + data.data.BidOrderId + "']").remove();
-                                });
+                                rendertradelog(data.data);
+                                
                             } else if (data.tag == "new_order") {
                                 var myorderView = $(".myorder"),
                                     myorderTpl = $("#myorder-tpl").html();

@@ -1,6 +1,7 @@
 package trading_engine
 
 import (
+	"sync"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -24,9 +25,12 @@ type TradePair struct {
 
 	priceDigit    int
 	quantityDigit int
+	latestPrice   decimal.Decimal
 
 	askQueue *OrderQueue
 	bidQueue *OrderQueue
+
+	sync.Mutex
 }
 
 func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
@@ -76,6 +80,10 @@ func (t *TradePair) AskLen() int {
 
 func (t *TradePair) BidLen() int {
 	return t.bidQueue.Len()
+}
+
+func (t *TradePair) LatestPrice() decimal.Decimal {
+	return t.latestPrice
 }
 
 func (t *TradePair) matching() {
@@ -271,6 +279,9 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 }
 
 func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty decimal.Decimal) {
+	t.Lock()
+	defer t.Unlock()
+
 	tradelog := TradeResult{}
 	tradelog.AskOrderId = ask.GetUniqueId()
 	tradelog.BidOrderId = bid.GetUniqueId()
@@ -278,6 +289,8 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	tradelog.TradePrice = price
 	tradelog.TradeTime = time.Now()
 	tradelog.TradeAmount = tradeQty.Mul(price)
+
+	t.latestPrice = price
 
 	logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
 	t.ChTradeResult <- tradelog

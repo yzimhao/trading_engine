@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 var sendMsg chan []byte
 var web *gin.Engine
 var btcusdt *trading_engine.TradePair
+var recentTrade []interface{}
 
 func main() {
 
@@ -28,6 +30,8 @@ func main() {
 
 	trading_engine.Debug = false
 	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 0)
+
+	recentTrade = make([]interface{}, 0)
 
 	startWeb(*port)
 }
@@ -42,6 +46,7 @@ func startWeb(port string) {
 	go watchTradeLog()
 
 	web.GET("/api/depth", depth)
+	web.GET("/api/trade_log", trade_log)
 	web.POST("/api/new_order", newOrder)
 	web.POST("/api/cancel_order", cancelOrder)
 	web.GET("/api/test_rand", testOrder)
@@ -77,12 +82,27 @@ func startWeb(port string) {
 }
 
 func depth(c *gin.Context) {
-	a := btcusdt.GetAskDepth(10)
-	b := btcusdt.GetBidDepth(10)
+	limit := c.Query("limit")
+	limitInt, _ := strconv.Atoi(limit)
+	if limitInt <= 0 || limitInt > 100 {
+		limitInt = 10
+	}
+	a := btcusdt.GetAskDepth(limitInt)
+	b := btcusdt.GetBidDepth(limitInt)
 
 	c.JSON(200, gin.H{
 		"ask": a,
 		"bid": b,
+	})
+}
+
+func trade_log(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"ok": true,
+		"data": gin.H{
+			"latest_price": btcusdt.Price2String(btcusdt.LatestPrice()),
+			"trade_log":    recentTrade,
+		},
 	})
 }
 
@@ -100,15 +120,20 @@ func watchTradeLog() {
 		select {
 		case log, ok := <-btcusdt.ChTradeResult:
 			if ok {
-
-				sendMessage("trade", gin.H{
+				relog := gin.H{
 					"TradePrice":    btcusdt.Price2String(log.TradePrice),
 					"TradeAmount":   btcusdt.Price2String(log.TradeAmount),
 					"TradeQuantity": btcusdt.Qty2String(log.TradeQuantity),
 					"TradeTime":     log.TradeTime,
 					"AskOrderId":    log.AskOrderId,
 					"BidOrderId":    log.BidOrderId,
-				})
+				}
+				sendMessage("trade", relog)
+
+				if len(recentTrade) >= 10 {
+					recentTrade = recentTrade[1:]
+				}
+				recentTrade = append(recentTrade, relog)
 
 				//latest price
 				sendMessage("latest_price", gin.H{
