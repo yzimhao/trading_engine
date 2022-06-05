@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
+<head>
     <meta charset="utf-8" />
     <title>yzimhao/trading_engine 简单使用案例体验</title>
     <link rel="stylesheet" type="text/css" href="//www.layuicdn.com/layui/css/layui.css" />
-  </head>
-  
-  <script id="depth-ask-tpl" type="text/html">
+</head>
+
+<script id="depth-ask-tpl" type="text/html">
 
     <tr><th colspan="2" style="text-align:center;">委托</th></tr>
     <tr><th width="40%">价格</th><th>数量</th></tr>
@@ -19,7 +19,7 @@
     {%#  }); %} 
   </script>
 
-  <script id="depth-bid-tpl" type="text/html">
+<script id="depth-bid-tpl" type="text/html">
     {%#  layui.each(d, function(index, item){ %}
     <tr>
         <td width="40%">{% item[0] %}</td><td>{% item[1] %}</td>
@@ -27,7 +27,7 @@
     {%#  }); %}
   </script>
 
-  <script id="trade-log-tpl" type="text/html">
+<script id="trade-log-tpl" type="text/html">
     <tr class="log-item">
         <td>{% d.TradePrice %}</td>
         <td>{% d.TradeQuantity %}</td>
@@ -35,39 +35,87 @@
         <td>{% d.TradeTime %}</td>
     </tr>
   </script>
-  
-  <script id="myorder-tpl" type="text/html">
+
+<script id="myorder-tpl" type="text/html">
     <tr class="order-item" order-id="{% d.order_id%}">
         <td>{% d.price_type %}</td>
         <td>{% d.price %}</td>
-        <td>{% d.quantity %}</td>
-        <td>{% d.amount %}</td>
+        <td>{% d.quantity %}/<span class="qty_ok">0</span></td>
+        <td>{%# if(d.amount==0) { %} - {%#  } else { %}  {% d.amount %} {%# } %}</td>
         <td>{% d.create_time %}</td>
         <td><a class="cancel" href="javascript:;">撤单</a></td>
     </tr>
-  </script> 
+  </script>
 
-  <body>
+<body>
 
     <div style="position: fixed; top: 0; right: 0; border: 0; z-index:9999;">
-        <a target="_blank" href="https://github.com/yzimhao/trading_engine" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+        <a target="_blank" href="https://github.com/yzimhao/trading_engine" class="github-corner"
+            aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250"
+                style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+                <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+                <path
+                    d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+                    fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+                <path
+                    d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+                    fill="currentColor" class="octo-body"></path>
+            </svg></a>
+        <style>
+            .github-corner:hover .octo-arm {
+                animation: octocat-wave 560ms ease-in-out
+            }
+
+            @keyframes octocat-wave {
+
+                0%,
+                100% {
+                    transform: rotate(0)
+                }
+
+                20%,
+                60% {
+                    transform: rotate(-25deg)
+                }
+
+                40%,
+                80% {
+                    transform: rotate(10deg)
+                }
+            }
+
+            @media (max-width:500px) {
+                .github-corner:hover .octo-arm {
+                    animation: none
+                }
+
+                .github-corner .octo-arm {
+                    animation: octocat-wave 560ms ease-in-out
+                }
+            }
+        </style>
     </div>
 
     <div class="main ">
 
-        
+
 
         <div class="layui-row layui-col-space10">
             <div class="layui-col-md4 ">
                 <div class="layui-row layui-col-space5">
                     <table class="layui-table depth-ask" style="background-color: #FFB800;">
-                        <tr><th colspan="2" style="text-align:center;">委托</th></tr>
-                        <tr><th width="40%">价格</th><th>数量</th></tr>
+                        <tr>
+                            <th colspan="2" style="text-align:center;">委托</th>
+                        </tr>
+                        <tr>
+                            <th width="40%">价格</th>
+                            <th>数量</th>
+                        </tr>
                         <tr></tr>
                     </table>
                 </div>
 
-                <div class="layui-row layui-col-space5">
+                <div class="layui-row layui-col-space5" style="background-color: #F6F6F6;">
                     <div class="latest-price" style="text-align: center; color:red;">-</div>
                 </div>
 
@@ -80,7 +128,9 @@
 
             <div class="layui-col-md4">
                 <table class="layui-table trade-log">
-                    <tr><th style="text-align: center;" colspan="4">成交记录</th></tr>
+                    <tr>
+                        <th style="text-align: center;" colspan="4">成交记录</th>
+                    </tr>
                     <tr>
                         <th>价格</th>
                         <th>数量</th>
@@ -88,7 +138,7 @@
                         <th>时间</th>
                     </tr>
                     <tr class="log"></tr>
-                    
+
                 </table>
             </div>
 
@@ -104,37 +154,42 @@
                                         <select name="price_type" lay-filter="price_type">
                                             <option value="limit">限价单</option>
                                             <option value="market">市价单</option>
-                                        </select>   
+                                        </select>
                                     </div>
                                 </div>
 
                                 <div class="layui-form-item item-market-type" style="display: none;">
                                     <label class="layui-form-label"></label>
                                     <div class="layui-input-block">
-                                        <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量" checked>
-                                        <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额" disabled>
+                                        <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量"
+                                            checked>
+                                        <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额"
+                                            disabled>
                                     </div>
                                 </div>
 
                                 <div class="layui-form-item item-price">
                                     <label class="layui-form-label">价格</label>
                                     <div class="layui-input-block">
-                                    <input type="text" name="price" required  lay-verify="required|number" placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
+                                        <input type="text" name="price" required lay-verify="required|number"
+                                            placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
                                     </div>
                                 </div>
-                                
-                                
+
+
                                 <div class="layui-form-item item-quantity">
                                     <label class="layui-form-label">数量</label>
                                     <div class="layui-input-inline">
-                                    <input type="text" name="quantity" required lay-verify="required|number" placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                        <input type="text" name="quantity" required lay-verify="required|number"
+                                            placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
                                     </div>
                                 </div>
 
                                 <div class="layui-form-item item-amount" style="display: none;">
                                     <label class="layui-form-label">金额</label>
                                     <div class="layui-input-inline">
-                                    <input type="text" name="amount" required lay-verify="required|number" placeholder="交易金额" autocomplete="off" class="layui-input" value="1000.00">
+                                        <input type="text" name="amount" required lay-verify="required|number"
+                                            placeholder="交易金额" autocomplete="off" class="layui-input" value="1000.00">
                                     </div>
                                 </div>
 
@@ -162,13 +217,13 @@
                                 <tr>
                                     <th>类型</th>
                                     <th>价格</th>
-                                    <th>数量</th>
+                                    <th>数量/已成</th>
                                     <th>金额</th>
                                     <th>时间</th>
                                     <th>操作</th>
                                 </tr>
                                 <tr class="myorder"></tr>
-                                
+
                             </table>
                         </div>
                     </div>
@@ -176,211 +231,225 @@
             </div>
         </div>
 
-        
+
     </div>
 
 
-    
+
 
     <script src="//www.layuicdn.com/layui/layui.js"></script>
     <!--您的Layui代码start-->
     <script type="text/javascript">
-    layui.use(['laydate', 'layer', 'table', 'element', 'laytpl', 'form'], function() {
-      var laydate = layui.laydate //日期
-      ,layer = layui.layer //弹层
-      ,table = layui.table //表格
-      ,$ =layui.$
-      ,laytpl = layui.laytpl
-      ,form = layui.form
-      ,element = layui.element; //元素操作 等等...
+        layui.use(['laydate', 'layer', 'table', 'element', 'laytpl', 'form'], function () {
+            var laydate = layui.laydate //日期
+                , layer = layui.layer //弹层
+                , table = layui.table //表格
+                , $ = layui.$
+                , laytpl = layui.laytpl
+                , form = layui.form
+                , element = layui.element; //元素操作 等等...
 
-      laytpl.config({
-            open: '{%',
-            close: '%}'
-        });
-
-
-
-    function formatTime(t) {
-        var d = new Date(t);
-        return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
-    }
-
-      /*layer弹出一个示例*/
-      //   layer.msg('Hello World');
-
-      $(".opt").on("click", function(){
-          var type = $(this).hasClass("sell") ? "ask" : "bid";
-          var price_type = $("select[name='price_type']").val();
-          var mtype = $("input[name='mtype']:checked").val();
-          
-          $.ajax({
-              url:"/api/new_order",
-              type: "post",
-              dataType: "json",
-              contentType : "application/json",
-              data: function(){
-                var data = {
-                    price_type: price_type,
-                    order_type: type,
-                };
-
-                if (price_type == "market") {
-                    if(mtype == "q") {
-                        data.quantity = $("input[name='quantity']").val();
-                    } else {
-                        data.amount = $("input[name='amount']").val();
-                    }
-                }else{
-                    data.price = $("input[name='price']").val();
-                    data.quantity = $("input[name='quantity']").val();
-                }
-
-                console.log(data);
-                return JSON.stringify(data)
-              }(),
-              success: function(d){
-                layer.msg("下单"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
-              }
-          });
-      });
-
-      $(".test-rand").on("click", function(){
-          var op_type = "ask", me = $(this);
-          if($(this).hasClass("buy")) {
-            op_type = "bid";
-          }
-
-          me.attr("disabled", true);
-
-          $.ajax({
-                url:"/api/test_rand?op_type="+ op_type,
-                type: "get",
-                success: function(d){
-                    layer.msg("操作"+ d.ok + " askLen:"+ d.data.ask_len + " bidLen:"+ d.data.bid_len);
-                    me.attr("disabled", false);
-                }
+            laytpl.config({
+                open: '{%',
+                close: '%}'
             });
 
-      });
-
-      $("body").on("click", ".cancel", function(){
-            var me = $(this);
-            $.ajax({
-                url:"/api/cancel_order",
-                type: "post",
-                dataType: "json",
-                contentType : "application/json",
-                data: JSON.stringify({
-                        order_id: me.parents("tr").attr("order-id")
-                }),
-                success: function(d){
-                    layer.msg("取消 "+ d.ok );
-                    if(d.ok){
-                        me.parents("tr").remove();
-                    }
-                }
-            });
-      });
-
-      
-      form.on('select(price_type)', function(data){
-        if(data.value=="limit"){
-            $(".item-price").show();
-            $(".item-quantity").show();
-            $(".item-amount").hide();
-            $(".item-market-type").hide();
-        }else if(data.value=="market"){
-            $(".item-price").hide();
-            $(".item-market-type").show();
-        }
-        form.render('select');
-      });
-      form.on('radio(market-type)', function(data){
-          if(data.value =="q"){
-            $(".item-quantity").show();
-            $(".item-amount").hide();
-          }else{
-            $(".item-quantity").hide();
-            $(".item-amount").show();
-          }
-      });
-      
-
-      
-       
-    
 
 
+            function formatTime(t) {
+                var d = new Date(t);
+                return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+            }
 
-      var socket = function(){
-            if (window["WebSocket"]) {
-                var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
-                conn = new WebSocket(protocol +"//" + document.location.host + "/ws");
-                conn.onclose = function (evt) {
-                    layer.msg("<b>WebSocket Connection closed</b>");
-                    setTimeout(function(){
-                        socket();
-                    }, 5e3);
-                };
-                conn.onmessage = function (evt) {
-                    var messages = evt.data.split('\n');
-                    for (var i = 0; i < messages.length; i++) {
-                        var data = JSON.parse(messages[i]);
-                        if (data.tag == "depth") {
-                            var info = data.data;
-                            var askTpl = $("#depth-ask-tpl").html()
-                                , askView = $(".depth-ask")
-                                , bidTpl = $("#depth-bid-tpl").html()
-                                , bidView = $(".depth-bid");
+            function createUUID() {
+                var dt = new Date().getTime();
+                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = (dt + Math.random() * 16) % 16 | 0;
+                    dt = Math.floor(dt / 16);
+                    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+                return uuid;
+            }
 
-                            
-                            laytpl(askTpl).render(info.ask.reverse(), function (html) {
-                                askView.html(html);
-                            });
-                            laytpl(bidTpl).render(info.bid, function (html) {
-                                bidView.html(html);
-                            });
-                            
-                        }else if(data.tag == "trade") {
-                            var logView = $(".trade-log .log"),
-                                logTpl = $("#trade-log-tpl").html();
-                            
-                            data.data['TradeTime'] = formatTime(data.data.TradeTime);
-                            laytpl(logTpl).render(data.data, function (html) {
-                                if($(".log-item").length > 10) {
-                                    $(".log-item").last().remove();
-                                }
-                                logView.after(html);
+            /*layer弹出一个示例*/
+            //   layer.msg('Hello World');
 
-                                //remove myorder
-                                $("tr[order-id='"+ data.data.AskOrderId +"']").remove();
-                                $("tr[order-id='"+ data.data.BidOrderId +"']").remove();
-                            });
-                        }else if(data.tag == "new_order") {
-                            var myorderView = $(".myorder"),
-                                myorderTpl = $("#myorder-tpl").html();
-                            
-                            data.data['create_time'] = formatTime(data.data.create_time);
-                            laytpl(myorderTpl).render(data.data, function (html) {
-                                if($(".order-item").length > 30) {
-                                    $(".order-item").last().remove();
-                                }
-                                myorderView.after(html);
-                            });
-                        }else if(data.tag =="latest_price"){
-                            $(".latest-price").html(data.data.latest_price);
+            $(".opt").on("click", function () {
+                var type = $(this).hasClass("sell") ? "ask" : "bid";
+                var price_type = $("select[name='price_type']").val();
+                var mtype = $("input[name='mtype']:checked").val();
+
+                $.ajax({
+                    url: "/api/new_order",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: function () {
+                        var data = {
+                            price_type: price_type,
+                            order_type: type,
+                        };
+
+                        if (price_type == "market") {
+                            if (mtype == "q") {
+                                data.quantity = $("input[name='quantity']").val();
+                            } else {
+                                data.amount = $("input[name='amount']").val();
+                            }
+                        } else {
+                            data.price = $("input[name='price']").val();
+                            data.quantity = $("input[name='quantity']").val();
+                        }
+
+                        console.log(data);
+                        return JSON.stringify(data)
+                    }(),
+                    success: function (d) {
+                        if(d.ok){
+                            layer.msg("下单" + d.ok + " askLen:" + d.data.ask_len + " bidLen:" + d.data.bid_len);
+                        }else{
+                            layer.msg(d.error);
                         }
                     }
-                };
-            } else {
-                layer.msg("<b>Your browser does not support WebSockets.</b>");
-            }
-        };
-        socket();
+                });
+            });
 
-    });
+            $(".test-rand").on("click", function () {
+                var op_type = "ask", me = $(this);
+                if ($(this).hasClass("buy")) {
+                    op_type = "bid";
+                }
+
+                me.attr("disabled", true);
+
+                $.ajax({
+                    url: "/api/test_rand?op_type=" + op_type,
+                    type: "get",
+                    success: function (d) {
+                        layer.msg("操作" + d.ok + " askLen:" + d.data.ask_len + " bidLen:" + d.data.bid_len);
+                        me.attr("disabled", false);
+                    }
+                });
+
+            });
+
+            $("body").on("click", ".cancel", function () {
+                var me = $(this);
+                $.ajax({
+                    url: "/api/cancel_order",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        order_id: me.parents("tr").attr("order-id")
+                    }),
+                    success: function (d) {
+                        layer.msg("取消 " + d.ok);
+                        if (d.ok) {
+                            me.parents("tr").remove();
+                        }
+                    }
+                });
+            });
+
+
+            form.on('select(price_type)', function (data) {
+                if (data.value == "limit") {
+                    $(".item-price").show();
+                    $(".item-quantity").show();
+                    $(".item-amount").hide();
+                    $(".item-market-type").hide();
+                } else if (data.value == "market") {
+                    $(".item-price").hide();
+                    $(".item-market-type").show();
+                }
+                form.render('select');
+            });
+            form.on('radio(market-type)', function (data) {
+                if (data.value == "q") {
+                    $(".item-quantity").show();
+                    $(".item-amount").hide();
+                } else {
+                    $(".item-quantity").hide();
+                    $(".item-amount").show();
+                }
+            });
+
+
+
+
+
+
+
+
+            var socket = function () {
+                if (window["WebSocket"]) {
+                    var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
+                    conn = new WebSocket(protocol + "//" + document.location.host + "/ws");
+                    conn.onclose = function (evt) {
+                        layer.msg("<b>WebSocket Connection closed</b>");
+                        setTimeout(function () {
+                            socket();
+                        }, 5e3);
+                    };
+                    conn.onmessage = function (evt) {
+                        var messages = evt.data.split('\n');
+                        for (var i = 0; i < messages.length; i++) {
+                            var data = JSON.parse(messages[i]);
+                            if (data.tag == "depth") {
+                                var info = data.data;
+                                var askTpl = $("#depth-ask-tpl").html()
+                                    , askView = $(".depth-ask")
+                                    , bidTpl = $("#depth-bid-tpl").html()
+                                    , bidView = $(".depth-bid");
+
+
+                                laytpl(askTpl).render(info.ask.reverse(), function (html) {
+                                    askView.html(html);
+                                });
+                                laytpl(bidTpl).render(info.bid, function (html) {
+                                    bidView.html(html);
+                                });
+
+                            } else if (data.tag == "trade") {
+                                var logView = $(".trade-log .log"),
+                                    logTpl = $("#trade-log-tpl").html();
+
+                                data.data['TradeTime'] = formatTime(data.data.TradeTime);
+                                laytpl(logTpl).render(data.data, function (html) {
+                                    if ($(".log-item").length > 10) {
+                                        $(".log-item").last().remove();
+                                    }
+                                    logView.after(html);
+
+                                    //remove myorder
+                                    $("tr[order-id='" + data.data.AskOrderId + "']").remove();
+                                    $("tr[order-id='" + data.data.BidOrderId + "']").remove();
+                                });
+                            } else if (data.tag == "new_order") {
+                                var myorderView = $(".myorder"),
+                                    myorderTpl = $("#myorder-tpl").html();
+
+                                data.data['create_time'] = formatTime(data.data.create_time);
+                                laytpl(myorderTpl).render(data.data, function (html) {
+                                    if ($(".order-item").length > 30) {
+                                        $(".order-item").last().remove();
+                                    }
+                                    myorderView.after(html);
+                                });
+                            } else if (data.tag == "latest_price") {
+                                $(".latest-price").html(data.data.latest_price);
+                            }
+                        }
+                    };
+                } else {
+                    layer.msg("<b>Your browser does not support WebSockets.</b>");
+                }
+            };
+            socket();
+
+        });
     </script>
-  </body>
+</body>
 
 </html>
