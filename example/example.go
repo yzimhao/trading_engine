@@ -29,7 +29,7 @@ func main() {
 	gin.SetMode(gin.DebugMode)
 
 	trading_engine.Debug = false
-	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 0)
+	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 4)
 
 	recentTrade = make([]interface{}, 0)
 
@@ -194,6 +194,8 @@ func newOrder(c *gin.Context) {
 		pt = trading_engine.PriceTypeMarket
 		if param.Amount != "" {
 			pt = trading_engine.PriceTypeMarketAmount
+			//市价按成交金额卖出时，默认持有该资产1000个
+			param.Quantity = "100"
 			if amount.Cmp(decimal.NewFromFloat(100000000)) > 0 || amount.Cmp(decimal.Zero) <= 0 {
 				c.JSON(200, gin.H{
 					"ok":    false,

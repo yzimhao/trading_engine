@@ -1,6 +1,7 @@
 package trading_engine
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -176,8 +177,6 @@ func (t *TradePair) doLimitOrder() {
 }
 
 func (t *TradePair) doMarketBuy(item QueueItem) {
-	//tradeQuantity := decimal.Zero
-	//tradeAmount := decimal.Zero
 
 	for {
 		if t.askQueue.Len() == 0 {
@@ -204,31 +203,49 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 				}
 
 				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQuantity)
-				// tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
 				return true
 			} else if item.GetPriceType() == PriceTypeMarketAmount {
-				//todo 市价按成交金额成交
+				//市价-按成交金额
+				//成交金额不包含手续费，手续费应该由上层系统计算提前预留
+				//撮合会针对这个金额最大限度的买入
+				if ask.GetPrice().Cmp(decimal.Zero) <= 0 {
+					return false
+				}
+
+				maxTradeQty := item.GetAmount().Div(ask.GetPrice()).Truncate(int32(t.quantityDigit))
+				curTradeQty := decimal.Zero
+
+				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) < 0 {
+					return false
+				}
+				if ask.GetQuantity().Cmp(maxTradeQty) <= 0 {
+					curTradeQty = ask.GetQuantity()
+					defer t.askQueue.Remove(ask.GetUniqueId())
+				} else {
+					curTradeQty = maxTradeQty
+					ask.SetQuantity(ask.GetQuantity().Sub(curTradeQty))
+				}
+
+				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty)
+				//部分成交了，需要更新这个单的剩余可成交金额，用于下一轮重新计算最大成交量
+				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
+				item.SetQuantity(item.GetQuantity().Add(curTradeQty))
+				return true
 			}
 
 			return false
 		}()
 
 		if !ok {
-			//不能成交了 bid剩下的未成交数量需要撤单
-			if item.GetPriceType() == PriceTypeMarketQuantity && item.GetQuantity().Cmp(decimal.Zero) > 0 {
-				//发取消订单通知
-				t.ChCancelResult <- item.GetUniqueId()
-			}
+			t.ChCancelResult <- item.GetUniqueId()
 			break
 		}
 
 	}
 }
 func (t *TradePair) doMarketSell(item QueueItem) {
-	// tradeQuantity := decimal.Zero
-	//tradeAmount := decimal.Zero
 
 	for {
 		if t.bidQueue.Len() == 0 {
@@ -255,23 +272,48 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				}
 
 				t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity)
-				// tradeQuantity = tradeQuantity.Add(curTradeQuantity)
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
 
 				return true
 			} else if item.GetPriceType() == PriceTypeMarketAmount {
-				//todo 市价按成交金额成交
+				//市价-按成交金额成交
+				if bid.GetPrice().Cmp(decimal.Zero) <= 0 {
+					return false
+				}
+
+				maxTradeQty := item.GetAmount().Div(bid.GetPrice()).Truncate(int32(t.quantityDigit))
+
+				//还需要用户是否持有这么多资产来卖出的条件限制
+				maxTradeQty = decimal.Min(maxTradeQty, item.GetQuantity())
+
+				curTradeQty := decimal.Zero
+				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) <= 0 {
+					return false
+				}
+
+				if bid.GetQuantity().Cmp(maxTradeQty) <= 0 {
+					curTradeQty = bid.GetQuantity()
+					defer t.bidQueue.Remove(bid.GetUniqueId())
+				} else {
+					curTradeQty = maxTradeQty
+					bid.SetQuantity(bid.GetQuantity().Sub(curTradeQty))
+				}
+
+				t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty)
+				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(bid.GetPrice())))
+
+				//市价 按成交额卖出时，需要用户持有的资产数量来进行限制
+				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
+				fmt.Println(item.GetQuantity().String())
+
+				return true
 			}
 
 			return false
 		}()
 
 		if !ok {
-			//不能成交了 bid剩下的未成交数量需要撤单
-			if item.GetPriceType() == PriceTypeMarketQuantity && item.GetQuantity().Cmp(decimal.Zero) > 0 {
-				//发取消订单通知
-				t.ChCancelResult <- item.GetUniqueId()
-			}
+			t.ChCancelResult <- item.GetUniqueId()
 			break
 		}
 

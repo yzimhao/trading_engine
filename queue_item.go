@@ -27,6 +27,10 @@ func (o *Order) SetQuantity(qnt decimal.Decimal) {
 	o.quantity = qnt
 }
 
+func (o *Order) SetAmount(amount decimal.Decimal) {
+	o.amount = amount
+}
+
 func (o *Order) GetUniqueId() string {
 	return o.orderId
 }
@@ -101,8 +105,8 @@ func NewAskLimitItem(uniq string, price, quantity decimal.Decimal, createTime in
 func NewAskMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *AskItem {
 	return NewAskItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
 }
-func NewAskMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *AskItem {
-	return NewAskItem(PriceTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
+func NewAskMarketAmountItem(uniq string, amount, maxHoldQty decimal.Decimal, createTime int64) *AskItem {
+	return NewAskItem(PriceTypeMarketAmount, uniq, decimal.Zero, maxHoldQty, amount, createTime)
 }
 
 func NewBidItem(pt PriceType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *BidItem {

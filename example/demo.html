@@ -164,7 +164,7 @@
                                         <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量"
                                             checked>
                                         <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额"
-                                            disabled>
+                                            >
                                     </div>
                                 </div>
 
@@ -190,6 +190,7 @@
                                     <div class="layui-input-inline">
                                         <input type="text" name="amount" required lay-verify="required|number"
                                             placeholder="交易金额" autocomplete="off" class="layui-input" value="1000.00">
+                                            <span style="font-size: 10px;">市价按成交额卖出时，需要用户已持有的资产数量做限制条件，测试系统默认持有100个数量</span>
                                     </div>
                                 </div>
 

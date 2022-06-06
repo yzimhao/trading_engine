@@ -11,6 +11,7 @@ import (
 type QueueItem interface {
 	SetIndex(index int)
 	SetQuantity(quantity decimal.Decimal)
+	SetAmount(amount decimal.Decimal)
 	Less(item QueueItem) bool
 	GetIndex() int
 	GetUniqueId() string
