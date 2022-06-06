@@ -10,13 +10,15 @@
 
 #### Demo
   <a href="http://132.226.14.192:8080/demo" target="_blank">在线体验</a> (免费的oracle cloud机器，望大家悠着点儿测试，感谢)
+
+
 #### 功能列表
   - [x] 委托深度
   - [x] 订单撮合  
   - [x] 限价单
   - [x] 取消订单
   - [x] 市价单 按数量
-  - [ ] 市价单 按金额
+  - [x] 市价单 按金额
 
 
 ####
@@ -42,8 +44,8 @@
   //市价-按数量卖出
   item = trading_engine.NewAskMarketQtyItem(uniq, quantity, createTime)
   btcusdt.PushNewOrder(item)
-  //市价-按金额卖出
-  item = trading_engine.NewAskMarketAmountItem(uniq, amount, createTime)
+  //市价-按金额卖出,需要用户持有的该资产最大数量
+  item = trading_engine.NewAskMarketAmountItem(uniq, amount, maxQty, createTime)
   btcusdt.PushNewOrder(item)
 
 
