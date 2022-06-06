@@ -9,7 +9,7 @@
   
 
 #### Demo
-  <a href="http://132.226.14.192:8080/demo">在线体验</a> (免费的oracle cloud机器，望大家悠着点儿测试，感谢)
+  <a href="http://132.226.14.192:8080/demo" target="_blank">在线体验</a> (免费的oracle cloud机器，望大家悠着点儿测试，感谢)
 #### 功能列表
   - [x] 委托深度
   - [x] 订单撮合  
