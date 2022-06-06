@@ -179,12 +179,11 @@ func (t *TradePair) doLimitOrder() {
 func (t *TradePair) doMarketBuy(item QueueItem) {
 
 	for {
-		if t.askQueue.Len() == 0 {
-			//对手盘为空，直接退出，取消当前市价单
-			break
-		}
-
 		ok := func() bool {
+			if t.askQueue.Len() == 0 {
+				return false
+			}
+
 			ask := t.askQueue.Top()
 			if item.GetPriceType() == PriceTypeMarketQuantity {
 
@@ -239,6 +238,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 		}()
 
 		if !ok {
+			//市价单不管是否完全成交，都触发一次撤单操作
 			t.ChCancelResult <- item.GetUniqueId()
 			break
 		}
@@ -248,12 +248,11 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 func (t *TradePair) doMarketSell(item QueueItem) {
 
 	for {
-		if t.bidQueue.Len() == 0 {
-			//对手盘为空，直接退出，取消当前市价单
-			break
-		}
-
 		ok := func() bool {
+			if t.bidQueue.Len() == 0 {
+				return false
+			}
+
 			bid := t.bidQueue.Top()
 			if item.GetPriceType() == PriceTypeMarketQuantity {
 
