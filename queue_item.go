@@ -105,6 +105,8 @@ func NewAskLimitItem(uniq string, price, quantity decimal.Decimal, createTime in
 func NewAskMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *AskItem {
 	return NewAskItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
 }
+
+//市价 按金额卖出订单时，需要用户持有交易物的数量，在撮合时候防止超卖
 func NewAskMarketAmountItem(uniq string, amount, maxHoldQty decimal.Decimal, createTime int64) *AskItem {
 	return NewAskItem(PriceTypeMarketAmount, uniq, decimal.Zero, maxHoldQty, amount, createTime)
 }
