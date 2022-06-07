@@ -139,15 +139,6 @@ func (o *OrderQueue) Push(item QueueItem) (exist bool) {
 	return false
 }
 
-func (o *OrderQueue) Clean() bool {
-	pq := make(PriorityQueue, 0)
-	heap.Init(&pq)
-
-	o.pq = &pq
-	o.m = make(map[string]*QueueItem)
-	return true
-}
-
 func (o *OrderQueue) Get(index int) QueueItem {
 	n := o.pq.Len()
 	if n <= index {
@@ -173,4 +164,14 @@ func (o *OrderQueue) Remove(uniqId string) QueueItem {
 	item := heap.Remove(o.pq, (*old).GetIndex())
 	delete(o.m, uniqId)
 	return item.(QueueItem)
+}
+
+func (o *OrderQueue) clean() {
+	o.Lock()
+	defer o.Unlock()
+
+	pq := make(PriorityQueue, 0)
+	heap.Init(&pq)
+	o.pq = &pq
+	o.m = make(map[string]*QueueItem)
 }

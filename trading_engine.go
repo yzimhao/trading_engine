@@ -39,7 +39,7 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 		Symbol:         symbol,
 		ChTradeResult:  make(chan TradeResult, 10),
 		ChNewOrder:     make(chan QueueItem),
-		ChCancelResult: make(chan string),
+		ChCancelResult: make(chan string, 10),
 
 		priceDigit:    priceDigit,
 		quantityDigit: quantityDigit,
@@ -85,6 +85,12 @@ func (t *TradePair) BidLen() int {
 
 func (t *TradePair) LatestPrice() decimal.Decimal {
 	return t.latestPrice
+}
+
+func (t *TradePair) cleanAll() {
+	//同时清空两个队列
+	t.askQueue.clean()
+	t.bidQueue.clean()
 }
 
 func (t *TradePair) matching() {

@@ -127,8 +127,8 @@ func NewBidLimitItem(uniq string, price, quantity decimal.Decimal, createTime in
 	return NewBidItem(PriceTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
 }
 
-func NewBidMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *BidItem {
-	return NewBidItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+func NewBidMarketQtyItem(uniq string, quantity, maxAmount decimal.Decimal, createTime int64) *BidItem {
+	return NewBidItem(PriceTypeMarketQuantity, uniq, decimal.Zero, quantity, maxAmount, createTime)
 }
 
 func NewBidMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *BidItem {
