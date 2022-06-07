@@ -17,12 +17,6 @@ func init() {
 
 func TestTradeFunc(t *testing.T) {
 
-	//限价单测试
-	TestTradeFunc_LimitOrder(t)
-
-	//市价单测试
-	TestTradeFunc_MarketOrder(t)
-
 }
 
 func TestTradeFunc_LimitOrder(t *testing.T) {
@@ -37,6 +31,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 	assert.Equal(t, "[[\"1.10\",\"1\"]]", string(stra))
 
 	btcusdt.PushNewOrder(NewAskLimitItem("uid2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1.2), 1112))
+
 	assert.Equal(t, 1, btcusdt.askQueue.Len())
 	assert.Equal(t, "uid2", btcusdt.askQueue.Top().GetUniqueId())
 

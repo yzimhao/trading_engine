@@ -58,3 +58,22 @@ func quickSort(nums []string, asc_desc string) []string {
 
 	//return append(append(left, mid...), right...)
 }
+
+func sortMap2Slice(m map[string]string, ask_bid OrderSide) [][2]string {
+	res := [][2]string{}
+	keys := []string{}
+	for k, _ := range m {
+		keys = append(keys, k)
+	}
+
+	if ask_bid == OrderSideSell {
+		keys = quickSort(keys, "asc")
+	} else {
+		keys = quickSort(keys, "desc")
+	}
+
+	for _, k := range keys {
+		res = append(res, [2]string{k, m[k]})
+	}
+	return res
+}

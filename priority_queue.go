@@ -92,25 +92,6 @@ func (o *OrderQueue) GetDepth(limit int) [][2]string {
 
 func (o *OrderQueue) setDepth() {
 
-	sortMap := func(m map[string]string, ask_bid OrderSide) [][2]string {
-		res := [][2]string{}
-		keys := []string{}
-		for k, _ := range m {
-			keys = append(keys, k)
-		}
-
-		if ask_bid == OrderSideSell {
-			keys = quickSort(keys, "asc")
-		} else {
-			keys = quickSort(keys, "desc")
-		}
-
-		for _, k := range keys {
-			res = append(res, [2]string{k, m[k]})
-		}
-		return res
-	}
-
 	for {
 		o.Lock()
 
@@ -133,7 +114,7 @@ func (o *OrderQueue) setDepth() {
 			}
 
 			//按价格排序map
-			o.depth = sortMap(depthMap, o.Top().GetOrderSide())
+			o.depth = sortMap2Slice(depthMap, o.Top().GetOrderSide())
 		}
 		o.Unlock()
 		time.Sleep(time.Millisecond * 20)
@@ -148,8 +129,6 @@ func (o *OrderQueue) Push(item QueueItem) (exist bool) {
 	o.Lock()
 	defer o.Unlock()
 
-	//todo 触发撮合订单
-
 	id := item.GetUniqueId()
 	if _, ok := o.m[id]; ok {
 		return true
@@ -160,12 +139,14 @@ func (o *OrderQueue) Push(item QueueItem) (exist bool) {
 	return false
 }
 
-// func (o *OrderQueue) Pop() QueueItem {
-// 	item := heap.Pop(o.pq)
-// 	id := item.(QueueItem).GetUniqueId()
-// 	delete(o.m, id)
-// 	return item.(QueueItem)
-// }
+func (o *OrderQueue) Clean() bool {
+	pq := make(PriorityQueue, 0)
+	heap.Init(&pq)
+
+	o.pq = &pq
+	o.m = make(map[string]*QueueItem)
+	return true
+}
 
 func (o *OrderQueue) Get(index int) QueueItem {
 	n := o.pq.Len()
