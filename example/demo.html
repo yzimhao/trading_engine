@@ -182,6 +182,7 @@
                                     <div class="layui-input-inline">
                                         <input type="text" name="quantity" required lay-verify="required|number"
                                             placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                            <span class="qty-tips" style="font-size: 10px; display: none;">市价按数量买入时，需要用户可用资金做限制条件，测试系统默认持有100块可用资金</span>
                                     </div>
                                 </div>
 
@@ -360,9 +361,11 @@
                     $(".item-quantity").show();
                     $(".item-amount").hide();
                     $(".item-market-type").hide();
+                    $(".qty-tips").hide();
                 } else if (data.value == "market") {
                     $(".item-price").hide();
                     $(".item-market-type").show();
+                    $(".qty-tips").show();
                 }
                 form.render('select');
             });
@@ -370,8 +373,10 @@
                 if (data.value == "q") {
                     $(".item-quantity").show();
                     $(".item-amount").hide();
+                    $(".qty-tips").show();
                 } else {
                     $(".item-quantity").hide();
+                    $(".qty-tips").hide();
                     $(".item-amount").show();
                 }
             });

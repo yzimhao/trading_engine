@@ -193,23 +193,27 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 			ask := t.askQueue.Top()
 			if item.GetPriceType() == PriceTypeMarketQuantity {
 
-				curTradeQuantity := decimal.Zero
+				//根据用户资产计算出当前价格能买的最大数量
+				maxTradeQty := item.GetAmount().Div(ask.GetPrice())
+				maxTradeQty = decimal.Min(maxTradeQty, item.GetQuantity())
+				curTradeQty := decimal.Zero
+
 				//市价按买入数量
-				if item.GetQuantity().Equal(decimal.Zero) {
+				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) <= 0 {
 					return false
 				}
 
-				if ask.GetQuantity().Cmp(item.GetQuantity()) <= 0 {
-					curTradeQuantity = ask.GetQuantity()
+				if ask.GetQuantity().Cmp(maxTradeQty) <= 0 {
+					curTradeQty = ask.GetQuantity()
 					defer t.askQueue.Remove(ask.GetUniqueId())
 				} else {
-					curTradeQuantity = item.GetQuantity()
-					ask.SetQuantity(ask.GetQuantity().Sub(curTradeQuantity))
+					curTradeQty = maxTradeQty
+					ask.SetQuantity(ask.GetQuantity().Sub(curTradeQty))
 				}
 
-				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQuantity)
-				item.SetQuantity(item.GetQuantity().Sub(curTradeQuantity))
-
+				t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty)
+				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
+				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
 				return true
 			} else if item.GetPriceType() == PriceTypeMarketAmount {
 				//市价-按成交金额
@@ -219,7 +223,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 					return false
 				}
 
-				maxTradeQty := item.GetAmount().Div(ask.GetPrice()).Truncate(int32(t.quantityDigit))
+				maxTradeQty := item.GetAmount().Div(ask.GetPrice())
 				curTradeQty := decimal.Zero
 
 				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) < 0 {

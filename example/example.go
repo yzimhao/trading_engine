@@ -206,6 +206,8 @@ func newOrder(c *gin.Context) {
 
 		} else if param.Quantity != "" {
 			pt = trading_engine.PriceTypeMarketQuantity
+			//市价按数量买入资产时，需要用户账户所有可用资产数量，测试默认100块
+			param.Amount = "100"
 			if quantity.Cmp(decimal.NewFromFloat(100000000)) > 0 || quantity.Cmp(decimal.Zero) <= 0 {
 				c.JSON(200, gin.H{
 					"ok":    false,

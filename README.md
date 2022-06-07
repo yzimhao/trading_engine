@@ -58,8 +58,8 @@
   //限价买单
   item := trading_engine.NewBidLimitItem(uniq, price, quantity, createTime)
   btcusdt.PushNewOrder(item)
-  //市价-按数量买单
-  item = trading_engine.NewBidMarketQtyItem(uniq, quantity, createTime)
+  //市价-按数量买单,需要用户可用资金来限制最大买入量
+  item = trading_engine.NewBidMarketQtyItem(uniq, quantity, maxAmount, createTime)
   btcusdt.PushNewOrder(item)
   //市价-按金额买单
   item = trading_engine.NewBidMarketAmountItem(uniq, amount, createTime)
