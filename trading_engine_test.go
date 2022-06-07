@@ -107,7 +107,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 
 }
 
-func TestTradeFunc_MarketOrder(t *testing.T) {
+func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 
 	//市价买入 按数量, 金额足够买单完全成交
 	btcusdt.cleanAll()
@@ -132,7 +132,7 @@ func TestTradeFunc_MarketOrder(t *testing.T) {
 	assert.Equal(t, "uid2", cancelOrder)
 	assert.Equal(t, 0, btcusdt.askQueue.Len())
 
-	//todo 市价买入 按数量, 金额不足 买单部分成交
+	//市价买入 按数量, 金额不足 买单部分成交
 	btcusdt.cleanAll()
 	btcusdt.PushNewOrder(NewAskLimitItem("uid1", d(100), d(20), 1112))
 	btcusdt.PushNewOrder(NewBidMarketQtyItem("uid2", d(20), d(100), 1113))
@@ -173,10 +173,76 @@ func TestTradeFunc_MarketOrder(t *testing.T) {
 	assert.Equal(t, 0, btcusdt.askQueue.Len())
 	assert.Equal(t, 0, btcusdt.bidQueue.Len())
 
-	//todo 市价卖出 按数量, 完全成交
-	//todo 市价卖出 按数量，部分成交
-	//todo 市价卖出 指定金额，金额足够完全成交
-	//todo 市价卖出 指定金额，金额足够部分成交
-	//todo 市价卖出 指定金额，金额不足
+}
 
+func TestTradeFunc_MarketSellOrder(t *testing.T) {
+	//市价卖出 按数量, 完全成交
+	btcusdt.cleanAll()
+	btcusdt.PushNewOrder(NewBidLimitItem("uid1", d(10.00), d(100), 1112))
+	btcusdt.PushNewOrder(NewAskMarketQtyItem("uid2", d(6), 1113))
+	tradeLog := <-btcusdt.ChTradeResult
+	assert.Equal(t, "uid2", tradeLog.AskOrderId)
+	assert.Equal(t, "uid1", tradeLog.BidOrderId)
+	assert.Equal(t, "10", tradeLog.TradePrice.String())
+	assert.Equal(t, "6", tradeLog.TradeQuantity.String())
+	cancelOrder := <-btcusdt.ChCancelResult
+	assert.Equal(t, "uid2", cancelOrder)
+	assert.Equal(t, 0, btcusdt.askQueue.Len())
+	assert.Equal(t, 1, btcusdt.bidQueue.Len())
+
+	//市价卖出 按数量，部分成交
+	btcusdt.cleanAll()
+	btcusdt.PushNewOrder(NewBidLimitItem("uid1", d(10.00), d(100), 1112))
+	btcusdt.PushNewOrder(NewAskMarketQtyItem("uid2", d(6000), 1113))
+	tradeLog = <-btcusdt.ChTradeResult
+	assert.Equal(t, "uid2", tradeLog.AskOrderId)
+	assert.Equal(t, "uid1", tradeLog.BidOrderId)
+	assert.Equal(t, "10", tradeLog.TradePrice.String())
+	assert.Equal(t, "100", tradeLog.TradeQuantity.String())
+	cancelOrder = <-btcusdt.ChCancelResult
+	assert.Equal(t, "uid2", cancelOrder)
+	assert.Equal(t, 0, btcusdt.askQueue.Len())
+	assert.Equal(t, 0, btcusdt.bidQueue.Len())
+
+	//市价卖出 指定金额，持仓足够完全成交
+	btcusdt.cleanAll()
+	btcusdt.PushNewOrder(NewBidLimitItem("uid1", d(10.00), d(1000), 1112))
+	btcusdt.PushNewOrder(NewAskMarketAmountItem("uid2", d(6000), d(1000000), 1113))
+	tradeLog = <-btcusdt.ChTradeResult
+	assert.Equal(t, "uid2", tradeLog.AskOrderId)
+	assert.Equal(t, "uid1", tradeLog.BidOrderId)
+	assert.Equal(t, "10", tradeLog.TradePrice.String())
+	assert.Equal(t, "600", tradeLog.TradeQuantity.String())
+	cancelOrder = <-btcusdt.ChCancelResult
+	assert.Equal(t, "uid2", cancelOrder)
+	assert.Equal(t, 0, btcusdt.askQueue.Len())
+	assert.Equal(t, 1, btcusdt.bidQueue.Len())
+
+	//市价卖出 指定金额，持仓足够 但是部分成交
+	btcusdt.cleanAll()
+	btcusdt.PushNewOrder(NewBidLimitItem("uid1", d(10.00), d(50), 1112))
+	btcusdt.PushNewOrder(NewAskMarketAmountItem("uid2", d(6000), d(1000000), 1113))
+	tradeLog = <-btcusdt.ChTradeResult
+	assert.Equal(t, "uid2", tradeLog.AskOrderId)
+	assert.Equal(t, "uid1", tradeLog.BidOrderId)
+	assert.Equal(t, "10", tradeLog.TradePrice.String())
+	assert.Equal(t, "50", tradeLog.TradeQuantity.String())
+	cancelOrder = <-btcusdt.ChCancelResult
+	assert.Equal(t, "uid2", cancelOrder)
+	assert.Equal(t, 0, btcusdt.askQueue.Len())
+	assert.Equal(t, 0, btcusdt.bidQueue.Len())
+
+	//市价卖出 指定金额，持仓不足
+	btcusdt.cleanAll()
+	btcusdt.PushNewOrder(NewBidLimitItem("uid1", d(100.00), d(50), 1112))
+	btcusdt.PushNewOrder(NewAskMarketAmountItem("uid2", d(500), d(3), 1113))
+	tradeLog = <-btcusdt.ChTradeResult
+	assert.Equal(t, "uid2", tradeLog.AskOrderId)
+	assert.Equal(t, "uid1", tradeLog.BidOrderId)
+	assert.Equal(t, "100", tradeLog.TradePrice.String())
+	assert.Equal(t, "3", tradeLog.TradeQuantity.String())
+	cancelOrder = <-btcusdt.ChCancelResult
+	assert.Equal(t, "uid2", cancelOrder)
+	assert.Equal(t, 0, btcusdt.askQueue.Len())
+	assert.Equal(t, 1, btcusdt.bidQueue.Len())
 }
