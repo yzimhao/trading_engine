@@ -1,6 +1,7 @@
 ## 交易系统撮合引擎
 
-一款使用golang编写的，采用优先级队列实现的订单撮合、输出委托深度、最新成交价格等功能的开源程序。
+## 适用场景
+  买卖双方自由报价，需要按照价格优先、时间优先的原则撮合成交，如：证券交易、虚拟货币交易等。
 
 ## 已支持的功能
 * 限价订单撮合
@@ -27,4 +28,4 @@
 
 ### Support or Contact
 
-[联系我](https://github.com/yzimhao/trading_engine#%E9%9C%80%E6%B1%82%E8%AE%A8%E8%AE%BA%E8%81%94%E7%B3%BB)
+[需求建议](https://github.com/yzimhao/trading_engine#%E9%9C%80%E6%B1%82%E8%AE%A8%E8%AE%BA%E8%81%94%E7%B3%BB)
