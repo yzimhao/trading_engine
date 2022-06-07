@@ -12,14 +12,14 @@
 * 最新成交价格
 
 ## 接入方式
- ### 1. `go package`
+ 1. `go package`
  ```
  go get github.com/yzimhao/trading_engine
  ```
  具体详细使用方法参考 [Readme](https://github.com/yzimhao/trading_engine#readme)
 
 
- ### 2. 独立程序
+  2. 独立程序
  使用消息中间件接入，开发准备中...
  ```
  ...
