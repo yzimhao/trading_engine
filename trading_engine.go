@@ -1,7 +1,6 @@
 package trading_engine
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -304,7 +303,6 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 
 				//市价 按成交额卖出时，需要用户持有的资产数量来进行限制
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
-				fmt.Println(item.GetQuantity().String())
 
 				return true
 			}
@@ -334,6 +332,9 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 
 	t.latestPrice = price
 
-	logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
+	if Debug {
+		logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
+	}
+
 	t.ChTradeResult <- tradelog
 }
