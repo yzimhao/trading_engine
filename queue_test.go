@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var askQueue *OrderQueue
@@ -20,57 +20,85 @@ func init() {
 
 func TestAskQueue(t *testing.T) {
 
-	askQueue.Push(NewAskLimitItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
-	askQueue.Push(NewAskLimitItem("2", decimal.NewFromFloat(0.99), decimal.NewFromFloat(10), 11111111))
-	askQueue.Push(NewAskLimitItem("3", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
-	askQueue.Push(NewAskLimitItem("5", decimal.NewFromFloat(1.1), decimal.NewFromFloat(12), 11111111))
+	Convey("卖盘挂单队列", t, func() {
 
-	assert.Equal(t, 4, askQueue.Len())
+		Convey("队列元素的顺序", func() {
+			askQueue.Push(NewAskLimitItem("1", d(1.8), d(1), 11111111))
+			askQueue.Push(NewAskLimitItem("2", d(0.99), d(10), 11111111))
+			askQueue.Push(NewAskLimitItem("3", d(1.1), d(12), 11111111))
+			askQueue.Push(NewAskLimitItem("5", d(1.1), d(12), 11111110))
+			So(askQueue.Len(), ShouldEqual, 4)
 
-	//取出堆顶的一个元素
-	top := askQueue.Top()
-	assert.Equal(t, "2", top.GetUniqueId())
+			top := askQueue.Top()
+			So(top.GetUniqueId(), ShouldEqual, "2")
+			So(top.GetPrice(), ShouldEqual, d(0.99))
+			So(top.GetQuantity(), ShouldEqual, d(10))
 
-	//重新插入一个低价订单，重新获取堆顶的item
-	askQueue.Push(NewAskLimitItem("4", decimal.NewFromFloat(0.01), decimal.NewFromFloat(10), 11111111))
-	top = askQueue.Top()
-	assert.Equal(t, "4", top.GetUniqueId())
+		})
 
-	top.SetQuantity(decimal.NewFromFloat(10.01))
-	assert.Equal(t, "10.01", top.GetQuantity().String())
+		Convey("重新插入低价卖单，重新获取队列顶元素", func() {
+			askQueue.Push(NewAskLimitItem("4", d(0.01), d(10), 11111111))
+			top := askQueue.Top()
+			So(top.GetUniqueId(), ShouldEqual, "4")
+		})
 
-	//取出队列最后一个插入的元素
-	// last := askQueue.Pop()
-	// assert.Equal(t, "4", last.GetUniqueId())
+		Convey("更新队列顶元素", func() {
+			top := askQueue.Top()
+			top.SetQuantity(d(10.01))
+			top.SetAmount(d(102))
+			So(top.GetAmount(), ShouldEqual, d(102))
+			So(top.GetQuantity(), ShouldEqual, d(10.01))
+		})
 
-	//从队列里移除一个指定的订单号
-	remove := askQueue.Remove("4")
-	assert.Equal(t, "4", remove.GetUniqueId())
-	assert.Equal(t, 4, askQueue.Len())
+		Convey("移除队列一个指定的订单号", func() {
+			So(askQueue.Len(), ShouldEqual, 5)
+			remove := askQueue.Remove("4")
+			So(remove.GetUniqueId(), ShouldEqual, "4")
+			So(askQueue.Len(), ShouldEqual, 4)
+		})
+	})
 
 }
 
 func TestBidQueue(t *testing.T) {
 
-	bidQueue.Push(NewBidLimitItem("1", decimal.NewFromFloat(1.8), decimal.NewFromFloat(1), 11111111))
-	bidQueue.Push(NewBidLimitItem("2", decimal.NewFromFloat(1.1), decimal.NewFromFloat(1), 11111111))
-	bidQueue.Push(NewBidLimitItem("3", decimal.NewFromFloat(2), decimal.NewFromFloat(1), 11111111))
+	Convey("买盘挂单队列", t, func() {
 
-	assert.Equal(t, 3, bidQueue.Len())
+		Convey("队列元素的顺序", func() {
+			bidQueue.Push(NewBidLimitItem("1", d(1.8), d(1), 11111111))
+			bidQueue.Push(NewBidLimitItem("2", d(0.99), d(10), 11111111))
+			bidQueue.Push(NewBidLimitItem("3", d(1.1), d(12), 11111111))
+			bidQueue.Push(NewBidLimitItem("5", d(1.1), d(12), 11111110))
+			So(bidQueue.Len(), ShouldEqual, 4)
 
-	//取出堆顶的一个元素
-	top := bidQueue.Top()
-	assert.Equal(t, "3", top.GetUniqueId())
+			top := bidQueue.Top()
+			So(top.GetUniqueId(), ShouldEqual, "1")
+			So(top.GetPrice(), ShouldEqual, d(1.8))
+			So(top.GetQuantity(), ShouldEqual, d(1))
 
-	//重新插入一个高价订单，重新获取堆顶的item
-	bidQueue.Push(NewBidLimitItem("4", decimal.NewFromFloat(10.01), decimal.NewFromFloat(10), 11111111))
-	top = bidQueue.Top()
-	assert.Equal(t, "4", top.GetUniqueId())
+		})
 
-	//从队列里移除一个指定的订单号
-	remove := bidQueue.Remove("3")
-	assert.Equal(t, "3", remove.GetUniqueId())
-	assert.Equal(t, 3, bidQueue.Len())
+		Convey("重新插入高价买单，重新获取队列顶元素", func() {
+			bidQueue.Push(NewBidLimitItem("4", d(2), d(10), 11111111))
+			top := bidQueue.Top()
+			So(top.GetUniqueId(), ShouldEqual, "4")
+		})
+
+		Convey("更新队列顶元素", func() {
+			top := bidQueue.Top()
+			top.SetQuantity(d(10.01))
+			top.SetAmount(d(102))
+			So(top.GetAmount(), ShouldEqual, d(102))
+			So(top.GetQuantity(), ShouldEqual, d(10.01))
+		})
+
+		Convey("移除队列一个指定的订单号", func() {
+			So(bidQueue.Len(), ShouldEqual, 5)
+			remove := bidQueue.Remove("4")
+			So(remove.GetUniqueId(), ShouldEqual, "4")
+			So(bidQueue.Len(), ShouldEqual, 4)
+		})
+	})
 
 }
 
