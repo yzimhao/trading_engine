@@ -67,14 +67,6 @@ func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
 	t.ChCancelResult <- uniq
 }
 
-func (t *TradePair) GetAskDepth(limit int) [][2]string {
-	return t.askQueue.GetDepth(limit)
-}
-
-func (t *TradePair) GetBidDepth(limit int) [][2]string {
-	return t.bidQueue.GetDepth(limit)
-}
-
 func (t *TradePair) AskLen() int {
 	return t.askQueue.Len()
 }
