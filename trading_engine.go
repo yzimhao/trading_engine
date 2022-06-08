@@ -286,7 +286,7 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				maxTradeQty = decimal.Min(maxTradeQty, item.GetQuantity())
 
 				curTradeQty := decimal.Zero
-				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) <= 0 {
+				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) < 0 {
 					return false
 				}
 
