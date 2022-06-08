@@ -140,7 +140,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 	assert.Equal(t, "uid1", tradeLog.AskOrderId)
 	assert.Equal(t, "uid2", tradeLog.BidOrderId)
 	assert.Equal(t, "100", tradeLog.TradePrice.String())
-	assert.Equal(t, "5", tradeLog.TradeQuantity.String())
+	assert.Equal(t, "1", tradeLog.TradeQuantity.String())
 	cancelOrder = <-btcusdt.ChCancelResult
 	assert.Equal(t, "uid2", cancelOrder)
 	assert.Equal(t, 1, btcusdt.askQueue.Len())

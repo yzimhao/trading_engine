@@ -108,7 +108,7 @@ func (t *TradePair) matching() {
 }
 
 func (t *TradePair) doNewOrder(newOrder QueueItem) {
-	logrus.Infof("%s new order: %+v", t.Symbol, newOrder)
+
 	if newOrder.GetPriceType() == PriceTypeLimit {
 		if newOrder.GetOrderSide() == OrderSideSell {
 			t.askQueue.Push(newOrder)
@@ -192,14 +192,13 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 
 			ask := t.askQueue.Top()
 			if item.GetPriceType() == PriceTypeMarketQuantity {
-
 				//根据用户资产计算出当前价格能买的最大数量
 				maxTradeQty := item.GetAmount().Div(ask.GetPrice())
 				maxTradeQty = decimal.Min(maxTradeQty, item.GetQuantity())
 				curTradeQty := decimal.Zero
 
 				//市价按买入数量
-				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) <= 0 {
+				if maxTradeQty.Cmp(decimal.New(1, int32(-t.quantityDigit))) < 0 {
 					return false
 				}
 
