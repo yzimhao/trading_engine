@@ -76,52 +76,6 @@ type OrderQueue struct {
 	depth         [][2]string
 }
 
-func (o *OrderQueue) GetDepth(limit int) [][2]string {
-	o.Lock()
-	defer o.Unlock()
-
-	max := len(o.depth)
-	if limit <= 0 || limit > max {
-		limit = max
-	}
-
-	dp := o.depth[0:limit]
-	return dp
-}
-
-func (o *OrderQueue) setDepth() {
-
-	// ticker := time.NewTicker(time.Duration(50) * time.Millisecond)
-	// for {
-	// 	<-ticker.C
-	// 	o.Lock()
-
-	// 	o.depth = [][2]string{}
-	// 	depthMap := make(map[string]string)
-
-	// 	if o.pq.Len() > 0 {
-
-	// 		for i := 0; i < o.pq.Len(); i++ {
-	// 			item := (*o.pq)[i]
-
-	// 			price := FormatDecimal2String(item.GetPrice(), o.priceDigit)
-
-	// 			if _, ok := depthMap[price]; !ok {
-	// 				depthMap[price] = FormatDecimal2String(item.GetQuantity(), o.quantityDigit)
-	// 			} else {
-	// 				old_qunantity, _ := decimal.NewFromString(depthMap[price])
-	// 				depthMap[price] = FormatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
-	// 			}
-	// 		}
-
-	// 		//按价格排序map
-	// 		o.depth = sortMap2Slice(depthMap, o.Top().GetOrderSide())
-	// 	}
-	// 	o.Unlock()
-
-	// }
-}
-
 func (o *OrderQueue) Len() int {
 	return o.pq.Len()
 }

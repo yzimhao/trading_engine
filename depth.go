@@ -6,12 +6,24 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (t *TradePair) GetAskDepth(limit int) [][2]string {
-	return t.askQueue.GetDepth(limit)
+func (t *TradePair) GetAskDepth(size int) [][2]string {
+	return t.depth(t.askQueue, size)
 }
 
-func (t *TradePair) GetBidDepth(limit int) [][2]string {
-	return t.bidQueue.GetDepth(limit)
+func (t *TradePair) GetBidDepth(size int) [][2]string {
+	return t.depth(t.bidQueue, size)
+}
+
+func (t *TradePair) depth(queue *OrderQueue, size int) [][2]string {
+	queue.Lock()
+	defer queue.Unlock()
+
+	max := len(queue.depth)
+	if size <= 0 || size > max {
+		size = max
+	}
+
+	return queue.depth[0:size]
 }
 
 func (t *TradePair) depthTicker(que *OrderQueue) {
