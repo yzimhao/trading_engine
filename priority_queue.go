@@ -58,11 +58,7 @@ func NewQueue() *OrderQueue {
 	queue := OrderQueue{
 		pq: &pq,
 		m:  make(map[string]*QueueItem),
-		// priceDigit:    priceDigit,
-		// quantityDigit: quantityDigit,
 	}
-
-	// go queue.setDepth()
 	return &queue
 }
 
@@ -71,9 +67,7 @@ type OrderQueue struct {
 	m  map[string]*QueueItem
 	sync.Mutex
 
-	priceDigit    int
-	quantityDigit int
-	depth         [][2]string
+	depth [][2]string
 }
 
 func (o *OrderQueue) Len() int {
