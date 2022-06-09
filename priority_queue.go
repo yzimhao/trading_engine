@@ -3,7 +3,6 @@ package trading_engine
 import (
 	"container/heap"
 	"sync"
-	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -52,18 +51,18 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	*pq = append(*pq, x.(QueueItem))
 }
 
-func NewQueue(priceDigit, quantityDigit int) *OrderQueue {
+func NewQueue() *OrderQueue {
 	pq := make(PriorityQueue, 0)
 	heap.Init(&pq)
 
 	queue := OrderQueue{
-		pq:            &pq,
-		m:             make(map[string]*QueueItem),
-		priceDigit:    priceDigit,
-		quantityDigit: quantityDigit,
+		pq: &pq,
+		m:  make(map[string]*QueueItem),
+		// priceDigit:    priceDigit,
+		// quantityDigit: quantityDigit,
 	}
 
-	go queue.setDepth()
+	// go queue.setDepth()
 	return &queue
 }
 
@@ -92,33 +91,35 @@ func (o *OrderQueue) GetDepth(limit int) [][2]string {
 
 func (o *OrderQueue) setDepth() {
 
-	for {
-		o.Lock()
+	// ticker := time.NewTicker(time.Duration(50) * time.Millisecond)
+	// for {
+	// 	<-ticker.C
+	// 	o.Lock()
 
-		o.depth = [][2]string{}
-		depthMap := make(map[string]string)
+	// 	o.depth = [][2]string{}
+	// 	depthMap := make(map[string]string)
 
-		if o.pq.Len() > 0 {
+	// 	if o.pq.Len() > 0 {
 
-			for i := 0; i < o.pq.Len(); i++ {
-				item := (*o.pq)[i]
+	// 		for i := 0; i < o.pq.Len(); i++ {
+	// 			item := (*o.pq)[i]
 
-				price := FormatDecimal2String(item.GetPrice(), o.priceDigit)
+	// 			price := FormatDecimal2String(item.GetPrice(), o.priceDigit)
 
-				if _, ok := depthMap[price]; !ok {
-					depthMap[price] = FormatDecimal2String(item.GetQuantity(), o.quantityDigit)
-				} else {
-					old_qunantity, _ := decimal.NewFromString(depthMap[price])
-					depthMap[price] = FormatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
-				}
-			}
+	// 			if _, ok := depthMap[price]; !ok {
+	// 				depthMap[price] = FormatDecimal2String(item.GetQuantity(), o.quantityDigit)
+	// 			} else {
+	// 				old_qunantity, _ := decimal.NewFromString(depthMap[price])
+	// 				depthMap[price] = FormatDecimal2String(old_qunantity.Add(item.GetQuantity()), o.quantityDigit)
+	// 			}
+	// 		}
 
-			//按价格排序map
-			o.depth = sortMap2Slice(depthMap, o.Top().GetOrderSide())
-		}
-		o.Unlock()
-		time.Sleep(time.Millisecond * 20)
-	}
+	// 		//按价格排序map
+	// 		o.depth = sortMap2Slice(depthMap, o.Top().GetOrderSide())
+	// 	}
+	// 	o.Unlock()
+
+	// }
 }
 
 func (o *OrderQueue) Len() int {

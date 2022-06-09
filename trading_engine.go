@@ -43,9 +43,11 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 		priceDigit:    priceDigit,
 		quantityDigit: quantityDigit,
 
-		askQueue: NewQueue(priceDigit, quantityDigit),
-		bidQueue: NewQueue(priceDigit, quantityDigit),
+		askQueue: NewQueue(),
+		bidQueue: NewQueue(),
 	}
+	go t.depthTicker(t.askQueue)
+	go t.depthTicker(t.bidQueue)
 	t.matching()
 	return t
 }
