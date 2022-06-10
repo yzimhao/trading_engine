@@ -48,7 +48,7 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 	}
 	go t.depthTicker(t.askQueue)
 	go t.depthTicker(t.bidQueue)
-	t.matching()
+	go t.matching()
 	return t
 }
 
@@ -87,17 +87,17 @@ func (t *TradePair) cleanAll() {
 }
 
 func (t *TradePair) matching() {
-	go func() {
-		for {
-			select {
-			case newOrder := <-t.ChNewOrder:
-				go t.doNewOrder(newOrder)
-			default:
-				t.doLimitOrder()
-			}
 
+	for {
+		select {
+		case newOrder := <-t.ChNewOrder:
+			go t.doNewOrder(newOrder)
+		default:
+			t.doLimitOrder()
 		}
-	}()
+
+	}
+
 }
 
 func (t *TradePair) doNewOrder(newOrder QueueItem) {
