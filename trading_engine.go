@@ -9,11 +9,12 @@ import (
 )
 
 type TradeResult struct {
-	AskOrderId    string
-	BidOrderId    string
-	TradeQuantity decimal.Decimal
-	TradePrice    decimal.Decimal
-	TradeAmount   decimal.Decimal
+	Symbol        string          `json:"symbol"`
+	AskOrderId    string          `json:"ask_order_id"`
+	BidOrderId    string          `json:"bid_order_id"`
+	TradeQuantity decimal.Decimal `json:"trade_quantity"`
+	TradePrice    decimal.Decimal `json:"trade_price"`
+	TradeAmount   decimal.Decimal `json:"trade_amount"`
 	TradeTime     time.Time
 }
 
@@ -325,6 +326,7 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	defer t.Unlock()
 
 	tradelog := TradeResult{}
+	tradelog.Symbol = t.Symbol
 	tradelog.AskOrderId = ask.GetUniqueId()
 	tradelog.BidOrderId = bid.GetUniqueId()
 	tradelog.TradeQuantity = tradeQty
