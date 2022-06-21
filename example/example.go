@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"example/wss"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine"
@@ -21,6 +23,7 @@ var sendMsg chan []byte
 var web *gin.Engine
 var btcusdt *trading_engine.TradePair
 var recentTrade []interface{}
+var rdc *redis.Client
 
 func main() {
 
@@ -32,6 +35,12 @@ func main() {
 	btcusdt = trading_engine.NewTradePair("BTC_USDT", 2, 4)
 
 	recentTrade = make([]interface{}, 0)
+
+	rdc = redis.NewClient(&redis.Options{
+		Addr:     ":6379",
+		DB:       0,
+		Password: "",
+	})
 
 	startWeb(*port)
 }
@@ -115,11 +124,21 @@ func sendMessage(tag string, data interface{}) {
 	sendMsg <- []byte(msgByte)
 }
 
+func pubTradeLog(log trading_engine.TradeResult) {
+	ctx := context.Background()
+	raw, _ := json.Marshal(log)
+	fmt.Println(string(raw))
+	rdc.Publish(ctx, "trade_log", string(raw))
+}
+
 func watchTradeLog() {
 	for {
 		select {
 		case log, ok := <-btcusdt.ChTradeResult:
 			if ok {
+				//
+				pubTradeLog(log)
+
 				relog := gin.H{
 					"TradePrice":    btcusdt.Price2String(log.TradePrice),
 					"TradeAmount":   btcusdt.Price2String(log.TradeAmount),

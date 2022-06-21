@@ -15,7 +15,7 @@ type TradeResult struct {
 	TradeQuantity decimal.Decimal `json:"trade_quantity"`
 	TradePrice    decimal.Decimal `json:"trade_price"`
 	TradeAmount   decimal.Decimal `json:"trade_amount"`
-	TradeTime     time.Time
+	TradeTime     int64           `json:"trade_time"`
 }
 
 type TradePair struct {
@@ -331,7 +331,7 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	tradelog.BidOrderId = bid.GetUniqueId()
 	tradelog.TradeQuantity = tradeQty
 	tradelog.TradePrice = price
-	tradelog.TradeTime = time.Now()
+	tradelog.TradeTime = time.Now().Unix()
 	tradelog.TradeAmount = tradeQty.Mul(price)
 
 	t.latestPrice = price
