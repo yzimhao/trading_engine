@@ -1,0 +1,123 @@
+basePath: /api/v1
+info:
+  contact:
+    name: yzimhao
+    url: https://github.com/yzimhao
+  description: 根据成交记录，快速统计出各个时间周期的行情数据。
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Haoquote行情管理通用系统
+  version: "1.0"
+paths:
+  /depth:
+    get:
+      description: 提供买卖双方的order book
+      parameters:
+      - description: 'eg: usdjpy'
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: 'default: 10'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: 深度行情
+      tags:
+      - Market
+  /kline:
+    get:
+      description: 每根K线的开盘时间可视为唯一ID
+      parameters:
+      - description: 'eg: usdjpy'
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: 默认500，最大1000
+        in: query
+        name: limit
+        type: integer
+      - description: K线间隔
+        enum:
+        - m1
+        - m3
+        - m5
+        - m15
+        - m30
+        - h1
+        - h2
+        - h4
+        - h6
+        - h8
+        - h12
+        - d1
+        - d3
+        - w1
+        - mn
+        in: query
+        name: interval
+        required: true
+        type: string
+      - description: 开始时间，默认返回最近的交易。
+        in: query
+        name: start_time
+        type: integer
+      - description: 结束时间
+        in: query
+        name: end_time
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: K线数据
+      tags:
+      - Market
+  /transaction/record:
+    get:
+      description: 获取近期成交
+      parameters:
+      - description: 'eg: usdjpy'
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: 'default: 10'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: 近期成交列表
+      tags:
+      - Market
+swagger: "2.0"

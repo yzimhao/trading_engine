@@ -1,0 +1,91 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.1
+
+      - name: Installation depends
+        run: |
+          make require
+          make doc
+            
+
+      - name: go test
+        run: go test -v ./...
+        
+      - name: Project Tag Version
+        id: get_tag
+        run: echo "::set-output name=tag::$(echo $GITHUB_REF | cut -d '/' -f 3)"
+        shell: bash
+
+      - name: Build
+        run: |
+          tag_version="${{ steps.get_tag.outputs.tag }}"
+          echo "Building version $tag_version"
+          make release version=$tag_version
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+           tag_version="${{ steps.get_tag.outputs.tag }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: upload linux zip artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/haotrader.${{ steps.get_tag.outputs.tag }}.linux-amd64.zip
+          asset_name: haotrader.${{ steps.get_tag.outputs.tag }}.linux-amd64.zip
+          asset_content_type: application/zip
+      
+      - name: upload linux tar.gz artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/haotrader.${{ steps.get_tag.outputs.tag }}.linux-amd64.tar.gz
+          asset_name: haotrader.${{ steps.get_tag.outputs.tag }}.linux-amd64.tar.gz
+          asset_content_type: application/octet-stream
+
+
+
+      - name: upload darwin zip artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/haotrader.${{ steps.get_tag.outputs.tag }}.darwin-amd64.zip
+          asset_name: haotrader.${{ steps.get_tag.outputs.tag }}.darwin-amd64.zip
+          asset_content_type: application/zip
+
+      - name: upload darwin tar.gz artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/haotrader.${{ steps.get_tag.outputs.tag }}.darwin-amd64.tar.gz
+          asset_name: haotrader.${{ steps.get_tag.outputs.tag }}.darwin-amd64.tar.gz
+          asset_content_type: application/octet-stream

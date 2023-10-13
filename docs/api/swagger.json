@@ -1,0 +1,178 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "根据成交记录，快速统计出各个时间周期的行情数据。",
+        "title": "Haoquote行情管理通用系统",
+        "contact": {
+            "name": "yzimhao",
+            "url": "https://github.com/yzimhao"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/depth": {
+            "get": {
+                "description": "提供买卖双方的order book",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Market"
+                ],
+                "summary": "深度行情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "eg: usdjpy",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default: 10",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/kline": {
+            "get": {
+                "description": "每根K线的开盘时间可视为唯一ID",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Market"
+                ],
+                "summary": "K线数据",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "eg: usdjpy",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "默认500，最大1000",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "m1",
+                            "m3",
+                            "m5",
+                            "m15",
+                            "m30",
+                            "h1",
+                            "h2",
+                            "h4",
+                            "h6",
+                            "h8",
+                            "h12",
+                            "d1",
+                            "d3",
+                            "w1",
+                            "mn"
+                        ],
+                        "type": "string",
+                        "description": "K线间隔",
+                        "name": "interval",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "开始时间，默认返回最近的交易。",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "结束时间",
+                        "name": "end_time",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/record": {
+            "get": {
+                "description": "获取近期成交",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Market"
+                ],
+                "summary": "近期成交列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "eg: usdjpy",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "default: 10",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

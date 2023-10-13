@@ -1,0 +1,69 @@
+[main]
+mode="dev" #运行的模式：dev,prod，线上环境请一定配置prod
+log_level="trace" #全局的日志输出等级:panic,fatal,error,warn,info,debug,trace
+# log_path="./logs/" #日志文件保存位置 默认不保存到文件
+time_zone="Asia/Shanghai"
+
+
+[redis]
+host="127.0.0.1:6379"
+password=""
+db=0
+prefix=""
+
+[database] # 支持mysql, sqlite3, postgres
+driver="mysql"
+dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
+
+# driver="sqlite3"
+# dsn = "./test.sqlite.db"
+
+# driver = "postgres" 
+# dsn = "host=localhost port=15432 user=postgres password=postgres dbname=haotrader sslmode=disable"
+
+
+show_sql = false
+
+
+[haotrader]
+storage_path="haotrader.db"
+# 是否直接通知到haoquote行情系统，正式环境时建议在结算完成后再通知
+notify_quote=false
+# 广播交易对的depth数据
+broadcast_depth=true
+
+
+[symbol.eurusd]
+name="欧元"
+price_digit=5  #配置交易对价格支持小数点位
+qty_digit=2    #配置交易对交易数量支持小数点位
+
+[symbol.usdjpy]
+name="USDJPY"
+price_digit=3
+qty_digit=2
+
+
+[haoquote]
+storage_path="haoquote.db"
+# 支持的周期 "m1", "m3", "m5", "m15", "m30", "h1", "h2", "h4", "h6", "h8", "h12", "d1", "d3", "w1", "mn"
+period=["m1", "m5", "d1", "w1", "mn"]
+
+[haoquote.http]
+host="0.0.0.0:8081"
+debug=true
+
+
+[haobase.http]
+host="0.0.0.0:8082"
+debug=true
+
+
+
+
+
+
+
+
+
+

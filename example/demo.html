@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Haotrader Demo</title>
+    <link crossorigin="anonymous" href="https://cdn.staticfile.org/layui/2.8.17/css/layui.min.css" rel="stylesheet">
+<style>
+body{
+   overflow-x: hidden;
+}
+
+.depth .layui-table{
+    margin: 0px;
+    padding: 0px 5px 0px 5px;
+}  
+.trade-log {
+    margin: 0px 5px;
+}  
+
+.depth .layui-table td, .layui-table th {
+    padding: 0px 20px 0px 15px;
+    border: none;
+}
+.depth-bid .price, .depth-ask .price {
+    width: 40%;
+}
+
+</style>
+</head>
+
+<script id="depth-ask-tpl" type="text/html">
+
+    <tr><th colspan="2" class="orderbook-title">委托</th></tr>
+    <tr><th class="price">价格</th><th>数量</th></tr>
+    
+    {%#  layui.each(d, function(index, item){ %}
+    <tr>
+        <td class="price">{% item[0] %}</td><td>{% item[1] %}</td>
+    </tr>
+    {%#  }); %} 
+  </script>
+
+<script id="depth-bid-tpl" type="text/html">
+    {%#  layui.each(d, function(index, item){ %}
+    <tr>
+        <td class="price">{% item[0] %}</td><td>{% item[1] %}</td>
+    </tr>
+    {%#  }); %}
+  </script>
+
+<script id="trade-log-tpl" type="text/html">
+    <tr class="log-item">
+        <td>{% d.price %}</td>
+        <td>{% d.qty %}</td>
+        <td>{% d.amount %}</td>
+        <td>{% d.trade_at %}</td>
+    </tr>
+  </script>
+
+<script id="myorder-tpl" type="text/html">
+    <tr class="order-item" order-id="{% d.order_id%}">
+        <td>{% d.price_type %}</td>
+        <td>{% d.price %}</td>
+        <td>{% d.quantity %}/<span class="qty_ok">0</span></td>
+        <td>{%# if(d.amount==0) { %} - {%#  } else { %}  {% d.amount %} {%# } %}</td>
+        <td>{% d.create_time %}</td>
+        <td><a class="cancel" href="javascript:;">撤单</a></td>
+    </tr>
+  </script>
+
+<body>
+
+    <div style="position: fixed; top: 0; right: 0; border: 0; z-index:9999;">
+        <a target="_blank" href="https://github.com/yzimhao/trading_engine" class="github-corner"
+            aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250"
+                style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+                <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+                <path
+                    d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+                    fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+                <path
+                    d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+                    fill="currentColor" class="octo-body"></path>
+            </svg></a>
+        <style>
+            .github-corner:hover .octo-arm {
+                animation: octocat-wave 560ms ease-in-out
+            }
+
+            @keyframes octocat-wave {
+
+                0%,
+                100% {
+                    transform: rotate(0)
+                }
+
+                20%,
+                60% {
+                    transform: rotate(-25deg)
+                }
+
+                40%,
+                80% {
+                    transform: rotate(10deg)
+                }
+            }
+
+            @media (max-width:500px) {
+                .github-corner:hover .octo-arm {
+                    animation: none
+                }
+
+                .github-corner .octo-arm {
+                    animation: octocat-wave 560ms ease-in-out
+                }
+            }
+        </style>
+    </div>
+
+    <div class="main ">
+        <div class="header layui-row" style="line-height: 20px; height: 20px;"></div>
+
+        <div class="layui-row">
+            <div class="layui-col-md7">
+                <div class="layui-row" style="height: 500px;">
+                    <div id="klinechart" style="height: 100%;"></div>
+                </div>
+                
+               
+                <div class="layui-row">
+                    <div class="layui-card">
+                        <div class="layui-card-header"><b>模拟下单</b></div>
+                        <div class="layui-card-body">
+                            
+                            <div class="layui-row">
+                                <div class="layui-col-md6">
+                                    <form class="layui-form" onsubmit="return false">
+                                        <div class="layui-form-item">
+                                            <label class="layui-form-label">订单类型</label>
+                                            <div class="layui-input-block">
+                                                <select name="price_type" lay-filter="price_type">
+                                                    <option value="limit" selected>限价单</option>
+                                                    <option value="market">市价单</option>
+                                                </select>
+                                            </div>
+                                        </div>
+        
+                                        <div class="layui-form-item item-market-type" style="display: none;">
+                                            <label class="layui-form-label"></label>
+                                            <div class="layui-input-block">
+                                                <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量"
+                                                    checked>
+                                                <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额"
+                                                    >
+                                            </div>
+                                        </div>
+        
+                                        <div class="layui-form-item item-price">
+                                            <label class="layui-form-label">价格</label>
+                                            <div class="layui-input-block">
+                                                <input type="text" name="price" required lay-verify="required|number"
+                                                    placeholder="请输入价格" autocomplete="off" class="layui-input" value="1.00">
+                                            </div>
+                                        </div>
+        
+        
+                                        <div class="layui-form-item item-quantity">
+                                            <label class="layui-form-label">数量</label>
+                                            <div class="layui-input-inline">
+                                                <input type="text" name="quantity" required lay-verify="required|number"
+                                                    placeholder="请输入数量" autocomplete="off" class="layui-input" value="10">
+                                                    <span class="qty-tips" style="font-size: 10px; display: none;">市价按数量买入时，需要用户可用资金做限制条件，测试系统默认持有10000块可用资金</span>
+                                            </div>
+                                        </div>
+        
+                                        <div class="layui-form-item item-amount" style="display: none;">
+                                            <label class="layui-form-label">金额</label>
+                                            <div class="layui-input-inline">
+                                                <input type="text" name="amount" required lay-verify="required|number"
+                                                    placeholder="交易金额" autocomplete="off" class="layui-input" value="1000.00">
+                                                    <span style="font-size: 10px;">市价按成交额卖出时，需要用户已持有的资产数量做限制条件，测试系统默认持有10000个数量</span>
+                                            </div>
+                                        </div>
+        
+                                        <div class="layui-form-item">
+                                            <div class="layui-input-block">
+                                                <button class="layui-btn layui-btn-danger opt sell">卖出</button>
+                                                <button class="layui-btn opt buy">买入</button>
+                                            </div>
+                                        </div>
+        
+                                        <div class="layui-form-item">
+                                            <div class="layui-input-block">
+                                                <button class="layui-btn layui-btn-normal test-rand sell">随机挂卖10单</button>
+                                                <button class="layui-btn layui-btn-normal test-rand buy">随机挂买10单</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="layui-col-md2">
+                <div class="layui-row depth" style="height: 500px;">
+                    <table class="layui-table depth-ask" style="background-color: #d0ebd7;">
+                        <tr>
+                            <th class="orderbook-title" colspan="2">委托</th>
+                        </tr> 
+                        <tr>
+                            <th class="price">价格</th>
+                            <th>数量</th>
+                        </tr>  
+                        <!-- <tr> <td class="price">69.000</td><td>349.00</td> </tr>  <tr> <td>68.000</td><td>508.20</td> </tr>  <tr> <td>67.000</td><td>117.00</td> </tr>  <tr> <td>66.000</td><td>178.00</td> </tr>  <tr> <td>64.000</td><td>94.00</td> </tr>  <tr> <td>61.000</td><td>75.00</td> </tr>  <tr> <td>59.000</td><td>83.00</td> </tr>  <tr> <td>56.000</td><td>39.00</td> </tr>  <tr> <td>55.000</td><td>132.00</td> </tr>  <tr> <td>51.000</td><td>162.31</td> </tr> -->
+                    
+                    </table>
+
+                    <div class="layui-row" style="background-color: #F6F6F6; height: 60px;">
+                        <div style="text-align: center; color:red; height: 60px; line-height: 60px;">最新价 <span class="latest-price">-</span> / 日涨跌：<i class="price_p"></i>%</div>
+                    </div>
+    
+                    
+                    <table class="layui-table depth-bid" style="background-color: #bfebcb;">
+                        <!-- <tr> <td class="price"> 69.000</td><td>349.00</td> </tr>  <tr> <td>68.000</td><td>508.20</td> </tr>  <tr> <td>67.000</td><td>117.00</td> </tr>  <tr> <td>66.000</td><td>178.00</td> </tr>  <tr> <td>64.000</td><td>94.00</td> </tr>  <tr> <td>61.000</td><td>75.00</td> </tr>  <tr> <td>59.000</td><td>83.00</td> </tr>  <tr> <td>56.000</td><td>39.00</td> </tr>  <tr> <td>55.000</td><td>132.00</td> </tr>  <tr> <td>51.000</td><td>162.31</td> </tr> -->
+                    </table>
+                    
+                </div>
+            </div>
+            <div class="layui-col-md3">
+                <div class="layui-row">
+                    <table class="layui-table trade-log">
+                        <tr>
+                            <th style="text-align: center;" colspan="4">成交记录</th>
+                        </tr>
+                        <tr>
+                            <th>价格</th>
+                            <th>数量</th>
+                            <th>金额</th>
+                            <th>时间</th>
+                        </tr>
+                        <tr class="log"></tr>
+    
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="footer layui-row" style="height: 30px; line-height: 30px; text-align: center; vertical-align: bottom;">
+            <p>Version: <i class="version"></i> Build: <i class="build"></i></p>
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript" src="https://unpkg.com/klinecharts/dist/klinecharts.min.js"></script>
+    <script crossorigin="anonymous" src="https://cdn.staticfile.org/layui/2.8.17/layui.min.js"></script>
+    <script src="/statics/kline.js"></script>
+    <!--您的Layui代码start-->
+    <script type="text/javascript">
+        layui.use(['laydate', 'layer', 'table', 'element', 'laytpl', 'form'], function () {
+            var laydate = layui.laydate //日期
+                , layer = layui.layer //弹层
+                , table = layui.table //表格
+                , $ = layui.$
+                , laytpl = layui.laytpl
+                , form = layui.form
+                , element = layui.element; //元素操作 等等...
+
+            var symbol = "{{ .symbol }}";
+            var latest_price = "";
+            var PORT = parseInt(window.location.port) + 1;
+            var APIHOST = "//"+window.location.hostname+":"+PORT;
+            var WSHOST = "ws://"+window.location.hostname+":"+PORT;
+            if(symbol=="usdjpy"){
+                kchart.setPriceVolumePrecision(3, 2);
+            }else if(symbol=="eurusd"){
+                kchart.setPriceVolumePrecision(5, 2);
+            }
+            laytpl.config({
+                open: '{%',
+                close: '%}'
+            });
+
+
+            function formatTime(t) {
+                var d = new Date(parseInt(t));
+                return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+            }
+
+            function createUUID() {
+                var dt = new Date().getTime();
+                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = (dt + Math.random() * 16) % 16 | 0;
+                    dt = Math.floor(dt / 16);
+                    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+                return uuid;
+            }
+
+
+            $(".opt").on("click", function () {
+                var type = $(this).hasClass("sell") ? "ask" : "bid";
+                var price_type = $("select[name='price_type']").val();
+                var mtype = $("input[name='mtype']:checked").val();
+
+                $.ajax({
+                    url: "/api/new_order",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: function () {
+                        var data = {
+                            symbol: symbol,
+                            price_type: price_type,
+                            order_type: type,
+                        };
+
+                        if (price_type == "market") {
+                            if (mtype == "q") {
+                                data.quantity = $("input[name='quantity']").val();
+                            } else {
+                                data.amount = $("input[name='amount']").val();
+                            }
+                        } else {
+                            data.price = $("input[name='price']").val();
+                            data.quantity = $("input[name='quantity']").val();
+                        }
+
+                        console.log(data);
+                        return JSON.stringify(data)
+                    }(),
+                    success: function (d) {
+                        if(d.ok){
+                            layer.msg("下单" + d.ok);
+                        }else{
+                            layer.msg(d.error);
+                        }
+                    }
+                });
+            });
+
+            $(".test-rand").on("click", function () {
+                var op_type = "ask", me = $(this);
+                if ($(this).hasClass("buy")) {
+                    op_type = "bid";
+                }
+
+                me.attr("disabled", true);
+
+                $.ajax({
+                    url: "/api/test_rand?op_type=" + op_type+ "&symbol="+symbol +"&latest_price="+latest_price,
+                    type: "get",
+                    success: function (d) {
+                        layer.msg("操作" + d.ok);
+                        me.attr("disabled", false);
+                    }
+                });
+
+            });
+
+            $("body").on("click", ".cancel", function () {
+                var me = $(this);
+                $.ajax({
+                    url: "/api/cancel_order",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        order_id: me.parents("tr").attr("order-id")
+                    }),
+                    success: function (d) {
+                        layer.msg("取消 " + d.ok);
+                        if (d.ok) {
+                            me.parents("tr").remove();
+                        }
+                    }
+                });
+            });
+
+
+            form.on('select(price_type)', function (data) {
+                if (data.value == "limit") {
+                    $(".item-price").show();
+                    $(".item-quantity").show();
+                    $(".item-amount").hide();
+                    $(".item-market-type").hide();
+                    $(".qty-tips").hide();
+                } else if (data.value == "market") {
+                    $(".item-price").hide();
+                    $(".item-market-type").show();
+                    $(".qty-tips").show();
+                }
+                form.render('select');
+            });
+            form.on('radio(market-type)', function (data) {
+                if (data.value == "q") {
+                    $(".item-quantity").show();
+                    $(".item-amount").hide();
+                    $(".qty-tips").show();
+                } else {
+                    $(".item-quantity").hide();
+                    $(".qty-tips").hide();
+                    $(".item-amount").show();
+                }
+            });
+
+
+            $().ready(function(){
+
+                //加载成交记录
+                $.get(APIHOST + "/api/v1/trans/record?symbol="+symbol+"&limit=12", function (d) {
+                    if (d.ok) {
+                        var data = d.data.reverse();
+                        for(var i=0; i<data.length; i++){
+                            rendertradelog(data[i]);
+                        }
+
+                    }
+                });
+
+                //加载k线
+                $.get(APIHOST + "/api/v1/kline?symbol="+symbol+"&interval=m1&limit=100", function (d) {
+                    if (d.ok) {
+                        var items = d.data.reverse();
+                        var chartDataList = items.map(function (data) {
+                            return {
+                                timestamp: new Date(data[0]).getTime(),
+                                open: +data[1],
+                                high: +data[2],
+                                low: +data[3],
+                                close: +data[4],
+                                volume: Math.ceil(+data[5]),
+                            }
+                        })
+                        kchart.applyNewData(chartDataList)
+                    }
+                });
+
+                //depth
+                $.get(APIHOST + "/api/v1/depth?symbol="+symbol+"&limit=10", function(d){
+                    if(d.ok){
+                        renderdepth(d.data);
+                    }
+                });
+
+
+                $.get(APIHOST + "/api/v1/system", function(d){
+                    console.log(d);
+                    $(".version").html(d.version);
+                    $(".build").html(d.build);
+                });
+
+            });
+
+
+            function rendertradelog(data) {
+                var logView = $(".trade-log .log"),
+                    logTpl = $("#trade-log-tpl").html();
+
+                
+                data['trade_at'] = formatTime(data.trade_at/1e6);
+                laytpl(logTpl).render(data, function (html) {
+                    if ($(".log-item").length > 12) {
+                        $(".log-item").last().remove();
+                    }
+                    logView.after(html);
+                });
+            }
+
+            function renderdepth(info) {
+                var askTpl = $("#depth-ask-tpl").html()
+                    , askView = $(".depth-ask")
+                    , bidTpl = $("#depth-bid-tpl").html()
+                    , bidView = $(".depth-bid");
+
+
+                laytpl(askTpl).render(info.asks.reverse(), function (html) {
+                    askView.html(html);
+                });
+                laytpl(bidTpl).render(info.bids, function (html) {
+                    bidView.html(html);
+                });
+            }
+
+
+            var socket = function () {
+                if (window["WebSocket"]) {
+                    var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
+                    conn = new WebSocket(WSHOST+"/quote/ws");
+                    conn.onclose = function (evt) {
+                        layer.msg("<b>WebSocket Connection closed</b>");
+                        setTimeout(function () {
+                            socket();
+                        }, 5e3);
+                    };
+
+                    conn.onopen = function(e){
+                        var msg = {
+                            "sub": [
+                                "depth."+symbol,
+                                "tradelog." + symbol,
+                                "latest_price."+symbol,
+                                "kline.m1."+symbol,
+                                "market.24h."+symbol,
+                            ],
+                        };
+                        console.log(JSON.stringify(msg));
+                        conn.send(JSON.stringify(msg));
+                    }
+
+                    
+                    conn.onmessage = function (evt) {
+                        var messages = evt.data.split('\n');
+                        for (var i = 0; i < messages.length; i++) {
+                            var msg = JSON.parse(messages[i]);
+                            console.log(msg);
+                            if (msg.type == "depth."+symbol) {
+                                renderdepth(msg.body);
+                            } else if (msg.type == "tradelog." +symbol) {
+                                rendertradelog(msg.body);
+                            } else if (msg.type == "new_order."+ symbol) {
+                                var myorderView = $(".myorder"),
+                                    myorderTpl = $("#myorder-tpl").html();
+                                
+                                var data = msg.body;
+
+                                data['create_time'] = formatTime(data.create_time);
+                                laytpl(myorderTpl).render(data, function (html) {
+                                    if ($(".order-item").length > 30) {
+                                        $(".order-item").last().remove();
+                                    }
+                                    myorderView.after(html);
+                                });
+                            } else if (msg.type == "latest_price."+symbol) {
+                                latest_price = msg.body.latest_price;
+                                $(".latest-price").html(msg.body.latest_price);
+                            } else if (msg.type =="kline.m1."+symbol) {
+                                var data = msg.body;
+                                kchart.updateData({
+                                    timestamp: new Date(data[0]).getTime(),
+                                    open: +data[1],
+                                    high: +data[2],
+                                    low: +data[3],
+                                    close: +data[4],
+                                    volume: Math.ceil(+data[5]),
+                                });
+                            }else if(msg.type=="market.24h."+symbol) {
+                                $(".price_p").html(msg.body.price_change_percent);
+                            }
+                        }
+                    };
+
+                    
+                } else {
+                    layer.msg("<b>Your browser does not support WebSockets.</b>");
+                }
+            };
+            socket();
+
+        });
+    </script>
+
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?cb636516c0fb603c6649808f21edaec6";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+    
+</body>
+
+</html>
