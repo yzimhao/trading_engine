@@ -1,0 +1,9 @@
+[main]
+mode="test"
+
+[example]
+host="0.0.0.0:8080"
+
+[api]
+haobase_host = "http://127.0.0.1:8082"
+haoquote_host = "http://127.0.0.1:8081"
