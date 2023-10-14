@@ -18,11 +18,21 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Mode string
+
+const (
+	ModeProd  Mode = "prod"
+	ModeDev   Mode = "dev"
+	ModeDebug Mode = "debug"
+	ModeDemo  Mode = "demo"
+)
+
 var (
-	Version   = "v0.0.0"
-	Goversion = ""
-	Commit    = ""
-	Build     = ""
+	Version        = "v0.0.0"
+	Goversion      = ""
+	Commit         = ""
+	Build          = ""
+	RunMode   Mode = ModeProd
 )
 
 func ShowVersion() {
@@ -41,6 +51,8 @@ func ConfigInit(fp string) {
 
 	//
 	time.LoadLocation(viper.GetString("main.time_zone"))
+
+	RunMode = Mode(viper.GetString("main.mode"))
 }
 
 func RedisInit() *redis.Client {

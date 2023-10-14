@@ -3,6 +3,7 @@ package www
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 )
 
 func Run() {
@@ -14,6 +15,8 @@ func Run() {
 func router(r *gin.Engine) {
 	api := r.Group("/api/v1/base")
 	{
+		api.Use(middle.CheckLogin())
+
 		//todo 登陆验证
 		api.GET("/assets/recharge", assets_recharge)
 		api.GET("/assets", assets_balance)

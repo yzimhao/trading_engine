@@ -1,5 +1,5 @@
 [main]
-mode="dev" #运行的模式：dev,prod，线上环境请一定配置prod
+mode="demo" #运行的模式：dev,demo,prod，线上环境请一定配置prod
 log_level="trace" #全局的日志输出等级:panic,fatal,error,warn,info,debug,trace
 # log_path="./logs/" #日志文件保存位置 默认不保存到文件
 time_zone="Asia/Shanghai"
