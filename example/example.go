@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/zehuamama/balancer/proxy"
 
 	_ "net/http/pprof"
 
@@ -85,24 +84,14 @@ func main() {
 
 func startWeb(host string) {
 	web = gin.New()
+	web.SetFuncMap(template.FuncMap{
+		"unsafe": func(str string) template.HTML {
+			return template.HTML(str)
+		},
+	})
+
 	web.LoadHTMLGlob("./*.html")
 	web.StaticFS("/statics", http.Dir("./statics"))
-
-	//代理交易系统的后端接口，实际应用中可以用nginx直接代理
-	web.Any("/api/v1/base/*any", func(ctx *gin.Context) {
-		httpProxy, err := proxy.NewHTTPProxy([]string{viper.GetString("api.haobase_host")}, "round-robin")
-		if err != nil {
-			log.Fatalf("create proxy error: %s", err)
-		}
-		httpProxy.ServeHTTP(ctx.Writer, ctx.Request)
-	})
-	web.Any("/api/v1/quote/*any", func(ctx *gin.Context) {
-		httpProxy, err := proxy.NewHTTPProxy([]string{viper.GetString("api.haoquote_host")}, "round-robin")
-		if err != nil {
-			log.Fatalf("create proxy error: %s", err)
-		}
-		httpProxy.ServeHTTP(ctx.Writer, ctx.Request)
-	})
 
 	web.GET("/:symbol", func(c *gin.Context) {
 		support := []string{"usdjpy", "eurusd"}
@@ -114,7 +103,10 @@ func startWeb(host string) {
 		}
 
 		c.HTML(200, "demo.html", gin.H{
-			"symbol": symbol,
+			"haobase_host":  viper.GetString("api.haobase_host"),
+			"haoquote_host": viper.GetString("api.haoquote_host"),
+			"ws_host":       viper.GetString("api.haoquote_ws_host"),
+			"symbol":        symbol,
 		})
 	})
 

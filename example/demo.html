@@ -282,9 +282,14 @@ body{
 
             var symbol = "{{ .symbol }}";
             var latest_price = "";
-            var PORT = parseInt(window.location.port) + 1;
-            var APIHOST = "//"+window.location.hostname+":"+PORT;
-            var WSHOST = "ws://"+window.location.hostname+":"+PORT;
+
+
+            
+            var API_HAOBASE_HOST = {{ .haobase_host | unsafe }};
+            var API_HAOQUOTE_HOST = {{ .haoquote_host | unsafe }};
+            var WSHOST = {{ .ws_host | unsafe}};
+
+
             if(symbol=="usdjpy"){
                 kchart.setPriceVolumePrecision(3, 2);
             }else if(symbol=="eurusd"){
@@ -322,10 +327,13 @@ body{
                 var mtype = $("input[name='mtype']:checked").val();
 
                 $.ajax({
-                    url: "/api/new_order",
+                    url: "/api/v1/base/order/create",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
+                    beforeSend: function(r) {
+                        r.setRequestHeader("User-Id", Cookies.get("user_id"));
+                    },
                     data: function () {
                         var data = {
                             symbol: symbol,
