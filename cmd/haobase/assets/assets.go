@@ -3,6 +3,7 @@ package assets
 import (
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/utils"
 )
 
@@ -64,4 +65,28 @@ func FindSymbol(user_id string, symbol string) *Assets {
 	var row Assets
 	db_engine.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).Get(&row)
 	return &row
+}
+
+func BalanceOfTotal(user_id, symbol string) decimal.Decimal {
+	row := FindSymbol(user_id, symbol)
+	if row.Id > 0 {
+		return utils.D(row.Total)
+	}
+	return decimal.Zero
+}
+
+func BalanceOfFreeze(user_id, symbol string) decimal.Decimal {
+	row := FindSymbol(user_id, symbol)
+	if row.Id > 0 {
+		return utils.D(row.Freeze)
+	}
+	return decimal.Zero
+}
+
+func BalanceOfAvailable(user_id, symbol string) decimal.Decimal {
+	row := FindSymbol(user_id, symbol)
+	if row.Id > 0 {
+		return utils.D(row.Available)
+	}
+	return decimal.Zero
 }
