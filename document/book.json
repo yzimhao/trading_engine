@@ -11,11 +11,15 @@
         "splitter",
         "tbfed-pagefooter",
         "pageview-count",
+        "hide-element",
         "github" 
     ],
     "pluginsConfig": {
         "github": {
             "url": "https://github.com/yzimhao/trading_engine"
+        },
+        "hide-element":{
+            "elements": [".gitbook-link"]
         },
         "tbfed-pagefooter": {
             "copyright":"Copyright &copy HaoTrader 2023",
