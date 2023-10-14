@@ -12,7 +12,7 @@ func NewTradingVarieties(symbol string) *TradingVarieties {
 	db.Where("symbol=?", symbol).Get(&row)
 	if row.Id > 0 {
 		row.Target = *newVarietiesById(row.TargetSymbolId)
-		row.Standard = *newVarietiesById(row.StandardSymbolId)
+		row.Base = *newVarietiesById(row.BaseSymbolId)
 	}
 	return &row
 }

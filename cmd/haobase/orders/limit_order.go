@@ -70,7 +70,7 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 
 		//fee、tradeamount字段在结算程序中修改
 		neworder.FreezeQty = freeze_amount
-		_, err = assets.FreezeAssets(db, false, user_id, varieties.Standard.Symbol, freeze_amount, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeAssets(db, false, user_id, varieties.Base.Symbol, freeze_amount, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}

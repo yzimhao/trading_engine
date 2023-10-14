@@ -176,13 +176,13 @@ func (c *clean) transfer() error {
 
 	//扣除fee
 	fee := utils.D(c.tradelog.BidFee).Add(utils.D(c.tradelog.AskFee))
-	_, err = assets.Transfer(c.db, c.bid.UserId, c.ask.UserId, c.trading_varieties.Standard.Symbol, amount.Sub(fee).String(), c.tradelog.TradeId, assets.Behavior_Trade)
+	_, err = assets.Transfer(c.db, c.bid.UserId, c.ask.UserId, c.trading_varieties.Base.Symbol, amount.Sub(fee).String(), c.tradelog.TradeId, assets.Behavior_Trade)
 	if err != nil {
 		return err
 	}
 
 	//手续费收入到一个全局的账号里
-	_, err = assets.Transfer(c.db, c.bid.UserId, assets.UserSystemFee, c.trading_varieties.Standard.Symbol, fee.String(), c.tradelog.TradeId, assets.Behavior_Trade)
+	_, err = assets.Transfer(c.db, c.bid.UserId, assets.UserSystemFee, c.trading_varieties.Base.Symbol, fee.String(), c.tradelog.TradeId, assets.Behavior_Trade)
 	if err != nil {
 		return err
 	}
