@@ -5,6 +5,6 @@ mode="test"
 host="0.0.0.0:8080"
 
 [api]
-haobase_host = "//127.0.0.1:8082"
-haoquote_host = "//127.0.0.1:8081"
-haoquote_ws_host = "ws//127.0.0.1:8081"
+haobase_host = "//0.0.0.0:8082"
+haoquote_host = "//0.0.0.0:8081"
+haoquote_ws_host = "ws://0.0.0.0:8081"

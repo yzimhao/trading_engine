@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
@@ -15,8 +14,6 @@ import (
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yzimhao/trading_engine/haoquote/period"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
 	"github.com/yzimhao/trading_engine/haoquote/ws"
@@ -50,41 +47,18 @@ func http_start(addr string) {
 }
 
 func web_router(router *gin.Engine) {
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 	router.GET("/quote/ws", func(ctx *gin.Context) {
 		ws.M.ServeWs(ctx)
 	})
 
 	api := router.Group("/api/v1/quote")
 	{
-		api.Use(corsMiddleware())
+		api.Use(utils.CorsMiddleware())
 		api.GET("/depth", symbol_depth)
 		api.GET("/trans/record", trans_record)
 		api.GET("/kline", kline)
 		api.GET("/system", system_info)
 	}
-}
-
-func corsMiddleware() gin.HandlerFunc {
-	return cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"PUT", "PATCH"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "*"
-		},
-		MaxAge: 12 * time.Hour,
-	})
-}
-
-func demo(ctx *gin.Context) {
-	symbol := ctx.Param("symbol")
-	ctx.HTML(200, "demo.html", gin.H{
-		"symbol": symbol,
-	})
 }
 
 // 深度行情

@@ -310,15 +310,7 @@ body{
                 return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
             }
 
-            function createUUID() {
-                var dt = new Date().getTime();
-                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                    var r = (dt + Math.random() * 16) % 16 | 0;
-                    dt = Math.floor(dt / 16);
-                    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
-                return uuid;
-            }
+            
 
 
             $(".opt").on("click", function () {
@@ -327,12 +319,12 @@ body{
                 var mtype = $("input[name='mtype']:checked").val();
 
                 $.ajax({
-                    url: "/api/v1/base/order/create",
+                    url: API_HAOBASE_HOST+ "/api/v1/base/order/create",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
                     beforeSend: function(r) {
-                        r.setRequestHeader("User-Id", Cookies.get("user_id"));
+                        r.setRequestHeader("token", Cookies.get("user_id"));
                     },
                     data: function () {
                         var data = {
@@ -387,10 +379,13 @@ body{
             $("body").on("click", ".cancel", function () {
                 var me = $(this);
                 $.ajax({
-                    url: "/api/cancel_order",
+                    url: API_HAOBASE_HOST+ "/api/v1/base/order/cancel",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
+                    beforeSend: function(r) {
+                        r.setRequestHeader("token", Cookies.get("user_id"));
+                    },
                     data: JSON.stringify({
                         order_id: me.parents("tr").attr("order-id")
                     }),
@@ -434,7 +429,7 @@ body{
             $().ready(function(){
 
                 //加载成交记录
-                $.get(APIHOST + "/api/v1/trans/record?symbol="+symbol+"&limit=12", function (d) {
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/trans/record?symbol="+symbol+"&limit=12", function (d) {
                     if (d.ok) {
                         var data = d.data.reverse();
                         for(var i=0; i<data.length; i++){
@@ -445,7 +440,7 @@ body{
                 });
 
                 //加载k线
-                $.get(APIHOST + "/api/v1/kline?symbol="+symbol+"&interval=m1&limit=100", function (d) {
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/kline?symbol="+symbol+"&interval=m1&limit=100", function (d) {
                     if (d.ok) {
                         var items = d.data.reverse();
                         var chartDataList = items.map(function (data) {
@@ -463,14 +458,14 @@ body{
                 });
 
                 //depth
-                $.get(APIHOST + "/api/v1/depth?symbol="+symbol+"&limit=10", function(d){
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+symbol+"&limit=10", function(d){
                     if(d.ok){
                         renderdepth(d.data);
                     }
                 });
 
 
-                $.get(APIHOST + "/api/v1/system", function(d){
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/system", function(d){
                     console.log(d);
                     $(".version").html(d.version);
                     $(".build").html(d.build);
