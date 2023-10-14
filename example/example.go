@@ -65,10 +65,6 @@ func main() {
 	}
 
 	gin.SetMode(gin.DebugMode)
-
-	go func() {
-		// log.Println(http.ListenAndServe(":6060", nil))
-	}()
 	startWeb(*port)
 }
 

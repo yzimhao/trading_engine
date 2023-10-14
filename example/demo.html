@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Haotrader Demo</title>
     <link crossorigin="anonymous" href="https://cdn.staticfile.org/layui/2.8.17/css/layui.min.css" rel="stylesheet">
+    <script src="/statics/lib/js.cookie.min.js"></script>
 <style>
 body{
    overflow-x: hidden;
@@ -119,7 +120,12 @@ body{
     </div>
 
     <div class="main ">
-        <div class="header layui-row" style="line-height: 20px; height: 20px;"></div>
+        <div class="header layui-row" style="line-height: 40px; height: 40px;">
+            <div class="layui-row">
+                <div class="layui-col-md10 layui-col-space10">-</div>
+                <div class="layui-col-md2 layui-col-space10"><p style="padding-left: 20px;">Hi, <span class="user">Guest</span></p></div>
+            </div>
+        </div>
 
         <div class="layui-row">
             <div class="layui-col-md7">
@@ -262,6 +268,7 @@ body{
     <script type="text/javascript" src="https://unpkg.com/klinecharts/dist/klinecharts.min.js"></script>
     <script crossorigin="anonymous" src="https://cdn.staticfile.org/layui/2.8.17/layui.min.js"></script>
     <script src="/statics/kline.js"></script>
+    <script src="/statics/login.js"></script>
     <!--您的Layui代码start-->
     <script type="text/javascript">
         layui.use(['laydate', 'layer', 'table', 'element', 'laytpl', 'form'], function () {
@@ -287,6 +294,10 @@ body{
                 open: '{%',
                 close: '%}'
             });
+
+
+          
+
 
 
             function formatTime(t) {
