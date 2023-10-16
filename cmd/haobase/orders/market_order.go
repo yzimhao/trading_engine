@@ -75,7 +75,7 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 		return nil, err
 	}
 
-	push_order_to_redis(neworder.Symbol, func() []byte {
+	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := haotrader.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType.String(),
@@ -160,7 +160,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		return nil, err
 	}
 
-	push_order_to_redis(neworder.Symbol, func() []byte {
+	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := haotrader.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType.String(),

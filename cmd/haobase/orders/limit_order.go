@@ -86,7 +86,7 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		return nil, err
 	}
 
-	push_order_to_redis(neworder.Symbol, func() []byte {
+	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := haotrader.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType.String(),

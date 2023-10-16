@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
@@ -28,7 +29,12 @@ func generate_order_id(prefix string) string {
 	return fmt.Sprintf("%s%s%06d%02d", prefix, s, ns, rn)
 }
 
-func push_order_to_redis(symbol string, data []byte) {
+func push_new_order_to_redis(symbol string, data []byte) {
+	topic := types.FormatNewOrder.Format(symbol)
+	logrus.Infof("push %s new: %s", topic, data)
 	ctx := context.Background()
-	base.RDC().RPush(ctx, types.FormatNewOrder.Format(symbol), data)
+	err := base.RDC().RPush(ctx, topic, data).Err()
+	if err != nil {
+		logrus.Errorf("push %s err: %s", topic, err.Error())
+	}
 }

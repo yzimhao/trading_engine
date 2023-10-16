@@ -28,7 +28,6 @@ func order_create(ctx *gin.Context) {
 	var err error
 
 	user_id := ctx.MustGet("user_id").(string)
-
 	if req.OrderType == trading_core.OrderTypeLimit {
 		info, err = orders.NewLimitOrder(user_id, req.Symbol, req.Side, req.Price, req.Quantity)
 	} else if req.OrderType == trading_core.OrderTypeMarket {
@@ -38,6 +37,7 @@ func order_create(ctx *gin.Context) {
 			info, err = orders.NewMarketOrderByQty(user_id, req.Symbol, req.Side, req.Quantity)
 		}
 	}
+
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())
 		return

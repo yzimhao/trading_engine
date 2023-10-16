@@ -60,6 +60,21 @@ func RedisInit() *redis.Client {
 		Addr:     viper.GetString("redis.host"),
 		Password: viper.GetString("redis.password"),
 		DB:       viper.GetInt("redis.db"),
+
+		DialTimeout:           10 * time.Second,
+		ReadTimeout:           30 * time.Second,
+		WriteTimeout:          30 * time.Second,
+		ContextTimeoutEnabled: true,
+
+		MaxRetries: -1,
+
+		PoolTimeout:     30 * time.Second,
+		ConnMaxIdleTime: time.Minute,
+
+		PoolSize:     15,
+		MinIdleConns: 10,
+
+		ConnMaxLifetime: 0,
 	})
 }
 
