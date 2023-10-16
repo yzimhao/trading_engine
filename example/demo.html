@@ -145,7 +145,7 @@ body{
                                         <div class="layui-form-item">
                                             <label class="layui-form-label">订单类型</label>
                                             <div class="layui-input-block">
-                                                <select name="price_type" lay-filter="price_type">
+                                                <select name="order_type" lay-filter="order_type">
                                                     <option value="limit" selected>限价单</option>
                                                     <option value="market">市价单</option>
                                                 </select>
@@ -155,9 +155,9 @@ body{
                                         <div class="layui-form-item item-market-type" style="display: none;">
                                             <label class="layui-form-label"></label>
                                             <div class="layui-input-block">
-                                                <input type="radio" name="mtype" lay-filter="market-type" value="q" title="按数量"
+                                                <input type="radio" name="mtype" lay-filter="market-type" value="market_qty" title="按数量"
                                                     checked>
-                                                <input type="radio" name="mtype" lay-filter="market-type" value="a" title="按金额"
+                                                <input type="radio" name="mtype" lay-filter="market-type" value="market_amount" title="按金额"
                                                     >
                                             </div>
                                         </div>
@@ -314,8 +314,8 @@ body{
 
 
             $(".opt").on("click", function () {
-                var type = $(this).hasClass("sell") ? "ask" : "bid";
-                var price_type = $("select[name='price_type']").val();
+                var side = $(this).hasClass("sell") ? "sell" : "buy";
+                var order_type = $("select[name='order_type']").val();
                 var mtype = $("input[name='mtype']:checked").val();
 
                 $.ajax({
@@ -329,19 +329,19 @@ body{
                     data: function () {
                         var data = {
                             symbol: symbol,
-                            price_type: price_type,
-                            order_type: type,
+                            side: side,
+                            order_type: order_type,
                         };
 
-                        if (price_type == "market") {
-                            if (mtype == "q") {
-                                data.quantity = $("input[name='quantity']").val();
+                        if (order_type == "market") {
+                            if (mtype == "market_qty") {
+                                data.qty = $("input[name='quantity']").val();
                             } else {
                                 data.amount = $("input[name='amount']").val();
                             }
                         } else {
                             data.price = $("input[name='price']").val();
-                            data.quantity = $("input[name='quantity']").val();
+                            data.qty = $("input[name='quantity']").val();
                         }
 
                         console.log(data);
@@ -399,7 +399,7 @@ body{
             });
 
 
-            form.on('select(price_type)', function (data) {
+            form.on('select(order_type)', function (data) {
                 if (data.value == "limit") {
                     $(".item-price").show();
                     $(".item-quantity").show();

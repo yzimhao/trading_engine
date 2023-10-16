@@ -8,14 +8,15 @@ import (
 )
 
 func CorsMiddleware() gin.HandlerFunc {
+	//todo 域名验证
 	return cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"Origin"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Token", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			return origin == "*"
+			return true
 		},
 		MaxAge: 12 * time.Hour,
 	})

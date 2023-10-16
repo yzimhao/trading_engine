@@ -16,9 +16,11 @@ func Run() {
 }
 
 func router(r *gin.Engine) {
+	r.Use(utils.CorsMiddleware())
+
 	api := r.Group("/api/v1/base")
 	{
-		api.Use(utils.CorsMiddleware())
+
 		api.Use(middle.CheckLogin())
 
 		//todo 登陆验证
