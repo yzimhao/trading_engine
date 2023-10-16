@@ -8,22 +8,38 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 )
 
-func RunClearing(symbol string) {
-	watch_redis_list(symbol)
+func Run() {
+	//load symbols
+	db := base.DB().NewSession()
+	defer db.Close()
+
+	var rows []symbols.TradingVarieties
+	db.Table(new(symbols.TradingVarieties)).Find(&rows)
+
+	for _, row := range rows {
+		run_clearing(row.Symbol)
+	}
+}
+
+func run_clearing(symbol string) {
+	go watch_redis_list(symbol)
 }
 
 func watch_redis_list(symbol string) {
 	key := types.FormatTradeResult.Format(symbol)
+	quote_key := types.FormatQuoteTradeResult.Format(symbol)
 	logrus.Infof("结算，正在监听%s成交日志...", symbol)
 	for {
 		func() {
 			cx := context.Background()
 			rdc := base.RDC()
+			defer rdc.Close()
 
 			if n, _ := rdc.LLen(cx, key).Result(); n == 0 {
 				time.Sleep(time.Duration(50) * time.Millisecond)
@@ -39,7 +55,17 @@ func watch_redis_list(symbol string) {
 				return
 			}
 
-			newClean(data)
+			logrus.Infof("%s成交记录 ask: %s bid: %s price: %s vol: %s", data.Symbol, data.AskOrderId, data.BidOrderId, data.TradePrice.String(), data.TradeQuantity.String())
+
+			err = newClean(data)
+			if err != nil {
+				logrus.Warnf("结算错误: %s %s", raw, err.Error())
+				return
+			}
+
+			//通知kline系统
+			rdc.RPush(cx, quote_key, raw)
+
 			// if !data.Last {
 			// 	go newClean(data)
 			// } else {

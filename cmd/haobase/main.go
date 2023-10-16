@@ -10,6 +10,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/clearing"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -76,6 +77,8 @@ func main() {
 
 			}
 
+			initDemoBaseData()
+			clearing.Run()
 			www.Run()
 			return nil
 		},
@@ -83,5 +86,11 @@ func main() {
 
 	if err := appm.Run(os.Args); err != nil {
 		logrus.Fatal(err)
+	}
+}
+
+func initDemoBaseData() {
+	if app.RunMode == app.ModeDemo {
+		symbols.DemoData()
 	}
 }

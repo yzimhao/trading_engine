@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 )
@@ -267,15 +266,7 @@ func (t *tengine) monitor_result() {
 		select {
 		case data := <-t.tp.ChTradeResult:
 			go func() {
-				relog := map[string]any{
-					"trade_price":    t.tp.Price2String(data.TradePrice),
-					"trade_quantity": t.tp.Qty2String(data.TradeQuantity),
-					"trade_time":     data.TradeTime,
-					"ask":            data.AskOrderId,
-					"bid":            data.BidOrderId,
-				}
-
-				raw, _ := json.Marshal(relog)
+				raw, _ := json.Marshal(data)
 				t.push_match_result(raw)
 			}()
 		case uniq := <-t.tp.ChCancelResult:
@@ -305,8 +296,8 @@ func (t *tengine) push_match_result(data []byte) {
 	key := types.FormatTradeResult.Format(t.symbol)
 	err := rdc.RPush(cx, key, data).Err()
 	logrus.Infof("往%s队列RPush: %s %s", key, data, err)
-	if viper.GetBool("haotrader.notify_quote") {
-		quote_key := types.FormatQuoteTradeResult.Format(t.symbol)
-		rdc.RPush(cx, quote_key, data)
-	}
+	// if viper.GetBool("haotrader.notify_quote") {
+	// 	quote_key := types.FormatQuoteTradeResult.Format(t.symbol)
+	// 	rdc.RPush(cx, quote_key, data)
+	// }
 }

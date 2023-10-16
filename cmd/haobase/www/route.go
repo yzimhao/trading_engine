@@ -8,8 +8,6 @@ import (
 )
 
 func Run() {
-	demoBaseData()
-
 	g := gin.New()
 	router(g)
 	g.Run(viper.GetString("haobase.http.host"))

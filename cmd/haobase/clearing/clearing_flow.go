@@ -22,7 +22,7 @@ type clean struct {
 	err               error
 }
 
-func newClean(raw trading_core.TradeResult) {
+func newClean(raw trading_core.TradeResult) error {
 	db := base.DB().NewSession()
 	defer db.Close()
 
@@ -34,10 +34,10 @@ func newClean(raw trading_core.TradeResult) {
 		tlog:              raw,
 	}
 
-	item.flow()
+	return item.flow()
 }
 
-func (c *clean) flow() {
+func (c *clean) flow() error {
 
 	c.db.Begin()
 	defer func() {
@@ -54,6 +54,7 @@ func (c *clean) flow() {
 	c.err = c.update_order(trading_core.OrderSideBuy)
 
 	c.err = c.transfer()
+	return c.err
 }
 
 func (c *clean) check_order() error {
