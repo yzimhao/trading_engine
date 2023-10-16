@@ -9,10 +9,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
 	"github.com/yzimhao/trading_engine/haoquote/www"
+	"github.com/yzimhao/trading_engine/utils/filecache"
 	"xorm.io/xorm"
 )
 
-func Start(ctx *context.Context, rc *redis.Client, db *xorm.Engine) {
+func Run(ctx *context.Context, rc *redis.Client, db *xorm.Engine) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	init_symbols_quote()
@@ -24,6 +25,7 @@ func Start(ctx *context.Context, rc *redis.Client, db *xorm.Engine) {
 
 func init_symbols_quote() {
 	symbols := viper.GetStringMap("symbol")
+	filecache.NewStorage(viper.GetString("haoquote.storage_path"), 1)
 
 	for k, attr := range symbols {
 		symbol := strings.ToLower(k)

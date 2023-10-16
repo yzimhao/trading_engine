@@ -78,7 +78,7 @@ func main() {
 
 			rc := app.RedisInit()
 			ctext := context.Background()
-			haoquote.Start(&ctext, rc, db)
+			haoquote.Run(&ctext, rc, db)
 			return nil
 		},
 	}

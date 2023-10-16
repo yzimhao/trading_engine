@@ -15,7 +15,6 @@ type Storage struct {
 var obj *Storage
 
 func NewStorage(filename string, timeout time.Duration) *Storage {
-
 	if obj == nil {
 		db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: timeout * time.Second})
 		if err != nil {
