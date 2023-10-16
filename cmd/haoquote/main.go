@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 
 	"github.com/sevlyar/go-daemon"
@@ -74,11 +73,9 @@ func main() {
 
 			}
 
-			db := app.DatabaseInit()
-
-			rc := app.RedisInit()
-			ctext := context.Background()
-			haoquote.Run(&ctext, rc, db)
+			app.DatabaseInit(app.Cstring("database.driver"), app.Cstring("database.dsn"), app.Cbool("database.show_sql"))
+			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
+			haoquote.Run()
 			return nil
 		},
 	}

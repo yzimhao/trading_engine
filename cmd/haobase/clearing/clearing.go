@@ -1,22 +1,22 @@
 package clearing
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func Run() {
 	//load symbols
-	db := base.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	var rows []symbols.TradingVarieties
@@ -37,16 +37,15 @@ func watch_redis_list(symbol string) {
 	logrus.Infof("结算，正在监听%s成交日志...", symbol)
 	for {
 		func() {
-			cx := context.Background()
-			rdc := base.RDC()
+			rdc := app.RedisPool().Get()
 			defer rdc.Close()
 
-			if n, _ := rdc.LLen(cx, key).Result(); n == 0 {
+			if n, _ := redis.Int64(rdc.Do("LLen", key)); n == 0 {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				return
 			}
 
-			raw, _ := rdc.LPop(cx, key).Bytes()
+			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
 
 			var data trading_core.TradeResult
 			err := json.Unmarshal(raw, &data)
@@ -64,7 +63,9 @@ func watch_redis_list(symbol string) {
 			}
 
 			//通知kline系统
-			rdc.RPush(cx, quote_key, raw)
+			if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
+				logrus.Errorf("rpush %s err: %s", quote_key, err.Error())
+			}
 
 			// if !data.Last {
 			// 	go newClean(data)

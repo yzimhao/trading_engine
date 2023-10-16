@@ -1,13 +1,12 @@
 package tradelog
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/period"
@@ -15,13 +14,10 @@ import (
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
-	"xorm.io/xorm"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-var (
-	db  *xorm.Engine
-	rdc *redis.Client
-)
+var ()
 
 type TradeLog struct {
 	Id            int64      `xorm:"autoincr pk" json:"-"`
@@ -44,6 +40,8 @@ func (t *TradeLog) CreateTable() error {
 	if t.Symbol == "" {
 		return fmt.Errorf("symbol is null")
 	}
+
+	db := app.Database()
 
 	exist, err := db.IsTableExist(t.TableName())
 	if err != nil {
@@ -68,14 +66,14 @@ func (t *TradeLog) CreateTable() error {
 }
 
 func (t *TradeLog) Save() error {
+	db := app.Database().NewSession()
+	defer db.Close()
+
 	_, err := db.Table(t.TableName()).Insert(t)
 	return err
 }
 
-func Init(rc *redis.Client, d *xorm.Engine) {
-	db = d
-	rdc = rc
-}
+func Init() {}
 
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
@@ -85,13 +83,22 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 
 	for {
 		func() {
-			cx := context.Background()
-			if n, _ := rdc.LLen(cx, key).Result(); n == 0 {
+			// cx := context.Background()
+			// if n, _ := rdc.LLen(cx, key).Result(); n == 0 {
+			// 	time.Sleep(time.Duration(50) * time.Millisecond)
+			// 	return
+			// }
+
+			rdc := app.RedisPool().Get()
+			defer rdc.Close()
+			if n, _ := redis.Int64(rdc.Do("LLen", key)); n == 0 {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				return
 			}
 
-			raw, _ := rdc.LPop(cx, key).Bytes()
+			// raw, _ := rdc.LPop(cx, key).Bytes()
+
+			raw, _ := redis.Bytes(rdc.Do("LPop", key))
 
 			var data trading_core.TradeResult
 			err := json.Unmarshal(raw, &data)
@@ -172,6 +179,8 @@ func tradelog_msg(symbol string, data TradeLog, pd, qd int64) {
 }
 
 func save_db(row *period.Period) error {
+
+	db := app.Database()
 	row.CreateTable(db)
 
 	sess := db.NewSession()

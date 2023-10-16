@@ -1,16 +1,17 @@
 package haotrader
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 type tengine struct {
@@ -52,24 +53,23 @@ func (t *tengine) broadcast_depth() {
 		select {
 		case <-t.broadcast:
 			go func() {
-				logrus.Debugf("触发%s广播", depth_channel)
-				tx := context.Background()
 				data := gin.H{
 					//todo 限制最大获取的数量
 					"asks": t.tp.GetAskDepth(100),
 					"bids": t.tp.GetBidDepth(100),
 				}
 
+				rdc := app.RedisPool().Get()
+				defer rdc.Close()
+
 				raw, _ := json.Marshal(data)
-				err := rdc.Publish(tx, depth_channel, raw).Err()
-				if err != nil {
+
+				if _, err := rdc.Do("Publish", depth_channel, raw); err != nil {
 					logrus.Warnf("广播%s消息失败: %s", depth_channel, err)
 				}
 			}()
 
 			go func() {
-				tx := context.Background()
-
 				price, at := t.tp.LatestPrice()
 				data := types.ChannelLatestPrice{
 					T:     at,
@@ -77,7 +77,11 @@ func (t *tengine) broadcast_depth() {
 				}
 
 				raw, _ := json.Marshal(data)
-				rdc.Publish(tx, price_channel, raw).Err()
+				rdc := app.RedisPool().Get()
+				defer rdc.Close()
+				if _, err := rdc.Do("Publish", price_channel, raw); err != nil {
+					logrus.Warnf("广播%s消息失败: %s", price_channel, err)
+				}
 			}()
 
 		default:
@@ -170,55 +174,65 @@ func (t *tengine) pull_new_order() {
 	logrus.Infof("正在监听redis队列: %s", key)
 	for {
 
-		cx := context.Background()
-		if n, _ := rdc.LLen(cx, key).Result(); n == 0 || t.tp.IsPausePushNew() {
-			time.Sleep(time.Duration(50) * time.Millisecond)
-			continue
-		}
+		// cx := context.Background()
+		// if n, _ := rdc.LLen(cx, key).Result(); n == 0 || t.tp.IsPausePushNew() {
+		// 	time.Sleep(time.Duration(50) * time.Millisecond)
+		// 	continue
+		// }
+		func() {
 
-		raw, _ := rdc.LPop(cx, key).Bytes()
-		go func(raw []byte) {
-			var data Order
-			err := json.Unmarshal(raw, &data)
-			if err != nil {
-				logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
+			rdc := app.RedisPool().Get()
+			defer rdc.Close()
+			if n, _ := redis.Int64(rdc.Do("LLen", key)); n == 0 || t.tp.IsPausePushNew() {
+				time.Sleep(time.Duration(50) * time.Millisecond)
+				return
 			}
 
-			if data.OrderId != "" {
-				logrus.Debugf("%s队列LPop: %s", key, raw)
-				side := strings.ToLower(data.Side)
-				order_type := strings.ToLower(data.OrderType)
+			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
 
-				if order_type == "limit" {
-					if side == trading_core.OrderSideSell.String() {
-						t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
-					} else if side == trading_core.OrderSideBuy.String() {
-						t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
-					} else {
-						logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
-					}
-				} else if order_type == "market_qty" {
-					//按成交量
-					if side == trading_core.OrderSideSell.String() {
-						t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, d(data.Qty), data.At))
-					} else if side == trading_core.OrderSideBuy.String() {
-						t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
-					} else {
-						logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
-					}
-				} else if order_type == "market_amount" {
-					//按成交金额
-					if side == trading_core.OrderSideSell.String() {
-						t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, d(data.Qty), d(data.MaxQty), data.At))
-					} else if side == trading_core.OrderSideBuy.String() {
-						t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
-					} else {
-						logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+			go func(raw []byte) {
+				var data Order
+				err := json.Unmarshal(raw, &data)
+				if err != nil {
+					logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
+				}
+
+				if data.OrderId != "" {
+					logrus.Debugf("%s队列LPop: %s", key, raw)
+					side := strings.ToLower(data.Side)
+					order_type := strings.ToLower(data.OrderType)
+
+					if order_type == "limit" {
+						if side == trading_core.OrderSideSell.String() {
+							t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
+						} else if side == trading_core.OrderSideBuy.String() {
+							t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
+						} else {
+							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+						}
+					} else if order_type == "market_qty" {
+						//按成交量
+						if side == trading_core.OrderSideSell.String() {
+							t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, d(data.Qty), data.At))
+						} else if side == trading_core.OrderSideBuy.String() {
+							t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
+						} else {
+							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+						}
+					} else if order_type == "market_amount" {
+						//按成交金额
+						if side == trading_core.OrderSideSell.String() {
+							t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, d(data.Qty), d(data.MaxQty), data.At))
+						} else if side == trading_core.OrderSideBuy.String() {
+							t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
+						} else {
+							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+						}
 					}
 				}
-			}
 
-		}(raw)
+			}(raw)
+		}()
 
 	}
 }
@@ -229,13 +243,15 @@ func (t *tengine) pull_cancel_order() {
 	logrus.Infof("正在监听redis队列: %s", key)
 	for {
 		func() {
-			cx := context.Background()
-			if n, _ := rdc.LLen(cx, key).Result(); n == 0 || t.tp.IsPausePushNew() {
+			rdc := app.RedisPool().Get()
+			defer rdc.Close()
+
+			if n, _ := redis.Int64(rdc.Do("Llen", key)); n == 0 || t.tp.IsPausePushNew() {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				return
 			}
 
-			raw, _ := rdc.LPop(cx, key).Bytes()
+			raw, _ := redis.Bytes(rdc.Do("LPOP", key)) // rdc.LPop(cx, key).Bytes()
 
 			var data cancel_order
 			err := json.Unmarshal(raw, &data)
@@ -271,7 +287,6 @@ func (t *tengine) monitor_result() {
 			}()
 		case uniq := <-t.tp.ChCancelResult:
 			go func() {
-				cx := context.Background()
 				key := types.FormatCancelResult.Format(t.symbol)
 
 				data := map[string]any{
@@ -279,9 +294,13 @@ func (t *tengine) monitor_result() {
 					"cancel":   "success",
 				}
 
+				rdc := app.RedisPool().Get()
+				defer rdc.Close()
+
 				raw, _ := json.Marshal(data)
-				err := rdc.RPush(cx, key, raw).Err()
-				logrus.Infof("%s队列RPush: %s %s", key, raw, err)
+				if _, err := rdc.Do("RPUSH", key, raw); err != nil { //rdc.RPush(cx, key, raw).Err()
+					logrus.Warnf("%s队列RPush: %s %s", key, raw, err)
+				}
 			}()
 
 		default:
@@ -292,10 +311,13 @@ func (t *tengine) monitor_result() {
 }
 
 func (t *tengine) push_match_result(data []byte) {
-	cx := context.Background()
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
 	key := types.FormatTradeResult.Format(t.symbol)
-	err := rdc.RPush(cx, key, data).Err()
-	logrus.Infof("往%s队列RPush: %s %s", key, data, err)
+	if _, err := rdc.Do("RPUSH", key, data); err != nil {
+		logrus.Warnf("往%s队列RPush: %s %s", key, data, err)
+	}
 	// if viper.GetBool("haotrader.notify_quote") {
 	// 	quote_key := types.FormatQuoteTradeResult.Format(t.symbol)
 	// 	rdc.RPush(cx, quote_key, data)

@@ -5,10 +5,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"xorm.io/xorm"
 
 	_ "github.com/yzimhao/trading_engine/docs/api" // main 文件中导入 docs 包
 	"github.com/yzimhao/trading_engine/utils"
@@ -19,15 +17,9 @@ import (
 	"github.com/yzimhao/trading_engine/haoquote/ws"
 )
 
-var (
-	rdc *redis.Client
-	db  *xorm.Engine
-)
+var ()
 
-func Run(rc *redis.Client, d *xorm.Engine) {
-	rdc = rc
-	db = d
-
+func Run() {
 	ws.NewHub()
 	sub_symbol_depth()
 	http_start(viper.GetString("haoquote.http.host"))
@@ -111,6 +103,9 @@ func trans_record(ctx *gin.Context) {
 		Symbol: symbol,
 	}
 
+	db := app.Database().NewSession()
+	defer db.Close()
+
 	db.Table(tl.TableName()).OrderBy("trade_at desc, id desc").Limit(limit).Find(&rows)
 
 	// [
@@ -182,6 +177,9 @@ func kline(ctx *gin.Context) {
 	//       "17928899.62484339" // 请忽略该参数
 	//     ]
 	//   ]
+
+	db := app.Database().NewSession()
+	defer db.Close()
 
 	var rows []period.Period
 	db.Table(row.TableName()).OrderBy("open_at desc").Limit(limit).Find(&rows)

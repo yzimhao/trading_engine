@@ -4,14 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
-	"xorm.io/xorm"
+	"github.com/yzimhao/trading_engine/utils/app"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -28,14 +27,10 @@ var (
 )
 
 func initdb(t *testing.T) {
-	db, err := xorm.NewEngine("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local")
-	if err != nil {
-		t.Logf("mysql err: %s", err)
-	}
+	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true)
+	app.RedisInit("127.0.0.1:6379", "", 0)
 
-	rdc := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379", DB: 0})
-	base.Init(db, rdc)
-	db.ShowSQL(true)
+	base.Init()
 
 	cleanAssets(t)
 	cleanOrders(t)
@@ -43,7 +38,7 @@ func initdb(t *testing.T) {
 }
 
 func initAssets(t *testing.T) {
-	assets.Init(base.DB(), base.RDC())
+	assets.Init()
 	symbols.DemoData()
 
 	assets.SysRecharge("user1", "usd", "10000.00", "C001")
@@ -53,10 +48,11 @@ func initAssets(t *testing.T) {
 }
 
 func cleanAssets(t *testing.T) {
-	base.DB().DropIndexes(new(assets.Assets))
-	base.DB().DropIndexes("assets_freeze")
-	base.DB().DropIndexes("assets_log")
-	err := base.DB().DropTables(new(assets.Assets), "assets_freeze", "assets_log")
+	db := app.Database()
+	db.DropIndexes(new(assets.Assets))
+	db.DropIndexes("assets_freeze")
+	db.DropIndexes("assets_log")
+	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
 	if err != nil {
 		t.Logf("mysql droptables: %s", err)
 	}
@@ -64,13 +60,14 @@ func cleanAssets(t *testing.T) {
 }
 
 func cleanOrders(t *testing.T) {
-	base.DB().DropIndexes(orders.GetOrderTableName(testSymbol))
-	base.DB().DropIndexes(new(orders.UnfinishedOrder))
-	base.DB().DropIndexes(orders.GetTradelogTableName(testSymbol))
+	db := app.Database()
+	db.DropIndexes(orders.GetOrderTableName(testSymbol))
+	db.DropIndexes(new(orders.UnfinishedOrder))
+	db.DropIndexes(orders.GetTradelogTableName(testSymbol))
 
-	base.DB().DropTables(orders.GetOrderTableName(testSymbol))
-	base.DB().DropTables(new(orders.UnfinishedOrder))
-	base.DB().DropTables(orders.GetTradelogTableName(testSymbol))
+	db.DropTables(orders.GetOrderTableName(testSymbol))
+	db.DropTables(new(orders.UnfinishedOrder))
+	db.DropTables(orders.GetTradelogTableName(testSymbol))
 
 }
 

@@ -1,7 +1,7 @@
 package orders
 
 import (
-	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
@@ -45,7 +45,7 @@ func (u *UnfinishedOrder) Create(db *xorm.Session) error {
 }
 
 func FindUnfinished(symbol string, order_id string) *Order {
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	var row Order

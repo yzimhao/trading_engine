@@ -27,11 +27,11 @@ func main() {
 
 		Before: func(ctx *cli.Context) error {
 			app.ConfigInit(ctx.String("config"))
-			db := app.DatabaseInit()
-			rc := app.RedisInit()
+			app.DatabaseInit(app.Cstring("database.driver"), app.Cstring("database.dsn"), app.Cbool("database.show_sql"))
+			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
 
-			base.Init(db, rc)
-			assets.Init(db, rc)
+			base.Init()
+			assets.Init()
 			return nil
 		},
 

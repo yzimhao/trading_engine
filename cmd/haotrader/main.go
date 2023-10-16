@@ -1,20 +1,14 @@
 package main
 
 import (
-	"context"
 	"os"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/haotrader"
 	"github.com/yzimhao/trading_engine/utils/app"
-)
-
-var (
-	rc *redis.Client
 )
 
 func main() {
@@ -54,12 +48,12 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					app.ConfigInit(ctx.String("config"))
 					app.LogsInit("haotrader.run", false)
-					rc := app.RedisInit()
+					// rc := app.RedisInit()
 
 					if ctx.String("side") == "ask" {
-						haotrader.InsertAsk(rc, ctx.String("symbol"), ctx.String("type"), ctx.Int("n"), ctx.String("price"), ctx.String("qty"))
+						// haotrader.InsertAsk(rc, ctx.String("symbol"), ctx.String("type"), ctx.Int("n"), ctx.String("price"), ctx.String("qty"))
 					} else {
-						haotrader.InsertBid(rc, ctx.String("symbol"), ctx.String("type"), ctx.Int("n"), ctx.String("price"), ctx.String("qty"))
+						// haotrader.InsertBid(rc, ctx.String("symbol"), ctx.String("type"), ctx.Int("n"), ctx.String("price"), ctx.String("qty"))
 					}
 					return nil
 				},
@@ -73,8 +67,7 @@ func main() {
 				logrus.Infof("当前运行在%s模式下，生产环境时main.mode请务必成prod", viper.GetString("main.mode"))
 			}
 
-			rc := app.RedisInit()
-			ctext := context.Background()
+			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
 
 			if ctx.Bool("deamon") {
 				logrus.Info("开始守护进程")
@@ -96,7 +89,7 @@ func main() {
 				}(context)
 			}
 
-			haotrader.Start(&ctext, rc)
+			haotrader.Run()
 			return nil
 		},
 	}

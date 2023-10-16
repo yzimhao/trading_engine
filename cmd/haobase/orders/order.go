@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
@@ -42,6 +42,7 @@ type Order struct {
 
 func (o *Order) Save(db *xorm.Session) error {
 	//todo 频繁查询表是否存在，后面考虑缓存一下
+
 	exist, err := db.IsTableExist(o.TableName())
 	if err != nil {
 		return err
@@ -80,7 +81,7 @@ func GetOrderTableName(symbol string) string {
 }
 
 func Find(symbol string, order_id string) *Order {
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	var row Order

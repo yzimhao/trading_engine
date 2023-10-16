@@ -1,16 +1,15 @@
 package orders
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func generate_order_id_by_side(side trading_core.OrderSide) string {
@@ -32,9 +31,10 @@ func generate_order_id(prefix string) string {
 func push_new_order_to_redis(symbol string, data []byte) {
 	topic := types.FormatNewOrder.Format(symbol)
 	logrus.Infof("push %s new: %s", topic, data)
-	ctx := context.Background()
-	err := base.RDC().RPush(ctx, topic, data).Err()
-	if err != nil {
+
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+	if _, err := rdc.Do("RPUSH", topic, data); err != nil {
 		logrus.Errorf("push %s err: %s", topic, err.Error())
 	}
 }

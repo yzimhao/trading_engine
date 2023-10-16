@@ -7,6 +7,7 @@ import (
 	"github.com/yzimhao/trading_engine/haotrader"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func NewLimitOrder(user_id string, symbol string, side trading_core.OrderSide, price, qty string) (order *Order, err error) {
@@ -36,7 +37,7 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		Status:         OrderStatusNew,
 	}
 
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	//todo事务开启前创建需要的表

@@ -5,6 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 // 用户资产冻结记录
@@ -62,8 +63,12 @@ type assetsFreeze struct {
 }
 
 func FindSymbol(user_id string, symbol string) *Assets {
+
+	db := app.Database().NewSession()
+	defer db.Close()
+
 	var row Assets
-	db_engine.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).Get(&row)
+	db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).Get(&row)
 	return &row
 }
 

@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/redis/go-redis/v9"
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -33,6 +33,10 @@ var (
 	Commit         = ""
 	Build          = ""
 	RunMode   Mode = ModeProd
+
+	//
+	redisPool *redis.Pool
+	database  *xorm.Engine
 )
 
 func ShowVersion() {
@@ -55,27 +59,52 @@ func ConfigInit(fp string) {
 	RunMode = Mode(viper.GetString("main.mode"))
 }
 
-func RedisInit() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     viper.GetString("redis.host"),
-		Password: viper.GetString("redis.password"),
-		DB:       viper.GetInt("redis.db"),
+func Cstring(key string) string {
+	return viper.GetString(key)
+}
 
-		DialTimeout:           10 * time.Second,
-		ReadTimeout:           30 * time.Second,
-		WriteTimeout:          30 * time.Second,
-		ContextTimeoutEnabled: true,
+func Cbool(key string) bool {
+	return viper.GetBool(key)
+}
 
-		MaxRetries: -1,
+func Cint(key string) int {
+	return viper.GetInt(key)
+}
 
-		PoolTimeout:     30 * time.Second,
-		ConnMaxIdleTime: time.Minute,
+func RedisInit(addr, password string, db int) {
+	if redisPool == nil {
+		// addr := viper.GetString("redis.host")
+		// password := viper.GetString("redis.password")
+		// db := viper.GetInt("redis.db")
+		redisPool = &redis.Pool{
+			MaxIdle:     10, //空闲数
+			IdleTimeout: 240 * time.Second,
+			MaxActive:   20, //最大数
+			Dial: func() (redis.Conn, error) {
+				c, err := redis.Dial("tcp", addr)
+				if err != nil {
+					return nil, err
+				}
+				if password != "" {
+					if _, err := c.Do("AUTH", password); err != nil {
+						c.Close()
+						return nil, err
+					}
+				}
 
-		PoolSize:     15,
-		MinIdleConns: 10,
+				if _, err := c.Do("SELECT", db); err != nil {
+					return nil, err
+				}
 
-		ConnMaxLifetime: 0,
-	})
+				return c, err
+			},
+			TestOnBorrow: func(c redis.Conn, t time.Time) error {
+				_, err := c.Do("PING")
+				return err
+			},
+		}
+	}
+
 }
 
 func LogsInit(fn string, is_daemon bool) {
@@ -111,23 +140,36 @@ func LogsInit(fn string, is_daemon bool) {
 	logrus.SetOutput(mw)
 }
 
-func DatabaseInit() *xorm.Engine {
-	dsn := viper.GetString("database.dsn")
-	driver := viper.GetString("database.driver")
-	conn, err := xorm.NewEngine(driver, dsn)
-	if err != nil {
-		logrus.Panic(err)
-	}
+func DatabaseInit(driver, dsn string, show_sql bool) {
+	if database == nil {
+		// dsn := viper.GetString("database.dsn")
+		// driver := viper.GetString("database.driver")
+		conn, err := xorm.NewEngine(driver, dsn)
+		if err != nil {
+			logrus.Panic(err)
+		}
 
-	// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, "ex_")
-	// conn.SetTableMapper(tbMapper)
-	if viper.GetBool("database.show_sql") {
-		conn.ShowSQL(true)
-	}
+		// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, "ex_")
+		// conn.SetTableMapper(tbMapper)
+		// if viper.GetBool("database.show_sql") {
+		// 	conn.ShowSQL(true)
+		// }
+		if show_sql {
+			conn.ShowSQL(true)
+		}
 
-	conn.DatabaseTZ = time.Local
-	conn.TZLocation = time.Local
-	return conn
+		conn.DatabaseTZ = time.Local
+		conn.TZLocation = time.Local
+		database = conn
+	}
+}
+
+func Database() *xorm.Engine {
+	return database
+}
+
+func RedisPool() *redis.Pool {
+	return redisPool
 }
 
 func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {

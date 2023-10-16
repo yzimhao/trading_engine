@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
@@ -12,7 +13,7 @@ func Transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 }
 
 func SysRecharge(to string, symbol string, amount string, business_id string) (success bool, err error) {
-	db := db_engine.NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	db.Begin()

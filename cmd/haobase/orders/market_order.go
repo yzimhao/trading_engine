@@ -5,6 +5,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/haotrader"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func NewMarketOrderByQty(user_id string, symbol string, side trading_core.OrderSide, qty string) (*Order, error) {
@@ -34,7 +35,7 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 		Status:         OrderStatusNew,
 	}
 
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	err = db.Begin()
@@ -120,7 +121,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		Status:         OrderStatusNew,
 	}
 
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	err = db.Begin()

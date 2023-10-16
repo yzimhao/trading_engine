@@ -1,25 +1,22 @@
 package haoquote
 
 import (
-	"context"
 	"strings"
 	"sync"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
 	"github.com/yzimhao/trading_engine/haoquote/www"
 	"github.com/yzimhao/trading_engine/utils/filecache"
-	"xorm.io/xorm"
 )
 
-func Run(ctx *context.Context, rc *redis.Client, db *xorm.Engine) {
+func Run() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	init_symbols_quote()
 	//http
-	tradelog.Init(rc, db)
-	www.Run(rc, db)
+	tradelog.Init()
+	www.Run()
 	wg.Wait()
 }
 

@@ -1,14 +1,9 @@
 package assets
 
 import (
-	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
-	"xorm.io/xorm"
-)
-
-var (
-	db_engine *xorm.Engine
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 const (
@@ -18,8 +13,8 @@ const (
 	UserSystemFee string = "system_fee"
 )
 
-func Init(db *xorm.Engine, rdc *redis.Client) {
-	db_engine = db
+func Init() {
+	db_engine := app.Database()
 
 	//同步表结构
 	err := db_engine.Sync2(
@@ -33,6 +28,9 @@ func Init(db *xorm.Engine, rdc *redis.Client) {
 }
 
 func UserAssets(user_id string, symbol []string) []Assets {
+	db_engine := app.Database().NewSession()
+	defer db_engine.Close()
+
 	rows := []Assets{}
 	q := db_engine.Table(new(Assets)).Where("user_id=?", user_id)
 	if len(symbol) > 0 {
@@ -41,10 +39,6 @@ func UserAssets(user_id string, symbol []string) []Assets {
 
 	q.Find(&rows)
 	return rows
-}
-
-func DB() *xorm.Engine {
-	return db_engine
 }
 
 func d(s string) decimal.Decimal {

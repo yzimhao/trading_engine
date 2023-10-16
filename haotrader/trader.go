@@ -1,12 +1,10 @@
 package haotrader
 
 import (
-	"context"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/trading_core"
@@ -14,23 +12,16 @@ import (
 )
 
 var (
-	rdc *redis.Client
-	wg  sync.WaitGroup
+	wg sync.WaitGroup
 
 	localdb *filecache.Storage
 	teps    map[string]*trading_core.TradePair
 )
 
-func Start(ctx *context.Context, rc *redis.Client) {
-	rdc = rc
+func Run() {
 	teps = make(map[string]*trading_core.TradePair)
 	localdb = filecache.NewStorage(viper.GetString("haotrader.storage_path"), time.Duration(10))
 	defer localdb.Close()
-
-	_, err := rdc.Ping(context.Background()).Result()
-	if err != nil {
-		panic(err)
-	}
 
 	wg = sync.WaitGroup{}
 	//todo wg.done()

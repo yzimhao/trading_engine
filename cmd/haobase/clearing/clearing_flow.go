@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
@@ -23,7 +23,7 @@ type clean struct {
 }
 
 func newClean(raw trading_core.TradeResult) error {
-	db := base.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	item := clean{

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/ws"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 var (
@@ -89,6 +90,9 @@ func sub_symbol_depth() {
 func sub_depth(symbol string, price_digit, qty_digit int64) {
 	channel := types.FormatBroadcastDepth.Format(symbol)
 	ctx := context.Background()
+
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
 
 	pubsub := rdc.PSubscribe(ctx, channel)
 	defer pubsub.Close()

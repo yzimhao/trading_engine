@@ -3,10 +3,11 @@ package orders
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func cancel_order(symbol, order_id string) (order *Order, err error) {
-	db := assets.DB().NewSession()
+	db := app.Database().NewSession()
 	defer db.Close()
 
 	err = db.Begin()

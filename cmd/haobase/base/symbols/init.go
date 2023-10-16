@@ -1,24 +1,19 @@
 package symbols
 
 import (
-	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
-	"xorm.io/xorm"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-var (
-	db  *xorm.Engine
-	rdc *redis.Client
-)
+var ()
 
-func Init(_db *xorm.Engine, _rdc *redis.Client) {
-	db = _db
-	rdc = _rdc
-
+func Init() {
 	init_db()
 }
 
 func init_db() {
+	db := app.Database()
+
 	err := db.Sync2(
 		new(Varieties),
 		new(TradingVarieties),
@@ -53,6 +48,9 @@ func DemoData() {
 			Status:        StatusEnabled,
 		},
 	}
+
+	db := app.Database().NewSession()
+	defer db.Close()
 
 	_, err := db.Insert(symbols)
 	if err != nil {
