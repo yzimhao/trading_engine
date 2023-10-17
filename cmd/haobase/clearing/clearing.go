@@ -70,7 +70,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 		go func() {
 			for {
 				time.Sleep(time.Duration(50) * time.Millisecond)
-				logrus.Infof("等待其他订单结算完成....")
+				logrus.Infof("等待订单 %s 其他订单结算完成....", data.Last)
 				if getlock(data.Last) == 1 {
 					newClean(data)
 					break
