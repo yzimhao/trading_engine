@@ -56,7 +56,13 @@ func watch_redis_list(symbol string) {
 
 			logrus.Infof("%s成交记录 ask: %s bid: %s price: %s vol: %s", data.Symbol, data.AskOrderId, data.BidOrderId, data.TradePrice.String(), data.TradeQuantity.String())
 
-			err = newClean(data)
+			if data.Last {
+				//todo 优化
+				time.Sleep(time.Duration(50) * time.Millisecond)
+				err = newClean(data)
+			} else {
+				err = newClean(data)
+			}
 			if err != nil {
 				logrus.Warnf("结算错误: %s %s", raw, err.Error())
 				return
@@ -66,12 +72,6 @@ func watch_redis_list(symbol string) {
 			if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
 				logrus.Errorf("rpush %s err: %s", quote_key, err.Error())
 			}
-
-			// if !data.Last {
-			// 	go newClean(data)
-			// } else {
-
-			// }
 		}()
 
 	}

@@ -73,9 +73,6 @@ func Cint(key string) int {
 
 func RedisInit(addr, password string, db int) {
 	if redisPool == nil {
-		// addr := viper.GetString("redis.host")
-		// password := viper.GetString("redis.password")
-		// db := viper.GetInt("redis.db")
 		redisPool = &redis.Pool{
 			MaxIdle:     10, //空闲数
 			IdleTimeout: 240 * time.Second,

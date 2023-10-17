@@ -172,17 +172,12 @@ func (t *tengine) pull_new_order() {
 	<-t.restore_done_signal
 	key := types.FormatNewOrder.Format(t.symbol)
 	logrus.Infof("正在监听redis队列: %s", key)
+
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
 	for {
-
-		// cx := context.Background()
-		// if n, _ := rdc.LLen(cx, key).Result(); n == 0 || t.tp.IsPausePushNew() {
-		// 	time.Sleep(time.Duration(50) * time.Millisecond)
-		// 	continue
-		// }
 		func() {
-
-			rdc := app.RedisPool().Get()
-			defer rdc.Close()
 			if n, _ := redis.Int64(rdc.Do("LLen", key)); n == 0 || t.tp.IsPausePushNew() {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				return
@@ -202,7 +197,7 @@ func (t *tengine) pull_new_order() {
 					side := strings.ToLower(data.Side)
 					order_type := strings.ToLower(data.OrderType)
 
-					if order_type == "limit" {
+					if order_type == string(trading_core.OrderTypeLimit) {
 						if side == trading_core.OrderSideSell.String() {
 							t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
 						} else if side == trading_core.OrderSideBuy.String() {
@@ -210,23 +205,27 @@ func (t *tengine) pull_new_order() {
 						} else {
 							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 						}
-					} else if order_type == "market_qty" {
-						//按成交量
-						if side == trading_core.OrderSideSell.String() {
-							t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, d(data.Qty), data.At))
-						} else if side == trading_core.OrderSideBuy.String() {
-							t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
+					} else if order_type == string(trading_core.OrderTypeMarket) {
+						if d(data.Qty).Cmp(d("0")) > 0 {
+							// 按成交量
+							if side == trading_core.OrderSideSell.String() {
+								t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, d(data.Qty), data.At))
+							} else if side == trading_core.OrderSideBuy.String() {
+								t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
+							} else {
+								logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+							}
+						} else if d(data.Amount).Cmp(d("0")) > 0 {
+							//按成交金额
+							if side == trading_core.OrderSideSell.String() {
+								t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, d(data.Qty), d(data.MaxQty), data.At))
+							} else if side == trading_core.OrderSideBuy.String() {
+								t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
+							} else {
+								logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+							}
 						} else {
-							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
-						}
-					} else if order_type == "market_amount" {
-						//按成交金额
-						if side == trading_core.OrderSideSell.String() {
-							t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, d(data.Qty), d(data.MaxQty), data.At))
-						} else if side == trading_core.OrderSideBuy.String() {
-							t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
-						} else {
-							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+							logrus.Warnf("市价订单参数错误: %s %s", t.symbol, raw)
 						}
 					}
 				}
@@ -282,7 +281,11 @@ func (t *tengine) monitor_result() {
 		select {
 		case data := <-t.tp.ChTradeResult:
 			go func() {
-				raw, _ := json.Marshal(data)
+				raw, err := json.Marshal(data)
+				if err != nil {
+					logrus.Warnf("log: %v %s", data, err.Error())
+					return
+				}
 				t.push_match_result(raw)
 			}()
 		case uniq := <-t.tp.ChCancelResult:
@@ -318,8 +321,5 @@ func (t *tengine) push_match_result(data []byte) {
 	if _, err := rdc.Do("RPUSH", key, data); err != nil {
 		logrus.Warnf("往%s队列RPush: %s %s", key, data, err)
 	}
-	// if viper.GetBool("haotrader.notify_quote") {
-	// 	quote_key := types.FormatQuoteTradeResult.Format(t.symbol)
-	// 	rdc.RPush(cx, quote_key, data)
-	// }
+
 }

@@ -1,12 +1,12 @@
 package www
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/ws"
@@ -89,54 +89,49 @@ func sub_symbol_depth() {
 
 func sub_depth(symbol string, price_digit, qty_digit int64) {
 	channel := types.FormatBroadcastDepth.Format(symbol)
-	ctx := context.Background()
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	pubsub := rdc.PSubscribe(ctx, channel)
-	defer pubsub.Close()
-
-	symbols_depth.set_digit(symbol, price_digit, qty_digit)
+	psc := redis.PubSubConn{Conn: rdc}
+	psc.Subscribe(channel)
 
 	for {
-		select {
-		case msg := <-pubsub.Channel():
+		switch v := psc.Receive().(type) {
+		case redis.Message:
 			var data map[string][][2]string
-
-			err := json.Unmarshal([]byte(msg.Payload), &data)
+			err := json.Unmarshal([]byte(v.Data), &data)
 			if err != nil {
-				logrus.Infof("subscribe: %s data: %s err: %s", channel, msg.Payload, err)
+				logrus.Infof("subscribe: %s data: %s err: %s", channel, v.Data, err.Error())
 			}
 
 			symbols_depth.update(symbol, data)
-			// websocket前端推送
 			push_websocket_depth(symbol)
+		case redis.Subscription:
+		case error:
+			logrus.Warnf("subscribe %s err: %s", channel, v.Error())
 		}
 	}
-
 }
 
 func sub_latest_price(symbol string) {
 	channel := types.FormatBroadcastLatestPrice.Format(symbol)
-	ctx := context.Background()
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
 
-	pubsub := rdc.PSubscribe(ctx, channel)
-	defer pubsub.Close()
+	psc := redis.PubSubConn{Conn: rdc}
+	psc.Subscribe(channel)
 
 	last := int64(0)
-
 	for {
-		select {
-		case msg := <-pubsub.Channel():
+		switch v := psc.Receive().(type) {
+		case redis.Message:
 			var data types.ChannelLatestPrice
-
-			err := json.Unmarshal([]byte(msg.Payload), &data)
+			err := json.Unmarshal([]byte(v.Data), &data)
 			if err != nil {
-				logrus.Infof("subscribe: %s data: %s err: %s", channel, msg.Payload, err)
+				logrus.Infof("subscribe: %s data: %s err: %s", channel, v.Data, err)
 			}
 
-			// logrus.Infof("last: %d now: %d %s", last, data.T, data.Price)
 			if data.T >= last {
 				symbols_depth.set_latest_price(symbol, data.Price)
 				last = data.T
@@ -157,7 +152,9 @@ func sub_latest_price(symbol string) {
 				//计算24H涨跌幅
 				market_24h(symbol, data.Price)
 			}
-
+		case redis.Subscription:
+		case error:
+			logrus.Warnf("subscribe %s err: %s", channel, v.Error())
 		}
 	}
 }

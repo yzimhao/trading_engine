@@ -28,6 +28,9 @@ func order_create(ctx *gin.Context) {
 	var err error
 
 	user_id := ctx.MustGet("user_id").(string)
+
+	//todo基础的验证
+
 	if req.OrderType == trading_core.OrderTypeLimit {
 		info, err = orders.NewLimitOrder(user_id, req.Symbol, req.Side, req.Price, req.Quantity)
 	} else if req.OrderType == trading_core.OrderTypeMarket {

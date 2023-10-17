@@ -83,20 +83,12 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 
 	for {
 		func() {
-			// cx := context.Background()
-			// if n, _ := rdc.LLen(cx, key).Result(); n == 0 {
-			// 	time.Sleep(time.Duration(50) * time.Millisecond)
-			// 	return
-			// }
-
 			rdc := app.RedisPool().Get()
 			defer rdc.Close()
 			if n, _ := redis.Int64(rdc.Do("LLen", key)); n == 0 {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				return
 			}
-
-			// raw, _ := rdc.LPop(cx, key).Bytes()
 
 			raw, _ := redis.Bytes(rdc.Do("LPop", key))
 
@@ -116,11 +108,6 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				TradeAmount:   data.TradePrice.Mul(data.TradeQuantity).String(),
 				Ask:           data.AskOrderId,
 				Bid:           data.BidOrderId,
-			}
-			row.CreateTable()
-			if err := row.Save(); err != nil {
-				logrus.Warnf("%s成交日志保存失败: %s %s %#v", symbol, raw, err, data)
-				return
 			}
 
 			// todo 更多的period

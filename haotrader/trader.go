@@ -28,10 +28,6 @@ func Run() {
 
 	logrus.Info("启动撮合程序成功! 如需帮助请参考: https://github.com/yzimhao/trading_engine")
 	init_symbols_tengine()
-
-	if viper.GetString("haotrader.http.host") != "" {
-		go http_start(viper.GetString("haotrader.http.host"))
-	}
 	wg.Wait()
 }
 
