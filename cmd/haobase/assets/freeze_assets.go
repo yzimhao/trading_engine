@@ -3,6 +3,7 @@ package assets
 import (
 	"fmt"
 
+	"github.com/yzimhao/trading_engine/utils"
 	"xorm.io/xorm"
 )
 
@@ -14,35 +15,24 @@ func QueryFreeze(db *xorm.Session, business_id string) (*assetsFreeze, error) {
 	}
 
 	if !has {
-		return nil, fmt.Errorf("failed to query frozen records")
+		return nil, fmt.Errorf("冻结记录不存在")
 	}
 
 	return &row, nil
 }
 
-func FreezeAssets(db *xorm.Session, enable_transaction bool, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
-	return freezeAssets(db, enable_transaction, user_id, symbol, freeze_amount, business_id, behavior)
+func FreezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
+	return freezeAssets(db, user_id, symbol, freeze_amount, business_id, behavior)
 }
 
-func FreezeTotalAssets(db *xorm.Session, enable_transaction bool, user_id string, symbol string, business_id string, behavior OpBehavior) (success bool, err error) {
-	return freezeAssets(db, enable_transaction, user_id, symbol, "0", business_id, behavior)
+func FreezeTotalAssets(db *xorm.Session, user_id string, symbol string, business_id string, behavior OpBehavior) (success bool, err error) {
+	return freezeAssets(db, user_id, symbol, "0", business_id, behavior)
 }
 
-func freezeAssets(db *xorm.Session, enable_transaction bool, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
+func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
 
-	if check_number_lt_zero(freeze_amount) {
-		return false, fmt.Errorf("freeze amount should be >= 0")
-	}
-
-	if enable_transaction {
-		db.Begin()
-		defer func() {
-			if err != nil {
-				db.Rollback()
-			} else {
-				db.Commit()
-			}
-		}()
+	if utils.D(freeze_amount).Cmp(utils.D("0")) < 0 {
+		return false, fmt.Errorf("冻结金额必须大于等于0")
 	}
 
 	item := Assets{UserId: user_id, Symbol: symbol}
@@ -51,23 +41,19 @@ func freezeAssets(db *xorm.Session, enable_transaction bool, user_id string, sym
 		return false, err
 	}
 
-	if d(freeze_amount).Equal(d("0")) {
-		freeze_amount = d(item.Available).String()
+	//冻结金额为0，冻结全部可用
+	if utils.D(freeze_amount).Equal(utils.D("0")) {
+		freeze_amount = utils.D(item.Available).String()
 	}
 
-	item.Available = number_sub(item.Available, freeze_amount)
-	item.Freeze = number_add(item.Freeze, freeze_amount)
+	item.Available = utils.D(item.Available).Sub(utils.D(freeze_amount)).String()
+	item.Freeze = utils.D(item.Freeze).Add(utils.D(freeze_amount)).String()
 
-	if check_number_lt_zero(item.Available) {
-		return false, fmt.Errorf("available balance less than zero")
-	}
-
-	if check_number_lt_zero(item.Freeze) {
-		return false, fmt.Errorf("freeze balance less than zero")
+	if utils.D(item.Available).Cmp(utils.D("0")) < 0 {
+		return false, fmt.Errorf("冻结金额超出可用资金")
 	}
 
 	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).AllCols().Update(&item)
-
 	if err != nil {
 		return false, err
 	}

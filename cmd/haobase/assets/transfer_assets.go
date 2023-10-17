@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
@@ -39,8 +40,8 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	}
 	//非根账户检查余额
 	if from != UserRoot {
-		if check_number_lt_zero(from_user.Available) {
-			return false, fmt.Errorf("available balance less than zero")
+		if utils.D(from_user.Available).Cmp(utils.D("0")) <= 0 {
+			return false, fmt.Errorf("可用资产不足")
 		}
 	}
 
@@ -49,9 +50,9 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	if err != nil {
 		return false, err
 	}
-	from_before := number(from_user.Total)
-	from_user.Total = number_sub(from_user.Total, amount)
-	from_user.Available = number_sub(from_user.Available, amount)
+	from_before := utils.D(from_user.Total)
+	from_user.Total = utils.D(from_user.Total).Sub(utils.D(amount)).String()
+	from_user.Available = utils.D(from_user.Available).Sub(utils.D(amount)).String()
 	if !has_from {
 		from_user.Freeze = "0"
 		_, err = db.Table(new(Assets)).Insert(&from_user)
@@ -62,9 +63,9 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		return false, err
 	}
 
-	to_before := number(to_user.Total)
-	to_user.Total = number_add(to_user.Total, amount)
-	to_user.Available = number_add(to_user.Available, amount)
+	to_before := utils.D(to_user.Total)
+	to_user.Total = utils.D(to_user.Total).Add(utils.D(amount)).String()
+	to_user.Available = utils.D(to_user.Available).Add(utils.D(amount)).String()
 	if !has_to {
 		to_user.Freeze = "0"
 		_, err = db.Table(new(Assets)).Insert(&to_user)
@@ -79,7 +80,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	from_log := assetsLog{
 		UserId:     from,
 		Symbol:     symbol,
-		Before:     from_before,
+		Before:     from_before.String(),
 		Amount:     "-" + amount,
 		After:      from_user.Total,
 		BusinessId: business_id,
@@ -94,7 +95,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	to_log := assetsLog{
 		UserId:     to,
 		Symbol:     symbol,
-		Before:     to_before,
+		Before:     to_before.String(),
 		Amount:     amount,
 		After:      to_user.Total,
 		BusinessId: business_id,

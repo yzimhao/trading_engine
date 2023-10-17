@@ -53,14 +53,14 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 
 	//冻结资产
 	if neworder.OrderSide == trading_core.OrderSideSell {
-		_, err = assets.FreezeAssets(db, false, user_id, varieties.Target.Symbol, qty, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeAssets(db, user_id, varieties.Target.Symbol, qty, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}
 		neworder.FreezeQty = qty
 	} else if neworder.OrderSide == trading_core.OrderSideBuy {
 		//冻结所有可用
-		_, err = assets.FreezeTotalAssets(db, false, user_id, varieties.Base.Symbol, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeTotalAssets(db, user_id, varieties.Base.Symbol, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +138,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 	}()
 
 	if neworder.OrderSide == trading_core.OrderSideSell {
-		_, err = assets.FreezeTotalAssets(db, false, user_id, varieties.Target.Symbol, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeTotalAssets(db, user_id, varieties.Target.Symbol, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		neworder.FreezeQty = freeze.FreezeAmount
 
 	} else if neworder.OrderSide == trading_core.OrderSideBuy {
-		_, err = assets.FreezeAssets(db, false, user_id, varieties.Base.Symbol, amount, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeAssets(db, user_id, varieties.Base.Symbol, amount, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}

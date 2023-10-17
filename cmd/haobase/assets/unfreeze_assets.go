@@ -3,6 +3,7 @@ package assets
 import (
 	"fmt"
 
+	"github.com/yzimhao/trading_engine/utils"
 	"xorm.io/xorm"
 )
 
@@ -15,8 +16,9 @@ func UnfreezeAllAssets(db *xorm.Session, user_id string, business_id string) (su
 }
 
 func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amount string) (success bool, err error) {
-	if check_number_lt_zero(unfreeze_amount) {
-		return false, fmt.Errorf("unfreeze amount should be >= 0")
+
+	if utils.D(unfreeze_amount).Cmp(utils.D("0")) >= 0 {
+		return false, fmt.Errorf("解冻金额必须大于等于0")
 	}
 
 	row := assetsFreeze{UserId: user_id, BusinessId: business_id}
@@ -27,27 +29,29 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 	}
 
 	if !has {
-		return false, fmt.Errorf("not found business_id")
+		return false, fmt.Errorf("未找到冻结记录")
 	}
 
 	if row.Status == FreezeStatusDone {
-		return false, fmt.Errorf("repeat unfreeze")
+		return false, fmt.Errorf("冻结记录已经解冻")
 	}
 
-	if d(unfreeze_amount).Equal(d("0")) {
+	//解冻金额为0，则解冻全部
+	if utils.D(unfreeze_amount).Equal(utils.D("0")) {
 		unfreeze_amount = row.FreezeAmount
 	}
 
-	row.FreezeAmount = number_sub(row.FreezeAmount, unfreeze_amount)
+	freeze_amount := utils.D(row.FreezeAmount).Sub(utils.D(unfreeze_amount))
 
-	if check_number_lt_zero(row.FreezeAmount) {
-		return false, fmt.Errorf("unfreeze amount must lt freeze amount")
+	if freeze_amount.Cmp(utils.D("0")) < 0 {
+		return false, fmt.Errorf("数据错误，解冻后金额为负数")
 	}
 
-	if check_number_eq_zero(row.FreezeAmount) {
+	if freeze_amount.Equal(utils.D("0")) {
 		row.Status = FreezeStatusDone
 	}
 
+	row.FreezeAmount = freeze_amount.String()
 	_, err = db.Table(new(assetsFreeze)).Where("business_id=?", business_id).AllCols().Update(&row)
 	if err != nil {
 		return false, err
@@ -55,21 +59,20 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 
 	//解冻资产为可用
 	assets := Assets{UserId: user_id, Symbol: row.Symbol}
-	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).ForUpdate().Get(&assets)
+	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).Get(&assets)
 	if err != nil {
 		return false, err
 	}
-	assets.Available = number_add(assets.Available, unfreeze_amount)
-	assets.Freeze = number_sub(assets.Freeze, unfreeze_amount)
+	assets.Available = utils.D(assets.Available).Add(utils.D(unfreeze_amount)).String()
+	assets.Freeze = utils.D(assets.Freeze).Sub(utils.D(unfreeze_amount)).String()
 
-	if check_number_lt_zero(assets.Freeze) {
-		return false, fmt.Errorf("freeze amount some wrong")
+	if utils.D(assets.Freeze).Cmp(utils.D("0")) < 0 {
+		return false, fmt.Errorf("数据出错，冻结金额为负数")
 	}
 
 	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).Update(&assets)
 	if err != nil {
 		return false, err
 	}
-
 	return true, nil
 }
