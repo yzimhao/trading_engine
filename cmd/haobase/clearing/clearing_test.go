@@ -103,7 +103,7 @@ func TestLimitOrder(t *testing.T) {
 			TradeTime:     time.Now().UnixNano(),
 		}
 		clearing_trade_order(testSymbol, result.Json())
-
+		time.Sleep(5 * time.Second)
 		//检查资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
 		sell_assets_standard := assets.FindSymbol(sellUser, testBaseSymbol)
