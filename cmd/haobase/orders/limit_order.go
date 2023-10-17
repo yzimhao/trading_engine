@@ -1,7 +1,6 @@
 package orders
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/haotrader"
@@ -16,7 +15,7 @@ func NewLimitOrder(user_id string, symbol string, side trading_core.OrderSide, p
 
 func limit_order(user_id string, symbol string, side trading_core.OrderSide, price, qty string) (order *Order, err error) {
 	varieties := symbols.NewTradingVarieties(symbol)
-	logrus.Infof("varieties: %#v", varieties)
+	// logrus.Infof("varieties: %#v", varieties)
 	//todo 检查交易对限制
 
 	neworder := Order{

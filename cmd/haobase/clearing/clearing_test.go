@@ -19,22 +19,21 @@ import (
 )
 
 var (
-	sellUser           = "user1"
-	buyUser            = "user2"
-	testSymbol         = "usdjpy"
-	testTargetSymbol   = "usd"
-	testStandardSymbol = "jpy"
+	sellUser         = "user1"
+	buyUser          = "user2"
+	testSymbol       = "usdjpy"
+	testTargetSymbol = "usd"
+	testBaseSymbol   = "jpy"
 )
 
 func initdb(t *testing.T) {
-	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true)
+	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", false)
 	app.RedisInit("127.0.0.1:6379", "", 0)
 
-	base.Init()
-
+	cleanSymbols(t)
 	cleanAssets(t)
 	cleanOrders(t)
-
+	base.Init()
 }
 
 func initAssets(t *testing.T) {
@@ -59,6 +58,16 @@ func cleanAssets(t *testing.T) {
 
 }
 
+func cleanSymbols(t *testing.T) {
+	db := app.Database()
+	db.DropIndexes(new(symbols.Varieties))
+	db.DropIndexes(new(symbols.TradingVarieties))
+	err := db.DropTables(new(symbols.Varieties), new(symbols.TradingVarieties))
+	if err != nil {
+		t.Logf("mysql droptables: %s", err)
+	}
+}
+
 func cleanOrders(t *testing.T) {
 	db := app.Database()
 	db.DropIndexes(orders.GetOrderTableName(testSymbol))
@@ -75,6 +84,7 @@ func TestLimitOrder(t *testing.T) {
 	initdb(t)
 	Convey("限价单完全成交结算测试", t, func() {
 		initAssets(t)
+		defer cleanSymbols(t)
 		defer cleanOrders(t)
 		defer cleanAssets(t)
 
@@ -96,10 +106,10 @@ func TestLimitOrder(t *testing.T) {
 
 		//检查资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
-		sell_assets_standard := assets.FindSymbol(sellUser, testStandardSymbol)
+		sell_assets_standard := assets.FindSymbol(sellUser, testBaseSymbol)
 
 		buy_assets_target := assets.FindSymbol(buyUser, testTargetSymbol)
-		buy_assets_standard := assets.FindSymbol(buyUser, testStandardSymbol)
+		buy_assets_standard := assets.FindSymbol(buyUser, testBaseSymbol)
 		So(utils.D(sell_assets_target.Total), ShouldEqual, utils.D("9999"))
 		So(utils.D(sell_assets_standard.Total), ShouldEqual, utils.D("10000.995"))
 
@@ -122,8 +132,11 @@ func TestLimitOrder(t *testing.T) {
 
 func TestMarket(t *testing.T) {
 	initdb(t)
-	Convey("市价买指定的数量", t, func() {
+	Convey("市价买指定的数量,完全成交", t, func() {
 		initAssets(t)
+		defer cleanSymbols(t)
+		defer cleanOrders(t)
+		defer cleanAssets(t)
 
 		s1, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -151,8 +164,37 @@ func TestMarket(t *testing.T) {
 			Last:          buy.OrderId,
 		}
 
-		clearing_trade_order(testSymbol, result1.Json())
 		clearing_trade_order(testSymbol, result2.Json())
+		clearing_trade_order(testSymbol, result1.Json())
+
 		time.Sleep(5 * time.Second)
+
+		//检查买卖双方订单状态及资产
+		s1 = orders.Find(testSymbol, s1.OrderId)
+		So(s1.Status, ShouldEqual, orders.OrderStatusDone)
+		s2 = orders.Find(testSymbol, s2.OrderId)
+		So(s2.Status, ShouldEqual, orders.OrderStatusDone)
+		buy = orders.Find(testSymbol, buy.OrderId)
+		So(buy.Status, ShouldEqual, orders.OrderStatusDone)
+
+		//资产
+		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
+		sell_assets_standard := assets.FindSymbol(sellUser, testBaseSymbol)
+		buy_assets_target := assets.FindSymbol(buyUser, testTargetSymbol)
+		buy_assets_standard := assets.FindSymbol(buyUser, testBaseSymbol)
+		//
+		So(utils.D(sell_assets_target.Total), ShouldEqual, utils.D("9998"))
+		So(utils.D(sell_assets_standard.Total), ShouldEqual, utils.D("10002.985"))
+		So(utils.D(sell_assets_standard.Freeze), ShouldEqual, utils.D("0"))
+
+		//市价1块买入2个usd，花费jpy
+		So(utils.D(buy_assets_target.Total), ShouldEqual, utils.D("10002"))
+		So(utils.D(buy_assets_standard.Total), ShouldEqual, utils.D("9996.985"))
+		So(utils.D(buy_assets_standard.Freeze), ShouldEqual, utils.D("0"))
+
+		//系统收入的手续费
+		fee := assets.FindSymbol(assets.UserSystemFee, testBaseSymbol)
+		So(utils.D(fee.Total), ShouldEqual, utils.D(s1.Fee).Add(utils.D(s2.Fee)).Add(utils.D(buy.Fee)))
+
 	})
 }
