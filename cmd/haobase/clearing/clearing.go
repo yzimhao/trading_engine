@@ -61,7 +61,7 @@ func watch_redis_list(symbol string) {
 			if data.Last != "" {
 				go func() {
 					for {
-						time.Sleep(time.Duration(130) * time.Millisecond)
+						time.Sleep(time.Duration(50) * time.Millisecond)
 						if getlock(data.Last) == 1 {
 							newClean(data)
 							break
@@ -71,10 +71,6 @@ func watch_redis_list(symbol string) {
 			} else {
 				go newClean(data)
 			}
-
-			//解锁
-			unlock(data.AskOrderId)
-			unlock(data.BidOrderId)
 
 			//通知kline系统
 			if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {

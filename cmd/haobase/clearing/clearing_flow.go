@@ -39,6 +39,11 @@ func newClean(raw trading_core.TradeResult) error {
 	if err != nil {
 		logrus.Warnf("%s clearing %+v %s", raw.Symbol, raw, err.Error())
 	}
+
+	//解锁
+	unlock(item.ask.OrderId)
+	unlock(item.bid.OrderId)
+
 	return err
 }
 
@@ -195,6 +200,7 @@ func (c *clean) transfer() error {
 
 	//市价单解除全部冻结
 	if c.tlog.Last != "" {
+		logrus.Infof("市价冻结订单 %s 解除", c.tlog.Last)
 		if c.ask.OrderType == trading_core.OrderTypeMarket {
 			_, err = assets.UnfreezeAllAssets(c.db, c.ask.UserId, c.ask.OrderId)
 			if err != nil {

@@ -3,6 +3,8 @@ package www
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
+	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
@@ -30,6 +32,23 @@ func order_create(ctx *gin.Context) {
 	user_id := ctx.MustGet("user_id").(string)
 
 	//todo基础的验证
+	varieties := symbols.NewTradingVarieties(req.Symbol)
+	if varieties == nil {
+		utils.ResponseFailJson(ctx, "非法交易对")
+		return
+	}
+
+	if req.Side == trading_core.OrderSideSell {
+		if assets.BalanceOfAvailable(user_id, varieties.Target.Symbol).Cmp(utils.D("0")) <= 0 {
+			utils.ResponseFailJson(ctx, "持有数量不足")
+			return
+		}
+	} else if req.Side == trading_core.OrderSideBuy {
+		if assets.BalanceOfAvailable(user_id, varieties.Base.Symbol).Cmp(utils.D("0")) <= 0 {
+			utils.ResponseFailJson(ctx, "可用金额不足")
+			return
+		}
+	}
 
 	if req.OrderType == trading_core.OrderTypeLimit {
 		info, err = orders.NewLimitOrder(user_id, req.Symbol, req.Side, req.Price, req.Quantity)

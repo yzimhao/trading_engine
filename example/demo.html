@@ -349,9 +349,9 @@ body{
                     }(),
                     success: function (d) {
                         if(d.ok){
-                            layer.msg("下单" + d.ok);
+                            layer.msg("下单成功");
                         }else{
-                            layer.msg(d.error);
+                            layer.msg(d.reason);
                         }
                     }
                 });
