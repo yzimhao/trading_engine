@@ -17,7 +17,7 @@ func UnfreezeAllAssets(db *xorm.Session, user_id string, business_id string) (su
 
 func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amount string) (success bool, err error) {
 
-	if utils.D(unfreeze_amount).Cmp(utils.D("0")) >= 0 {
+	if utils.D(unfreeze_amount).Cmp(utils.D("0")) < 0 {
 		return false, fmt.Errorf("解冻金额必须大于等于0")
 	}
 

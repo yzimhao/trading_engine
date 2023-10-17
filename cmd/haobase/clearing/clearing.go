@@ -33,7 +33,6 @@ func run_clearing(symbol string) {
 
 func watch_redis_list(symbol string) {
 	key := types.FormatTradeResult.Format(symbol)
-	quote_key := types.FormatQuoteTradeResult.Format(symbol)
 	logrus.Infof("正在监听%s成交日志 结算...", symbol)
 	for {
 		func() {
@@ -48,36 +47,44 @@ func watch_redis_list(symbol string) {
 			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
 			logrus.Infof("%s成交记录: %s", symbol, raw)
 
-			var data trading_core.TradeResult
-			err := json.Unmarshal(raw, &data)
-			if err != nil {
-				logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
-				return
-			}
-
-			lock(data.AskOrderId)
-			lock(data.BidOrderId)
-
-			if data.Last != "" {
-				go func() {
-					for {
-						time.Sleep(time.Duration(50) * time.Millisecond)
-						if getlock(data.Last) == 1 {
-							newClean(data)
-							break
-						}
-					}
-				}()
-			} else {
-				go newClean(data)
-			}
-
-			//通知kline系统
-			if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
-				logrus.Errorf("rpush %s err: %s", quote_key, err.Error())
-			}
+			go clearing_trade_order(symbol, raw)
 		}()
 
+	}
+}
+
+func clearing_trade_order(symbol string, raw []byte) {
+	var data trading_core.TradeResult
+	err := json.Unmarshal(raw, &data)
+	if err != nil {
+		logrus.Errorf("%s成交日志格式错误: %s %s", symbol, err.Error(), raw)
+		return
+	}
+
+	lock(data.AskOrderId)
+	lock(data.BidOrderId)
+
+	if data.Last == "" {
+		go newClean(data)
+	} else {
+		go func() {
+			for {
+				time.Sleep(time.Duration(50) * time.Millisecond)
+				logrus.Infof("等待其他订单结算完成....")
+				if getlock(data.Last) == 1 {
+					newClean(data)
+					break
+				}
+			}
+		}()
+	}
+
+	//通知kline系统
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+	quote_key := types.FormatQuoteTradeResult.Format(symbol)
+	if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
+		logrus.Errorf("rpush %s err: %s", quote_key, err.Error())
 	}
 }
 
@@ -93,7 +100,6 @@ func lock(order_id string) {
 
 	key := fmt.Sprintf("clearing.lock.%s", order_id)
 	rdc.Do("INCR", key)
-	rdc.Do("expire", key, time.Duration(1)*time.Minute)
 }
 
 func unlock(order_id string) {
@@ -101,7 +107,12 @@ func unlock(order_id string) {
 	defer rdc.Close()
 
 	key := fmt.Sprintf("clearing.lock.%s", order_id)
-	rdc.Do("DECR", key)
+	if _, err := rdc.Do("DECR", key); err != nil {
+		logrus.Warnf("clearing unlock %s err: %s", order_id, err.Error())
+	}
+	if _, err := rdc.Do("Expire", key, 300); err != nil {
+		logrus.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
+	}
 }
 
 func getlock(order_id string) int64 {

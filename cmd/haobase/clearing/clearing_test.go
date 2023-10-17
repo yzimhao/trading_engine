@@ -92,7 +92,7 @@ func TestLimitOrder(t *testing.T) {
 			TradeQuantity: utils.D("1"),
 			TradeTime:     time.Now().UnixNano(),
 		}
-		newClean(result)
+		clearing_trade_order(testSymbol, result.Json())
 
 		//检查资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
@@ -124,8 +124,6 @@ func TestMarket(t *testing.T) {
 	initdb(t)
 	Convey("市价买指定的数量", t, func() {
 		initAssets(t)
-		// defer cleanOrders(t)
-		// defer cleanAssets(t)
 
 		s1, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -153,7 +151,8 @@ func TestMarket(t *testing.T) {
 			Last:          buy.OrderId,
 		}
 
-		newClean(result1)
-		newClean(result2)
+		clearing_trade_order(testSymbol, result1.Json())
+		clearing_trade_order(testSymbol, result2.Json())
+		time.Sleep(5 * time.Second)
 	})
 }
