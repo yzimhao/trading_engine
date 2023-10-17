@@ -218,7 +218,7 @@ func (t *TradePair) handlerLimitOrder() {
 				curTradePrice = askTop.GetPrice()
 			}
 
-			go t.sendTradeResultNotify(askTop, bidTop, curTradePrice, curTradeQty, time.Now().UnixNano(), false)
+			go t.sendTradeResultNotify(askTop, bidTop, curTradePrice, curTradeQty, time.Now().UnixNano(), "")
 			return true
 		} else {
 			return false
@@ -277,9 +277,9 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 				// c.剩余资金已经不能达到最小成交需求
 				if t.askQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
 					maxQty(item.GetAmount(), t.askQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 {
-					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), true)
+					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), false)
+					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 
 				return true
@@ -321,9 +321,9 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 				// c.剩余资金已经不能达到最小成交需求
 				if t.askQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
 					maxQty(item.GetAmount(), t.askQueue.Top().GetPrice()).Cmp(t.miniTradeQty) < 0 {
-					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), true)
+					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), false)
+					go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 				return true
 			}
@@ -370,9 +370,9 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.市价订单完全成交了
 				if t.bidQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
-					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), true)
+					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), false)
+					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 				}
 
 				return true
@@ -411,9 +411,9 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// b.金额完全成交
 				// c.剩余资金不满足最小成交量
 				if t.bidQueue.Len() == 0 || maxQty(item.GetAmount(), t.bidQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 {
-					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), true)
+					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), false)
+					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 
 				return true
@@ -429,7 +429,7 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 	}
 }
 
-func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty decimal.Decimal, trade_at int64, last bool) {
+func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty decimal.Decimal, trade_at int64, last string) {
 	// t.w.Lock()
 	// defer t.w.Unlock()
 
@@ -440,7 +440,7 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	tradelog.TradeQuantity = tradeQty
 	tradelog.TradePrice = price
 	tradelog.TradeTime = trade_at //精确到纳秒
-	tradelog.Last = last          //标记市价订单已经完成，结算时候碰到这条成交记录，特殊处理
+	tradelog.Last = last          //标记市价订单已经完成
 
 	if trade_at > t.latestPriceAt {
 		t.latestPrice = price

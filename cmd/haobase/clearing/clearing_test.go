@@ -150,7 +150,7 @@ func TestMarket(t *testing.T) {
 			TradePrice:    utils.D("2.00"),
 			TradeQuantity: utils.D("1"),
 			TradeTime:     time.Now().UnixNano(),
-			Last:          true,
+			Last:          buy.OrderId,
 		}
 
 		newClean(result1)

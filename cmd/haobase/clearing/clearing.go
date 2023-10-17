@@ -34,7 +34,7 @@ func run_clearing(symbol string) {
 func watch_redis_list(symbol string) {
 	key := types.FormatTradeResult.Format(symbol)
 	quote_key := types.FormatQuoteTradeResult.Format(symbol)
-	logrus.Infof("结算，正在监听%s成交日志...", symbol)
+	logrus.Infof("正在监听%s成交日志 结算...", symbol)
 	for {
 		func() {
 			rdc := app.RedisPool().Get()
@@ -46,6 +46,7 @@ func watch_redis_list(symbol string) {
 			}
 
 			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
+			logrus.Infof("%s成交记录: %s", symbol, raw)
 
 			var data trading_core.TradeResult
 			err := json.Unmarshal(raw, &data)
@@ -54,19 +55,26 @@ func watch_redis_list(symbol string) {
 				return
 			}
 
-			logrus.Infof("%s成交记录 ask: %s bid: %s price: %s vol: %s", data.Symbol, data.AskOrderId, data.BidOrderId, data.TradePrice.String(), data.TradeQuantity.String())
+			lock(data.AskOrderId)
+			lock(data.BidOrderId)
 
-			if data.Last {
-				//todo 优化
-				time.Sleep(time.Duration(50) * time.Millisecond)
-				err = newClean(data)
+			if data.Last != "" {
+				go func() {
+					for {
+						time.Sleep(time.Duration(130) * time.Millisecond)
+						if getlock(data.Last) == 1 {
+							newClean(data)
+							break
+						}
+					}
+				}()
 			} else {
-				err = newClean(data)
+				go newClean(data)
 			}
-			if err != nil {
-				logrus.Warnf("结算错误: %s %s", raw, err.Error())
-				return
-			}
+
+			//解锁
+			unlock(data.AskOrderId)
+			unlock(data.BidOrderId)
 
 			//通知kline系统
 			if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
@@ -81,4 +89,30 @@ func generate_trading_id(ask, bid string) string {
 	times := time.Now().Format("060102")
 	hash := utils.Hash256(fmt.Sprintf("%s%s", ask, bid))
 	return fmt.Sprintf("T%s%s", times, hash[0:17])
+}
+
+func lock(order_id string) {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	key := fmt.Sprintf("clearing.lock.%s", order_id)
+	rdc.Do("INCR", key)
+	rdc.Do("expire", key, time.Duration(1)*time.Minute)
+}
+
+func unlock(order_id string) {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	key := fmt.Sprintf("clearing.lock.%s", order_id)
+	rdc.Do("DECR", key)
+}
+
+func getlock(order_id string) int64 {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	key := fmt.Sprintf("clearing.lock.%s", order_id)
+	n, _ := redis.Int64(rdc.Do("GET", key))
+	return n
 }

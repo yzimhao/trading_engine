@@ -3,6 +3,7 @@ package clearing
 import (
 	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
@@ -34,7 +35,11 @@ func newClean(raw trading_core.TradeResult) error {
 		tlog:              raw,
 	}
 
-	return item.flow()
+	err := item.flow()
+	if err != nil {
+		logrus.Warnf("%s clearing %+v %s", raw.Symbol, raw, err.Error())
+	}
+	return err
 }
 
 func (c *clean) flow() error {
@@ -145,7 +150,7 @@ func (c *clean) update_order(side trading_core.OrderSide) error {
 			order.Status = orders.OrderStatusDone
 		}
 
-		if c.tlog.Last {
+		if c.tlog.Last == order.OrderId {
 			order.Status = orders.OrderStatusDone
 		}
 
@@ -189,7 +194,7 @@ func (c *clean) transfer() error {
 	}
 
 	//市价单解除全部冻结
-	if c.tlog.Last {
+	if c.tlog.Last != "" {
 		if c.ask.OrderType == trading_core.OrderTypeMarket {
 			_, err = assets.UnfreezeAllAssets(c.db, c.ask.UserId, c.ask.OrderId)
 			if err != nil {

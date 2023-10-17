@@ -161,6 +161,7 @@ func sub_latest_price(symbol string) {
 
 func push_websocket_depth(symbol string) {
 	to := types.MsgDepth.Format(symbol)
+
 	ws.M.Broadcast <- ws.MsgBody{
 		To: to,
 		Response: ws.Response{
