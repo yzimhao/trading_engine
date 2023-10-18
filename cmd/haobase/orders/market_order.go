@@ -13,7 +13,6 @@ func NewMarketOrderByQty(user_id string, symbol string, side trading_core.OrderS
 }
 
 func market_order_qty(user_id string, symbol string, side trading_core.OrderSide, qty string) (order *Order, err error) {
-	//todo 检查交易对限制
 	varieties := symbols.NewTradingVarieties(symbol)
 
 	neworder := Order{
@@ -33,6 +32,10 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 		FinishedAmount: "0",
 		FeeRate:        string(varieties.FeeRate),
 		Status:         OrderStatusNew,
+	}
+
+	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
+		return nil, err
 	}
 
 	db := app.Database().NewSession()
