@@ -8,19 +8,19 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	"github.com/yzimhao/trading_engine/cmd/haobase/message"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	_ "github.com/yzimhao/trading_engine/docs/api" // main 文件中导入 docs 包
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 
 	"github.com/yzimhao/trading_engine/haoquote/period"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
-	"github.com/yzimhao/trading_engine/haoquote/ws"
 )
 
 var ()
 
 func Run() {
-	ws.NewHub()
 	sub_symbol_depth()
 	http_start(viper.GetString("haoquote.http.host"))
 }
@@ -39,6 +39,10 @@ func http_start(addr string) {
 }
 
 func web_router(router *gin.Engine) {
+	//websokect服务放在这个quote里
+	ws.NewHub()
+	message.Subscribe()
+
 	router.GET("/quote/ws", func(ctx *gin.Context) {
 		ws.M.ServeWs(ctx)
 	})
@@ -53,17 +57,6 @@ func web_router(router *gin.Engine) {
 	}
 }
 
-// 深度行情
-//
-//	@Summary		深度行情
-//	@Description	提供买卖双方的order book
-//	@Tags			Market
-//	@Produce		plain
-//	@Param			symbol	query		string		true	"eg: usdjpy"
-//	@Param			limit	query		int		    false 	"default: 10"
-//	@Success		200	{string}	string	"{}"
-//	@Failure		500	{string}	string	""
-//	@Router			/depth [get]
 func symbol_depth(ctx *gin.Context) {
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := strings.ToLower(ctx.Query("symbol"))
@@ -83,17 +76,6 @@ func symbol_depth(ctx *gin.Context) {
 	})
 }
 
-// 近期成交列表
-//
-//	@Summary		近期成交列表
-//	@Description	获取近期成交
-//	@Tags			Market
-//	@Produce		plain
-//	@Param			symbol	query		string		true	"eg: usdjpy"
-//	@Param			limit	query		int		    false 	"default: 10"
-//	@Success		200	{string}	string	"{}"
-//	@Failure		500	{string}	string	""
-//	@Router			/trans/record [get]
 func trans_record(ctx *gin.Context) {
 	symbol := ctx.Query("symbol")
 	limit := utils.S2Int(ctx.Query("limit"))
@@ -130,20 +112,6 @@ func trans_record(ctx *gin.Context) {
 	utils.ResponseOkJson(ctx, rows)
 }
 
-// K线数据
-//
-//	@Summary		K线数据
-//	@Description	每根K线的开盘时间可视为唯一ID
-//	@Tags			Market
-//	@Produce		plain
-//	@Param			symbol	query		string		true	"eg: usdjpy"
-//	@Param			limit	query		int		    false 	"默认500，最大1000"
-//	@Param			interval	query		period.PeriodType		    true 	"K线间隔"
-//	@Param			start_time	query		int64		    false 	"开始时间，默认返回最近的交易。"
-//	@Param			end_time	query		int64		    false 	"结束时间"
-//	@Success		200	{string}	string	"{}"
-//	@Failure		500	{string}	string	""
-//	@Router			/kline [get]
 func kline(ctx *gin.Context) {
 	interval := ctx.Query("interval")
 	limit := utils.S2Int(ctx.Query("limit"))

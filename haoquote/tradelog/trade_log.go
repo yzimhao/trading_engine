@@ -9,8 +9,9 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/haoquote/period"
-	"github.com/yzimhao/trading_engine/haoquote/ws"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
@@ -33,7 +34,8 @@ type TradeLog struct {
 }
 
 func (t *TradeLog) TableName() string {
-	return fmt.Sprintf("trade_log_%s", t.Symbol)
+	//和haobase中订单结算后的成交日志有一点点冲突，这里只保存最近的记录就好了
+	return fmt.Sprintf("trade_log_quote_%s", t.Symbol)
 }
 
 func (t *TradeLog) CreateTable() error {
@@ -95,7 +97,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 			var data trading_core.TradeResult
 			err := json.Unmarshal(raw, &data)
 			if err != nil {
-				logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
+				logrus.Errorf("%s 解析: %s 错误: %s", key, raw, err)
 				return
 			}
 
@@ -126,7 +128,8 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 
 					//websocket通知更新
 					to := types.MsgMarketKLine.Format(string(cp), symbol)
-					ws.M.Broadcast <- ws.MsgBody{
+
+					message.Publish(ws.MsgBody{
 						To: to,
 						Response: ws.Response{
 							Type: to,
@@ -139,7 +142,8 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 								utils.NumberFix(row.Volume, int(qty_digit)),
 							},
 						},
-					}
+					})
+
 				}(curp)
 			}
 
@@ -156,13 +160,13 @@ func tradelog_msg(symbol string, data TradeLog, pd, qd int64) {
 	data.TradeQuantity = utils.NumberFix(data.TradeQuantity, int(qd))
 
 	to := types.MsgTrade.Format(symbol)
-	ws.M.Broadcast <- ws.MsgBody{
+	message.Publish(ws.MsgBody{
 		To: to,
 		Response: ws.Response{
 			Type: to,
 			Body: data,
 		},
-	}
+	})
 }
 
 func save_db(row *period.Period) error {

@@ -9,7 +9,8 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/haoquote/ws"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -138,7 +139,8 @@ func sub_latest_price(symbol string) {
 
 				// websocket前端推送
 				to := types.MsgLatestPrice.Format(symbol)
-				ws.M.Broadcast <- ws.MsgBody{
+
+				message.Publish(ws.MsgBody{
 					To: to,
 					Response: ws.Response{
 						Type: to,
@@ -147,7 +149,7 @@ func sub_latest_price(symbol string) {
 							"at":           data.T,
 						},
 					},
-				}
+				})
 
 				//计算24H涨跌幅
 				market_24h(symbol, data.Price)
@@ -162,7 +164,7 @@ func sub_latest_price(symbol string) {
 func push_websocket_depth(symbol string) {
 	to := types.MsgDepth.Format(symbol)
 
-	ws.M.Broadcast <- ws.MsgBody{
+	message.Publish(ws.MsgBody{
 		To: to,
 		Response: ws.Response{
 			Type: to,
@@ -171,5 +173,5 @@ func push_websocket_depth(symbol string) {
 				"bids": symbols_depth.limit("bids", symbol, 10),
 			},
 		},
-	}
+	})
 }

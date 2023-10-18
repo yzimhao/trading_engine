@@ -11,18 +11,6 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-//	@title			Haoquote交易行情系统
-//	@version		1.0
-//	@description	根据成交记录，快速统计出各个时间周期的行情数据。
-
-//	@contact.name	yzimhao
-//	@contact.url	https://github.com/yzimhao
-
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-
-// host		www.demo.com
-// @BasePath	/api/v1
 func main() {
 	appm := &cli.App{
 		Name:      "haoquote",

@@ -2,7 +2,6 @@ package haoquote
 
 import (
 	"strings"
-	"sync"
 
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
@@ -11,13 +10,9 @@ import (
 )
 
 func Run() {
-	wg := sync.WaitGroup{}
-	wg.Add(1)
 	init_symbols_quote()
-	//http
 	tradelog.Init()
 	www.Run()
-	wg.Wait()
 }
 
 func init_symbols_quote() {

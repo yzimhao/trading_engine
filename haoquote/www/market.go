@@ -1,8 +1,9 @@
 package www
 
 import (
+	"github.com/yzimhao/trading_engine/cmd/haobase/message"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/haoquote/period"
-	"github.com/yzimhao/trading_engine/haoquote/ws"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 )
@@ -16,7 +17,8 @@ func market_24h(symbol string, last_price string) {
 	}
 
 	to := types.MsgMarket24H.Format(symbol)
-	ws.M.Broadcast <- ws.MsgBody{
+
+	message.Publish(ws.MsgBody{
 		To: to,
 		Response: ws.Response{
 			Type: to,
@@ -33,5 +35,6 @@ func market_24h(symbol string, last_price string) {
 				}(),
 			},
 		},
-	}
+	})
+
 }

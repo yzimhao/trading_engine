@@ -7,13 +7,11 @@ type WebSocketKlineMsgType string
 type WebSocketMarket string
 
 const (
-	MsgDepth       WebSocketMsgType = "depth.{symbol}"
-	MsgTrade       WebSocketMsgType = "tradelog.{symbol}"
-	MsgLatestPrice WebSocketMsgType = "latest_price.{symbol}"
-
+	MsgDepth       WebSocketMsgType      = "depth.{symbol}"
+	MsgTrade       WebSocketMsgType      = "tradelog.{symbol}"
+	MsgLatestPrice WebSocketMsgType      = "latest_price.{symbol}"
 	MsgMarketKLine WebSocketKlineMsgType = "kline.{period}.{symbol}"
-
-	MsgMarket24H WebSocketMarket = "market.24h.{symbol}"
+	MsgMarket24H   WebSocketMarket       = "market.24h.{symbol}"
 )
 
 func (w WebSocketMsgType) Format(symbol string) string {

@@ -36,3 +36,8 @@ func (m *MsgBody) GetBody() []byte {
 	data, _ := json.Marshal(re)
 	return data
 }
+
+func (m *MsgBody) JSON() []byte {
+	raw, _ := json.Marshal(m)
+	return raw
+}
