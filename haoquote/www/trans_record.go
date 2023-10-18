@@ -2,6 +2,7 @@ package www
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/haoquote/tradelog"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -10,6 +11,13 @@ import (
 func trans_record(ctx *gin.Context) {
 	symbol := ctx.Query("symbol")
 	limit := utils.S2Int(ctx.Query("limit"))
+
+	tsymbols := base.NewTSymbols()
+	info, err := tsymbols.Get(symbol)
+	if err != nil {
+		utils.ResponseFailJson(ctx, err.Error())
+		return
+	}
 
 	rows := make([]tradelog.TradeLog, 0)
 	tl := tradelog.TradeLog{
@@ -32,7 +40,7 @@ func trans_record(ctx *gin.Context) {
 	//     }
 	// ]
 
-	price, qty := symbols_depth.get_digit(symbol)
+	price, qty := info.PricePrecision, info.QtyPrecision
 
 	for i, v := range rows {
 		rows[i].TradePrice = utils.NumberFix(v.TradePrice, int(price))

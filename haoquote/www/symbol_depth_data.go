@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/types"
@@ -15,9 +15,9 @@ import (
 )
 
 func publish_depth() {
-	symbols := symbols.AllTradingVarieties()
+	tsymbols := base.NewTSymbols()
 
-	for _, item := range symbols {
+	for _, item := range tsymbols.All() {
 		push_depth_message(item.Symbol)
 	}
 }

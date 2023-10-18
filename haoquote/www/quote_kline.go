@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/haoquote/period"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -13,6 +14,13 @@ func kline(ctx *gin.Context) {
 	interval := ctx.Query("interval")
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := ctx.Query("symbol")
+
+	tsymbols := base.NewTSymbols()
+	info, err := tsymbols.Get(symbol)
+	if err != nil {
+		utils.ResponseFailJson(ctx, err.Error())
+		return
+	}
 
 	if limit > 1000 {
 		limit = 1000
@@ -49,7 +57,7 @@ func kline(ctx *gin.Context) {
 	var rows []period.Period
 	db.Table(row.TableName()).OrderBy("open_at desc").Limit(limit).Find(&rows)
 
-	pd, qd := symbols_depth.get_digit(symbol)
+	pd, qd := info.PricePrecision, info.QtyPrecision
 
 	data := make([][6]any, 0)
 	for _, v := range rows {
