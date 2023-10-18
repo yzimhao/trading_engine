@@ -35,6 +35,8 @@ var (
 	Build          = ""
 	RunMode   Mode = ModeProd
 
+	Logger *logrus.Logger
+
 	//
 	redisPool *redis.Pool
 	database  *xorm.Engine
@@ -93,11 +95,12 @@ func RedisInit(addr, password string, db int) {
 }
 
 func LogsInit(fn string, is_daemon bool) {
+	Logger = logrus.New()
 	level, _ := logrus.ParseLevel(viper.GetString("main.log_level"))
-	logrus.SetLevel(level)
-	// logrus.SetReportCaller(true)
+	Logger.SetLevel(level)
+	// Logger.SetReportCaller(true)
 
-	logrus.SetFormatter(&nested.Formatter{
+	Logger.SetFormatter(&nested.Formatter{
 		TimestampFormat: "2006-01-02 15:04:05",
 		HideKeys:        true,
 		FieldsOrder:     []string{"component", "category"},
@@ -111,19 +114,19 @@ func LogsInit(fn string, is_daemon bool) {
 		save_path := viper.GetString("main.log_path")
 		err := fsutil.Mkdir(save_path, 0755)
 		if err != nil {
-			logrus.Fatal(err)
+			Logger.Fatal(err)
 		}
 
 		file := fmt.Sprintf("%s/%s_%d.log", save_path, fn, time.Now().Unix())
 		f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
-			logrus.Fatal(err)
+			Logger.Fatal(err)
 		}
 		output = append(output, f)
 	}
 
 	mw := io.MultiWriter(output...)
-	logrus.SetOutput(mw)
+	Logger.SetOutput(mw)
 }
 
 func DatabaseInit(driver, dsn string, show_sql bool) {
@@ -132,7 +135,7 @@ func DatabaseInit(driver, dsn string, show_sql bool) {
 		// driver := viper.GetString("database.driver")
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
-			logrus.Panic(err)
+			Logger.Panic(err)
 		}
 
 		// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, "ex_")
