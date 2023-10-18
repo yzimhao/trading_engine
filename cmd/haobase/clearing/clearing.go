@@ -8,6 +8,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
@@ -61,8 +62,8 @@ func clearing_trade_order(symbol string, raw []byte) {
 		return
 	}
 
-	lock(data.AskOrderId)
-	lock(data.BidOrderId)
+	orders.Lock(orders.ClearingLock, data.AskOrderId)
+	orders.Lock(orders.ClearingLock, data.BidOrderId)
 
 	if data.Last == "" {
 		go newClean(data)
@@ -71,7 +72,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 			for {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				logrus.Infof("等待订单 %s 其他结算完成....", data.Last)
-				if getlock(data.Last) == 1 {
+				if orders.GetLock(orders.ClearingLock, data.Last) == 1 {
 					newClean(data)
 					break
 				}
@@ -92,34 +93,4 @@ func generate_trading_id(ask, bid string) string {
 	times := time.Now().Format("060102")
 	hash := utils.Hash256(fmt.Sprintf("%s%s", ask, bid))
 	return fmt.Sprintf("T%s%s", times, hash[0:17])
-}
-
-func lock(order_id string) {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-
-	key := fmt.Sprintf("clearing.lock.%s", order_id)
-	rdc.Do("INCR", key)
-}
-
-func unlock(order_id string) {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-
-	key := fmt.Sprintf("clearing.lock.%s", order_id)
-	if _, err := rdc.Do("DECR", key); err != nil {
-		logrus.Warnf("clearing unlock %s err: %s", order_id, err.Error())
-	}
-	if _, err := rdc.Do("Expire", key, 300); err != nil {
-		logrus.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
-	}
-}
-
-func getlock(order_id string) int64 {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-
-	key := fmt.Sprintf("clearing.lock.%s", order_id)
-	n, _ := redis.Int64(rdc.Do("GET", key))
-	return n
 }

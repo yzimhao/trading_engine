@@ -41,9 +41,8 @@ func newClean(raw trading_core.TradeResult) error {
 	err := item.flow()
 
 	//解锁
-	unlock(item.ask.OrderId)
-	unlock(item.bid.OrderId)
-
+	orders.UnLock(orders.ClearingLock, item.ask.OrderId)
+	orders.UnLock(orders.ClearingLock, item.bid.OrderId)
 	return err
 }
 
