@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
@@ -18,7 +17,7 @@ type tengine struct {
 	symbol              string
 	tp                  *trading_core.TradePair
 	restore_done_signal chan struct{}
-	broadcast           chan struct{}
+	update              chan struct{}
 }
 
 func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePair {
@@ -26,64 +25,49 @@ func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePa
 		symbol:              symbol,
 		tp:                  trading_core.NewTradePair(symbol, price_digit, qty_digit),
 		restore_done_signal: make(chan struct{}),
-		broadcast:           make(chan struct{}, 100),
+		update:              make(chan struct{}, 100),
 	}
 
 	go te.queue_monitor()
 	go te.restore()
-	go te.broadcast_depth()
+	go te.push_depth_to_redis()
 	go te.pull_new_order()
 	go te.pull_cancel_order()
 	go te.monitor_result()
 	return te.tp
 }
 
-func (t *tengine) broadcast_depth() {
-	depth_channel := types.FormatBroadcastDepth.Format(t.symbol)
-	price_channel := types.FormatBroadcastLatestPrice.Format(t.symbol)
+func (t *tengine) push_depth_to_redis() {
+	depth_topic := types.FormatDepthData.Format(t.symbol)
+
 	//如果长时间没有触发，5s自动触发一次更新
 	go func() {
 		for {
 			time.Sleep(time.Duration(5) * time.Second)
-			t.broadcast <- struct{}{}
+			t.update <- struct{}{}
 		}
 	}()
 
 	for {
 		select {
-		case <-t.broadcast:
-			go func() {
-				data := gin.H{
-					//todo 限制最大获取的数量
-					"asks": t.tp.GetAskDepth(100),
-					"bids": t.tp.GetBidDepth(100),
-				}
-
-				rdc := app.RedisPool().Get()
-				defer rdc.Close()
-
-				raw, _ := json.Marshal(data)
-
-				if _, err := rdc.Do("Publish", depth_channel, raw); err != nil {
-					logrus.Warnf("广播%s消息失败: %s", depth_channel, err)
-				}
-			}()
-
+		case <-t.update:
 			go func() {
 				price, at := t.tp.LatestPrice()
-				data := types.ChannelLatestPrice{
-					T:     at,
-					Price: t.tp.Price2String(price),
+				data := types.RedisDepthData{
+					Price: price.String(),
+					At:    at,
+					Asks:  t.tp.GetAskDepth(50),
+					Bids:  t.tp.GetBidDepth(50),
 				}
 
-				raw, _ := json.Marshal(data)
 				rdc := app.RedisPool().Get()
 				defer rdc.Close()
-				if _, err := rdc.Do("Publish", price_channel, raw); err != nil {
-					logrus.Warnf("广播%s消息失败: %s", price_channel, err)
+
+				raw := data.JSON()
+				if _, err := rdc.Do("SET", depth_topic, raw); err != nil {
+					logrus.Errorf("set redis %s err: %s", depth_topic, err)
 				}
 			}()
-
 		default:
 			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
@@ -108,7 +92,7 @@ func (t *tengine) queue_monitor() {
 				go localdb.Set(t.symbol, raw.OrderId, raw.Json())
 			}
 		}
-		t.broadcast <- struct{}{}
+		t.update <- struct{}{}
 	}, func(qi trading_core.QueueItem) {
 		if t.tp.TriggerEvent() {
 			raw := Order{
@@ -123,7 +107,7 @@ func (t *tengine) queue_monitor() {
 			go localdb.Remove(t.symbol, raw.OrderId)
 		}
 
-		t.broadcast <- struct{}{}
+		t.update <- struct{}{}
 	}, func(tl trading_core.TradeResult) {
 		//只保留最近的1条成交记录,用于恢复最新成交价格
 		localdb.Set("tradelog", t.symbol, tl.Json())

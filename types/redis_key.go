@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -15,7 +16,7 @@ const (
 	FormatCancelResult         RedisKey = "{prefix}cancel.result.{symbol}"
 	FormatQuoteTradeResult     RedisKey = "{prefix}quote.trade.result.{symbol}"
 	FormatWsMessage            RedisKey = "{prefix}ws.message"
-	FormatBroadcastDepth       RedisKey = "{prefix}broadcast.depth.{symbol}"
+	FormatDepthData            RedisKey = "{prefix}depth.{symbol}"
 	FormatBroadcastLatestPrice RedisKey = "{prefix}broadcast.latest_price.{symbol}"
 )
 
@@ -29,7 +30,14 @@ func (r RedisKey) String() string {
 	return string(r)
 }
 
-type ChannelLatestPrice struct {
-	T     int64  `json:"t"`
-	Price string `json:"price"`
+type RedisDepthData struct {
+	Price string      `json:"price"`
+	At    int64       `json:"at"`
+	Asks  [][2]string `json:"asks"`
+	Bids  [][2]string `json:"bids"`
+}
+
+func (r *RedisDepthData) JSON() []byte {
+	raw, _ := json.Marshal(r)
+	return raw
 }
