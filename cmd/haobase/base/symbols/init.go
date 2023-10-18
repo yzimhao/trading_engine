@@ -13,14 +13,13 @@ func Init() {
 
 func init_db() {
 	db := app.Database()
-
 	err := db.Sync2(
 		new(Varieties),
 		new(TradingVarieties),
 	)
 
 	if err != nil {
-		panic(err)
+		logrus.Panic(err)
 	}
 }
 

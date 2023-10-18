@@ -2,13 +2,12 @@ package www
 
 import (
 	"encoding/json"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/types"
@@ -16,11 +15,10 @@ import (
 )
 
 func publish_depth() {
-	symbols := viper.GetStringMap("symbol")
+	symbols := symbols.AllTradingVarieties()
 
-	for k, _ := range symbols {
-		symbol := strings.ToLower(k)
-		push_depth_message(symbol)
+	for _, item := range symbols {
+		push_depth_message(item.Symbol)
 	}
 }
 

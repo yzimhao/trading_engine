@@ -25,6 +25,20 @@ func NewTradingVarieties(symbol string) *TradingVarieties {
 	return &row
 }
 
+func AllTradingVarieties() []TradingVarieties {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	var rows []TradingVarieties
+
+	db.Table(new(TradingVarieties)).OrderBy("id asc").Get(&rows)
+	for i, item := range rows {
+		rows[i].Target = *newVarietiesById(item.TargetSymbolId)
+		rows[i].Base = *newVarietiesById(item.BaseSymbolId)
+	}
+	return rows
+}
+
 func newVarietiesById(id int) *Varieties {
 	db := app.Database().NewSession()
 	defer db.Close()
