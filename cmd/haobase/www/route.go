@@ -27,8 +27,8 @@ func router(r *gin.Engine) {
 
 		api.POST("/order/create", order_create)
 		api.POST("/order/cancel", order_cancel)
-		api.GET("/order/hisotry", nil)
-		api.GET("/order/unfinished", nil)
+		api.GET("/order/hisotry", order_history)
+		api.GET("/order/unfinished", order_unfinished)
 	}
 
 }
