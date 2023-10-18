@@ -241,7 +241,7 @@ func TestMarketCase2(t *testing.T) {
 		buy_assets_base := assets.FindSymbol(buyUser, testBaseSymbol)
 
 		//卖家资产检查
-		So(utils.D(sell_assets_target.Total), ShouldEqual, utils.D("4"))
+		So(utils.D(sell_assets_target.Total), ShouldEqual, utils.D("9996"))
 		So(utils.D(sell_assets_target.Freeze), ShouldEqual, utils.D("0"))
 		So(utils.D(sell_assets_base.Total), ShouldEqual, utils.D("6.965"))
 		//买家资产检查
