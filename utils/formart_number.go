@@ -13,3 +13,12 @@ func (t FloatString) MarshalJSON() ([]byte, error) {
 	s := fmt.Sprintf("\"%s\"", tt.String())
 	return []byte(s), nil
 }
+
+func (t FloatString) String() string {
+	return string(t)
+}
+
+func (t FloatString) Decimal() decimal.Decimal {
+	tt, _ := decimal.NewFromString(string(t))
+	return tt
+}

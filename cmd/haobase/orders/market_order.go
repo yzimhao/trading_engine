@@ -100,8 +100,6 @@ func NewMarketOrderByAmount(user_id string, symbol string, side trading_core.Ord
 func market_order_amount(user_id string, symbol string, side trading_core.OrderSide, amount string) (order *Order, err error) {
 	varieties := symbols.NewTradingVarieties(symbol)
 
-	//todo 检查交易对限制
-
 	neworder := Order{
 		OrderId:        generate_order_id_by_side(side),
 		Symbol:         symbol,
@@ -119,6 +117,10 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		FreezeAmount:   "0",
 		FeeRate:        string(varieties.FeeRate),
 		Status:         OrderStatusNew,
+	}
+
+	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
+		return nil, err
 	}
 
 	db := app.Database().NewSession()

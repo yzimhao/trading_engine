@@ -15,8 +15,6 @@ func NewLimitOrder(user_id string, symbol string, side trading_core.OrderSide, p
 
 func limit_order(user_id string, symbol string, side trading_core.OrderSide, price, qty string) (order *Order, err error) {
 	varieties := symbols.NewTradingVarieties(symbol)
-	// logrus.Infof("varieties: %#v", varieties)
-	//todo 检查交易对限制
 
 	neworder := Order{
 		OrderId:        generate_order_id_by_side(side),
@@ -34,6 +32,10 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		Fee:            "0",
 		FinishedAmount: "0",
 		Status:         OrderStatusNew,
+	}
+
+	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
+		return nil, err
 	}
 
 	db := app.Database().NewSession()

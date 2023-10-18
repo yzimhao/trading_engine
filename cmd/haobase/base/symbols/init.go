@@ -51,9 +51,11 @@ func DemoData() {
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	_, err := db.Insert(symbols)
-	if err != nil {
-		logrus.Error(err)
+	if empty, _ := db.IsTableEmpty(new(Varieties)); empty {
+		_, err := db.Insert(symbols)
+		if err != nil {
+			logrus.Error(err)
+		}
 	}
 
 	usd := NewVarieties("usd")
@@ -89,8 +91,10 @@ func DemoData() {
 			FeeRate:        "0.001",
 		},
 	}
-	_, err = db.Insert(pairs)
-	if err != nil {
-		logrus.Error(err)
+	if empty, _ := db.IsTableEmpty(new(TradingVarieties)); empty {
+		_, err := db.Insert(pairs)
+		if err != nil {
+			logrus.Error(err)
+		}
 	}
 }

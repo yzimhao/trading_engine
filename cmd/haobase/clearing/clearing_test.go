@@ -40,8 +40,8 @@ func initAssets(t *testing.T) {
 	assets.Init()
 	symbols.DemoData()
 
-	assets.SysRecharge("seller1", "usd", "10000.00", "C001")
-	assets.SysRecharge("buyer1", "jpy", "10000.00", "C001")
+	assets.SysRecharge(sellUser, testTargetSymbol, "10000.00", "C001")
+	assets.SysRecharge(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
 func cleanAssets(t *testing.T) {

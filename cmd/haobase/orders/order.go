@@ -1,10 +1,13 @@
 package orders
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
@@ -90,4 +93,44 @@ func Find(symbol string, order_id string) *Order {
 		return &row
 	}
 	return nil
+}
+
+// 订单预检
+func order_pre_inspection(varieties *symbols.TradingVarieties, info *Order) (bool, error) {
+	zero := utils.D("0")
+
+	//下单数量的检查
+	min_qty := utils.D(varieties.AllowMinQty.String())
+	qty := utils.D(info.Quantity)
+	if min_qty.Cmp(zero) > 0 && qty.Cmp(zero) > 0 && qty.Cmp(min_qty) < 0 {
+		return false, errors.New("数量低于交易对最小限制")
+	}
+
+	//下单金额的检查
+	min_amount := utils.D(string(varieties.AllowMinAmount))
+	amount := utils.D(info.Amount)
+	if min_amount.Cmp(zero) > 0 && amount.Cmp(zero) > 0 && amount.Cmp(min_amount) < 0 {
+		return false, errors.New("成交金额低于交易对最小限制")
+	}
+
+	//反向订单检查，不能让用户自己的订单撮合成交
+	if info.OrderSide == trading_core.OrderSideBuy {
+		//检查卖单是否有挂单
+		sell_orders := find_user_unfinished_orders(info.UserId, info.Symbol, trading_core.OrderSideSell)
+		if len(sell_orders) > 0 {
+			if (info.OrderType == trading_core.OrderTypeLimit && utils.D(sell_orders[0].Price).Cmp(utils.D(info.Price)) <= 0) || (info.OrderType == trading_core.OrderTypeMarket) {
+				return false, errors.New("对向有挂单请撤单后再操作")
+			}
+		}
+	} else if info.OrderSide == trading_core.OrderSideSell {
+		buy_orders := find_user_unfinished_orders(info.UserId, info.Symbol, trading_core.OrderSideBuy)
+		n := len(buy_orders)
+		if n > 0 {
+			if (info.OrderType == trading_core.OrderTypeLimit && utils.D(buy_orders[n-1].Price).Cmp(utils.D(info.Price)) >= 0) || (info.OrderType == trading_core.OrderTypeMarket) {
+				return false, errors.New("对向有挂单请撤单后再操作")
+			}
+		}
+	}
+
+	return true, nil
 }
