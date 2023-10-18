@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/sirupsen/logrus"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
@@ -17,14 +18,12 @@ import (
 
 func Run() {
 	//load symbols
-	db := app.Database().NewSession()
-	defer db.Close()
-
-	var rows []symbols.TradingVarieties
-	db.Table(new(symbols.TradingVarieties)).Find(&rows)
-
-	for _, row := range rows {
-		run_clearing(row.Symbol)
+	local_config_symbols := app.CstringSlice("local.symbols")
+	db_symbols := base.NewTSymbols().All()
+	for _, item := range db_symbols {
+		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
+			run_clearing(item.Symbol)
+		}
 	}
 }
 

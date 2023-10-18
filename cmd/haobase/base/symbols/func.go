@@ -1,6 +1,8 @@
 package symbols
 
-import "github.com/yzimhao/trading_engine/utils/app"
+import (
+	"github.com/yzimhao/trading_engine/utils/app"
+)
 
 func NewVarieties(symbol string) *Varieties {
 	db := app.Database().NewSession()
@@ -31,7 +33,7 @@ func AllTradingVarieties() []TradingVarieties {
 
 	var rows []TradingVarieties
 
-	db.Table(new(TradingVarieties)).OrderBy("id asc").Get(&rows)
+	db.Table(new(TradingVarieties)).OrderBy("id asc").Find(&rows)
 	for i, item := range rows {
 		rows[i].Target = *newVarietiesById(item.TargetSymbolId)
 		rows[i].Base = *newVarietiesById(item.BaseSymbolId)

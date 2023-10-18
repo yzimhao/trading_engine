@@ -25,8 +25,8 @@ dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 show_sql = false
 
 
-[local]
-symbols=["usdjpy"]
+# [local] 
+# symbols=["usdjpy"]
 
 [haotrader]
 storage_path="haotrader.db"
