@@ -75,9 +75,9 @@ func Cint(key string) int {
 func RedisInit(addr, password string, db int) {
 	if redisPool == nil {
 		redisPool = &redis.Pool{
-			MaxIdle:     10, //空闲数
-			IdleTimeout: 240 * time.Second,
-			MaxActive:   20, //最大数
+			MaxIdle:     50, //空闲数
+			IdleTimeout: 300 * time.Second,
+			MaxActive:   0, //最大数
 			Dial: func() (redis.Conn, error) {
 				c, err := redis.Dial("tcp", addr)
 				if err != nil {
