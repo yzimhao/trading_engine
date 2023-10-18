@@ -1,13 +1,15 @@
 package haotrader
 
 import (
-	"strings"
 	"sync"
 	"time"
 
+	"github.com/gookit/goutil/arrutil"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
@@ -24,21 +26,18 @@ func Run() {
 	defer localdb.Close()
 
 	wg = sync.WaitGroup{}
-	//todo wg.done()
-
+	wg.Add(1)
 	logrus.Info("启动撮合程序成功! 如需帮助请参考: https://github.com/yzimhao/trading_engine")
 	init_symbols_tengine()
 	wg.Wait()
 }
 
 func init_symbols_tengine() {
-	symbols := viper.GetStringMap("symbol")
-
-	for k, attr := range symbols {
-		wg.Add(1)
-		symbol := strings.ToLower(k)
-		price_digit := attr.(map[string]any)["price_digit"].(int64)
-		qty_digit := attr.(map[string]any)["qty_digit"].(int64)
-		teps[symbol] = NewTengine(symbol, int(price_digit), int(qty_digit))
+	local_config_symbols := app.CstringSlice("local.symbols")
+	db_symbols := base.NewTSymbols().All()
+	for _, item := range db_symbols {
+		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
+			teps[item.Symbol] = NewTengine(item.Symbol, item.PricePrecision, item.QtyPrecision)
+		}
 	}
 }

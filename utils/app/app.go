@@ -56,20 +56,7 @@ func ConfigInit(fp string) {
 
 	//
 	time.LoadLocation(viper.GetString("main.time_zone"))
-
 	RunMode = Mode(viper.GetString("main.mode"))
-}
-
-func Cstring(key string) string {
-	return viper.GetString(key)
-}
-
-func Cbool(key string) bool {
-	return viper.GetBool(key)
-}
-
-func Cint(key string) int {
-	return viper.GetInt(key)
 }
 
 func RedisInit(addr, password string, db int) {

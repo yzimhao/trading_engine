@@ -25,6 +25,9 @@ dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 show_sql = false
 
 
+[local]
+symbols=["usdjpy"]
+
 [haotrader]
 storage_path="haotrader.db"
 # 是否直接通知到haoquote行情系统，正式环境时建议在结算完成后再通知
@@ -33,15 +36,6 @@ notify_quote=false
 broadcast_depth=true
 
 
-[symbol.eurusd]
-name="欧元"
-price_digit=5  #配置交易对价格支持小数点位
-qty_digit=2    #配置交易对交易数量支持小数点位
-
-[symbol.usdjpy]
-name="USDJPY"
-price_digit=3
-qty_digit=2
 
 
 [haoquote]
