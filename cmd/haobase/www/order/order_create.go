@@ -1,4 +1,4 @@
-package www
+package order
 
 import (
 	"github.com/gin-gonic/gin"
@@ -19,7 +19,7 @@ type order_create_request_args struct {
 	Amount    string                 `json:"amount" example:"100.00"`
 }
 
-func order_create(ctx *gin.Context) {
+func Create(ctx *gin.Context) {
 	var req order_create_request_args
 	if err := ctx.BindJSON(&req); err != nil {
 		utils.ResponseFailJson(ctx, err.Error())

@@ -1,4 +1,4 @@
-package www
+package order
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ type order_cancel_request_args struct {
 	OrderId string `json:"order_id" binding:"required"`
 }
 
-func order_cancel(ctx *gin.Context) {
+func Cancel(ctx *gin.Context) {
 	var req order_cancel_request_args
 	if err := ctx.BindJSON(&req); err != nil {
 		utils.ResponseFailJson(ctx, err.Error())
