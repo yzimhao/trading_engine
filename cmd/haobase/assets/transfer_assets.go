@@ -40,7 +40,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	}
 	//非根账户检查余额
 	if from != UserRoot {
-		if utils.D(from_user.Available).Cmp(utils.D("0")) <= 0 {
+		if utils.D(from_user.Available).Cmp(utils.D("0")) < 0 {
 			return false, fmt.Errorf("可用资产不足")
 		}
 	}

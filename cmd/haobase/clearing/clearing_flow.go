@@ -27,6 +27,9 @@ func newClean(raw trading_core.TradeResult) error {
 	db := app.Database().NewSession()
 	defer db.Close()
 
+	//提前创建需要的表, 创建表的操作不能放到事务中
+	orders.CreateTradeLogTable(db, raw.Symbol)
+
 	item := clean{
 		db:                db,
 		trading_varieties: symbols.NewTradingVarieties(raw.Symbol),
@@ -36,9 +39,6 @@ func newClean(raw trading_core.TradeResult) error {
 	}
 
 	err := item.flow()
-	if err != nil {
-		logrus.Warnf("%s clearing %+v %s", raw.Symbol, raw, err.Error())
-	}
 
 	//解锁
 	unlock(item.ask.OrderId)
@@ -52,9 +52,13 @@ func (c *clean) flow() error {
 	c.db.Begin()
 	defer func() {
 		if c.err != nil {
-			c.db.Rollback()
+			if err := c.db.Rollback(); err != nil {
+				logrus.Errorf("结算事务回滚失败: %s", err.Error())
+			}
 		} else {
-			c.db.Commit()
+			if err := c.db.Commit(); err != nil {
+				logrus.Errorf("结算事务提交失败: %s", err.Error())
+			}
 		}
 	}()
 
@@ -68,6 +72,7 @@ func (c *clean) flow() error {
 }
 
 func (c *clean) check_order() error {
+	logrus.Info("检查订单状态")
 	_, err := c.db.Table(orders.GetOrderTableName(c.tlog.Symbol)).Where("order_id=?", c.tlog.AskOrderId).ForUpdate().Get(&c.ask)
 	if err != nil {
 		return err
@@ -78,11 +83,11 @@ func (c *clean) check_order() error {
 	}
 
 	if c.ask.Status != orders.OrderStatusNew {
-		return fmt.Errorf("卖方订单状态错误")
+		return fmt.Errorf("卖单状态错误")
 	}
 
 	if c.bid.Status != orders.OrderStatusNew {
-		return fmt.Errorf("买方订单状态错误")
+		return fmt.Errorf("买单状态错误")
 	}
 	return nil
 }
@@ -200,7 +205,7 @@ func (c *clean) transfer() error {
 
 	//市价单解除全部冻结
 	if c.tlog.Last != "" {
-		logrus.Infof("市价冻结订单 %s 解除", c.tlog.Last)
+		logrus.Infof("市价订单 %s 解除剩余全部资产", c.tlog.Last)
 		if c.ask.OrderType == trading_core.OrderTypeMarket {
 			_, err = assets.UnfreezeAllAssets(c.db, c.ask.UserId, c.ask.OrderId)
 			if err != nil {

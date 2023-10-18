@@ -216,23 +216,14 @@ func TestMarketCase2(t *testing.T) {
 		result1 := trading_core.TradeResult{Symbol: testSymbol, AskOrderId: s1.OrderId, BidOrderId: buy.OrderId, TradePrice: utils.D("1.00"), TradeQuantity: utils.D("1"), TradeTime: time.Now().UnixNano()}
 		result2 := trading_core.TradeResult{Symbol: testSymbol, AskOrderId: s2.OrderId, BidOrderId: buy.OrderId, TradePrice: utils.D("2.00"), TradeQuantity: utils.D("1"), TradeTime: time.Now().UnixNano()}
 		result3 := trading_core.TradeResult{Symbol: testSymbol, AskOrderId: s3.OrderId, BidOrderId: buy.OrderId, TradePrice: utils.D("2.00"), TradeQuantity: utils.D("1"), TradeTime: time.Now().UnixNano()}
-
 		result4 := trading_core.TradeResult{Symbol: testSymbol, AskOrderId: s4.OrderId, BidOrderId: buy.OrderId, TradePrice: utils.D("2.00"), TradeQuantity: utils.D("1"), TradeTime: time.Now().UnixNano(), Last: buy.OrderId}
 
+		clearing_trade_order(testSymbol, result4.Json())
 		clearing_trade_order(testSymbol, result2.Json())
 		clearing_trade_order(testSymbol, result1.Json())
-		clearing_trade_order(testSymbol, result4.Json())
 		clearing_trade_order(testSymbol, result3.Json())
 
 		time.Sleep(5 * time.Second)
-
-		// //检查买卖双方订单状态及资产
-		// s1 = orders.Find(testSymbol, s1.OrderId)
-		// So(s1.Status, ShouldEqual, orders.OrderStatusDone)
-		// s2 = orders.Find(testSymbol, s2.OrderId)
-		// So(s2.Status, ShouldEqual, orders.OrderStatusDone)
-		// buy = orders.Find(testSymbol, buy.OrderId)
-		// So(buy.Status, ShouldEqual, orders.OrderStatusDone)
 
 		//资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)

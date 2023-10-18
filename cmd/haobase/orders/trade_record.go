@@ -37,11 +37,25 @@ type TradeLog struct {
 }
 
 func (tr *TradeLog) Save(db *xorm.Session) error {
-	if tr.Symbol == "" {
-		return fmt.Errorf("symbol not set")
+	_, err := db.Table(tr).Insert(tr)
+	if err != nil {
+		return err
 	}
-	//todo 频繁查询表是否存在，后面考虑缓存一下
-	exist, err := db.IsTableExist(tr.TableName())
+	return nil
+}
+
+func (tr *TradeLog) TableName() string {
+	return fmt.Sprintf("trade_log_%s", tr.Symbol)
+}
+
+func GetTradelogTableName(symbol string) string {
+	t := TradeLog{Symbol: symbol}
+	return t.TableName()
+}
+
+func CreateTradeLogTable(db *xorm.Session, symbol string) error {
+	tr := TradeLog{Symbol: symbol}
+	exist, err := db.IsTableExist(tr)
 	if err != nil {
 		return err
 	}
@@ -61,19 +75,5 @@ func (tr *TradeLog) Save(db *xorm.Session) error {
 			return err
 		}
 	}
-
-	_, err = db.Table(tr).Insert(tr)
-	if err != nil {
-		return err
-	}
 	return nil
-}
-
-func (tr *TradeLog) TableName() string {
-	return fmt.Sprintf("trade_log_%s", tr.Symbol)
-}
-
-func GetTradelogTableName(symbol string) string {
-	t := TradeLog{Symbol: symbol}
-	return t.TableName()
 }

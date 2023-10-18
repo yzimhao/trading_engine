@@ -21,19 +21,18 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 		return false, fmt.Errorf("解冻金额必须大于等于0")
 	}
 
-	row := assetsFreeze{UserId: user_id, BusinessId: business_id}
-
-	has, err := db.Table(new(assetsFreeze)).Where("business_id=?", business_id).Get(&row)
+	row := assetsFreeze{}
+	has, err := db.Table(new(assetsFreeze)).Where("business_id=?", business_id).ForUpdate().Get(&row)
 	if err != nil {
 		return false, err
 	}
 
 	if !has {
-		return false, fmt.Errorf("未找到冻结记录")
+		return false, fmt.Errorf("未找到冻结 %s 记录", row.BusinessId)
 	}
 
 	if row.Status == FreezeStatusDone {
-		return false, fmt.Errorf("冻结记录已经解冻")
+		return false, fmt.Errorf("订单 %s 已经解冻", row.BusinessId)
 	}
 
 	//解冻金额为0，则解冻全部
@@ -58,7 +57,7 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 	}
 
 	//解冻资产为可用
-	assets := Assets{UserId: user_id, Symbol: row.Symbol}
+	assets := Assets{}
 	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).Get(&assets)
 	if err != nil {
 		return false, err
@@ -70,7 +69,7 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 		return false, fmt.Errorf("数据出错，冻结金额为负数")
 	}
 
-	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).Update(&assets)
+	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, row.Symbol).AllCols().Update(&assets)
 	if err != nil {
 		return false, err
 	}
