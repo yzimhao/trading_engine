@@ -138,7 +138,7 @@ body{
                     <div class="layui-card">
                         <div class="layui-card-header">
                             <b>模拟下单</b>
-                            <span>资产:  <b>USD=100.00</b> <b>JPY=2000.00</b></span>
+                            <span class="assets" style="margin-left: 20px;">持有资产:  <b class="target">USD=0.00</b> <b class="base">JPY=0.00</b></span>
                         </div>
                         <div class="layui-card-body">
                             
@@ -266,10 +266,19 @@ body{
         </div>
     </div>
 
-
+<script type="text/javascript">
+    var CURRENT_SYMBOL = "{{ .symbol }}";
+    var latest_price = "";
+    var API_HAOBASE_HOST = {{ .haobase_host | unsafe }};
+    var API_HAOQUOTE_HOST = {{ .haoquote_host | unsafe }};
+    var WSHOST = {{ .ws_host | unsafe}};
+    
+</script>
 
     <script type="text/javascript" src="https://unpkg.com/klinecharts/dist/klinecharts.min.js"></script>
     <script crossorigin="anonymous" src="https://cdn.staticfile.org/layui/2.8.17/layui.min.js"></script>
+    
+    <script src="/statics/symbol_info.js"></script>
     <script src="/statics/kline.js"></script>
     <script src="/statics/login.js"></script>
     <!--您的Layui代码start-->
@@ -283,19 +292,11 @@ body{
                 , form = layui.form
                 , element = layui.element; //元素操作 等等...
 
-            var symbol = "{{ .symbol }}";
-            var latest_price = "";
-
-
             
-            var API_HAOBASE_HOST = {{ .haobase_host | unsafe }};
-            var API_HAOQUOTE_HOST = {{ .haoquote_host | unsafe }};
-            var WSHOST = {{ .ws_host | unsafe}};
 
-
-            if(symbol=="usdjpy"){
+            if(CURRENT_SYMBOL=="usdjpy"){
                 kchart.setPriceVolumePrecision(3, 2);
-            }else if(symbol=="eurusd"){
+            }else if(CURRENT_SYMBOL=="eurusd"){
                 kchart.setPriceVolumePrecision(5, 2);
             }
             laytpl.config({
@@ -329,7 +330,7 @@ body{
                     },
                     data: function () {
                         var data = {
-                            symbol: symbol,
+                            symbol: CURRENT_SYMBOL,
                             side: side,
                             order_type: order_type,
                         };
@@ -367,7 +368,7 @@ body{
                 me.attr("disabled", true);
 
                 $.ajax({
-                    url: "/api/test_rand?op_type=" + op_type+ "&symbol="+symbol +"&latest_price="+latest_price,
+                    url: "/api/test_rand?op_type=" + op_type+ "&symbol="+CURRENT_SYMBOL +"&latest_price="+latest_price,
                     type: "get",
                     success: function (d) {
                         layer.msg("操作" + d.ok);
@@ -430,7 +431,7 @@ body{
             $().ready(function(){
 
                 //加载成交记录
-                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/trans/record?symbol="+symbol+"&limit=12", function (d) {
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=12", function (d) {
                     if (d.ok) {
                         var data = d.data.reverse();
                         for(var i=0; i<data.length; i++){
@@ -441,7 +442,7 @@ body{
                 });
 
                 //加载k线
-                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/kline?symbol="+symbol+"&interval=m1&limit=100", function (d) {
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/kline?symbol="+CURRENT_SYMBOL+"&interval=m1&limit=100", function (d) {
                     if (d.ok) {
                         var items = d.data.reverse();
                         var chartDataList = items.map(function (data) {
@@ -459,7 +460,7 @@ body{
                 });
 
                 //depth
-                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+symbol+"&limit=10", function(d){
+                $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
                     if(d.ok){
                         renderdepth(d.data);
                     }
@@ -519,11 +520,11 @@ body{
                     conn.onopen = function(e){
                         var msg = {
                             "sub": [
-                                "depth."+symbol,
-                                "tradelog." + symbol,
-                                "latest_price."+symbol,
-                                "kline.m1."+symbol,
-                                "market.24h."+symbol,
+                                "depth."+CURRENT_SYMBOL,
+                                "tradelog." + CURRENT_SYMBOL,
+                                "latest_price."+CURRENT_SYMBOL,
+                                "kline.m1."+CURRENT_SYMBOL,
+                                "market.24h."+CURRENT_SYMBOL,
                             ],
                         };
                         console.log(JSON.stringify(msg));
@@ -536,11 +537,11 @@ body{
                         for (var i = 0; i < messages.length; i++) {
                             var msg = JSON.parse(messages[i]);
                             console.log(msg);
-                            if (msg.type == "depth."+symbol) {
+                            if (msg.type == "depth."+CURRENT_SYMBOL) {
                                 renderdepth(msg.body);
-                            } else if (msg.type == "tradelog." +symbol) {
+                            } else if (msg.type == "tradelog." +CURRENT_SYMBOL) {
                                 rendertradelog(msg.body);
-                            } else if (msg.type == "new_order."+ symbol) {
+                            } else if (msg.type == "new_order."+ CURRENT_SYMBOL) {
                                 var myorderView = $(".myorder"),
                                     myorderTpl = $("#myorder-tpl").html();
                                 
@@ -553,10 +554,10 @@ body{
                                     }
                                     myorderView.after(html);
                                 });
-                            } else if (msg.type == "latest_price."+symbol) {
+                            } else if (msg.type == "latest_price."+CURRENT_SYMBOL) {
                                 latest_price = msg.body.latest_price;
                                 $(".latest-price").html(msg.body.latest_price);
-                            } else if (msg.type =="kline.m1."+symbol) {
+                            } else if (msg.type =="kline.m1."+CURRENT_SYMBOL) {
                                 var data = msg.body;
                                 kchart.updateData({
                                     timestamp: new Date(data[0]).getTime(),
@@ -566,7 +567,7 @@ body{
                                     close: +data[4],
                                     volume: Math.ceil(+data[5]),
                                 });
-                            }else if(msg.type=="market.24h."+symbol) {
+                            }else if(msg.type=="market.24h."+CURRENT_SYMBOL) {
                                 $(".price_p").html(msg.body.price_change_percent);
                             }
                         }

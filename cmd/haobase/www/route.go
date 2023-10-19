@@ -25,11 +25,13 @@ func router(r *gin.Engine) {
 
 	api := r.Group("/api/v1/base")
 	{
+		//全部交易品类
+		api.GET("/trading/varieties", trading_varieties)
+		//指定交易品类
+		api.GET("/varieties/config", varieties_config)
 
 		api.Use(middle.CheckLogin())
-
 		api.GET("/assets", assets_balance)
-
 		api.POST("/order/create", order.Create)
 		api.POST("/order/cancel", order.Cancel)
 		api.GET("/order/hisotry", order.History)
