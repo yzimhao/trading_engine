@@ -28,8 +28,6 @@ func router(r *gin.Engine) {
 
 		api.Use(middle.CheckLogin())
 
-		//todo 登陆验证
-		api.GET("/assets/recharge", assets_recharge)
 		api.GET("/assets", assets_balance)
 
 		api.POST("/order/create", order.Create)

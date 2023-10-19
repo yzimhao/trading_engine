@@ -136,7 +136,10 @@ body{
                
                 <div class="layui-row">
                     <div class="layui-card">
-                        <div class="layui-card-header"><b>模拟下单</b></div>
+                        <div class="layui-card-header">
+                            <b>模拟下单</b>
+                            <span>资产:  <b>USD=100.00</b> <b>JPY=2000.00</b></span>
+                        </div>
                         <div class="layui-card-body">
                             
                             <div class="layui-row">
@@ -309,8 +312,6 @@ body{
                 var d = new Date(parseInt(t));
                 return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
             }
-
-            
 
 
             $(".opt").on("click", function () {

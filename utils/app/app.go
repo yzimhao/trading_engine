@@ -44,14 +44,18 @@ func ShowVersion() {
 }
 
 func ConfigInit(config_file string, is_daemon bool) {
-	viper.SetConfigFile(config_file)
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
+	if config_file != "" {
+		viper.SetConfigFile(config_file)
+		err := viper.ReadInConfig()
+		if err != nil {
+			panic(err)
+		}
 
-	if err := viper.Unmarshal(&config.App); err != nil {
-		logrus.Panicf("Error unmarshaling config: %s %s\n", config_file, err)
+		if err := viper.Unmarshal(&config.App); err != nil {
+			logrus.Panicf("Error unmarshaling config: %s %s\n", config_file, err)
+		}
+	} else {
+		config.App = &config.Configuration{}
 	}
 
 	//时区

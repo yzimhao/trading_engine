@@ -25,6 +25,7 @@ var (
 )
 
 func initdb(t *testing.T) {
+	app.ConfigInit("", false)
 	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
 	app.RedisInit("127.0.0.1:6379", "", 15)
 
