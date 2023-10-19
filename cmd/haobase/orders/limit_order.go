@@ -3,7 +3,7 @@ package orders
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
-	"github.com/yzimhao/trading_engine/haotrader"
+	"github.com/yzimhao/trading_engine/cmd/haotrader/matching"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -89,7 +89,7 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 	}
 
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
-		data := haotrader.Order{
+		data := matching.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType.String(),
 			Side:      neworder.OrderSide.String(),
