@@ -14,6 +14,10 @@ func CheckLogin() gin.HandlerFunc {
 		if config.App.Main.Mode == config.ModeDemo {
 			//自动为demo用户充值三种货币
 			user_id = c.GetHeader("Token")
+			if user_id == "" {
+				user_id = c.Query("user_id")
+			}
+
 			if user_id != "" {
 				if assets.BalanceOfTotal(user_id, "usd").Equal(decimal.Zero) {
 					assets.SysRecharge(user_id, "usd", "10000.00", "sys_recharge")

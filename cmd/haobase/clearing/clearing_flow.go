@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
@@ -14,7 +15,7 @@ import (
 
 type clean struct {
 	db                *xorm.Session
-	trading_varieties *symbols.TradingVarieties
+	trading_varieties *varieties.TradingVarieties
 	ask               orders.Order
 	bid               orders.Order
 	tlog              trading_core.TradeResult
@@ -30,9 +31,10 @@ func newClean(raw trading_core.TradeResult) error {
 	orders.CreateTradeLogTable(db, raw.Symbol)
 	//
 
+	tv, _ := base.NewTSymbols().Get(raw.Symbol)
 	item := clean{
 		db:                db,
-		trading_varieties: symbols.NewTradingVarieties(raw.Symbol),
+		trading_varieties: tv,
 		ask:               orders.Order{},
 		bid:               orders.Order{},
 		tlog:              raw,

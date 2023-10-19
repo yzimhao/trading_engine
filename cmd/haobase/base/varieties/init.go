@@ -1,4 +1,4 @@
-package symbols
+package varieties
 
 import (
 	"github.com/yzimhao/trading_engine/utils/app"

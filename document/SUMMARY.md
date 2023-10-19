@@ -5,9 +5,11 @@
 * [安装](install.md)
 * [配置](setting.md)
 * [API](api.md)
+    * [交易品种](varieties.md)
+        * [所有交易对](varieties.md)
+        * [交易品种规格](varieties_config.md)
     * [资产](assets.md)
         * [资产查询](assets.md)
-        <!-- * [资产详情](x.md) -->
 
     * [订单](order_create.md)
         * [新订单](order_create.md)

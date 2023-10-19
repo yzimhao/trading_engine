@@ -2,7 +2,7 @@ package orders
 
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
@@ -14,7 +14,7 @@ func NewLimitOrder(user_id string, symbol string, side trading_core.OrderSide, p
 }
 
 func limit_order(user_id string, symbol string, side trading_core.OrderSide, price, qty string) (order *Order, err error) {
-	varieties := symbols.NewTradingVarieties(symbol)
+	varieties := varieties.NewTradingVarieties(symbol)
 
 	neworder := Order{
 		OrderId:        generate_order_id_by_side(side),

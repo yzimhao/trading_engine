@@ -3,7 +3,7 @@ package base
 import (
 	"fmt"
 
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 )
 
 var (
@@ -11,7 +11,7 @@ var (
 )
 
 type TSymbols struct {
-	all_symbols []symbols.TradingVarieties
+	all_symbols []varieties.TradingVarieties
 }
 
 func NewTSymbols() *TSymbols {
@@ -24,10 +24,10 @@ func NewTSymbols() *TSymbols {
 }
 
 func (t *TSymbols) init() {
-	t.all_symbols = symbols.AllTradingVarieties()
+	t.all_symbols = varieties.AllTradingVarieties()
 }
 
-func (t *TSymbols) Get(symbol string) (*symbols.TradingVarieties, error) {
+func (t *TSymbols) Get(symbol string) (*varieties.TradingVarieties, error) {
 	for _, item := range t.all_symbols {
 		if item.Symbol == symbol {
 			return &item, nil
@@ -36,6 +36,6 @@ func (t *TSymbols) Get(symbol string) (*symbols.TradingVarieties, error) {
 	return nil, fmt.Errorf("不存在的交易对symbol")
 }
 
-func (t *TSymbols) All() []symbols.TradingVarieties {
+func (t *TSymbols) All() []varieties.TradingVarieties {
 	return t.all_symbols
 }

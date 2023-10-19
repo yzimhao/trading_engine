@@ -1,9 +1,9 @@
 package base
 
 import (
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 )
 
 func Init() {
-	symbols.Init()
+	varieties.Init()
 }

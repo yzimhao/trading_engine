@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -96,7 +96,7 @@ func Find(symbol string, order_id string) *Order {
 }
 
 // 订单预检
-func order_pre_inspection(varieties *symbols.TradingVarieties, info *Order) (bool, error) {
+func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (bool, error) {
 	zero := utils.D("0")
 
 	//下单数量的检查

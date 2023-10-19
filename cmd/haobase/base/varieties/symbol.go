@@ -1,4 +1,4 @@
-package symbols
+package varieties
 
 import (
 	"time"
@@ -14,15 +14,15 @@ const (
 )
 
 type Varieties struct {
-	Id            int       `xorm:"pk autoincr int" json:"id"`
-	Symbol        string    `xorm:"varchar(100) notnull unique(symbol)" json:"symbol"`
-	Name          string    `xorm:"varchar(250) notnull" json:"name"`
-	ShowPrecision int       `xorm:"default(0)" json:"show_precision"`
-	MinPrecision  int       `xorm:"default(0)" json:"min_precision"`
-	Base          bool      `xorm:"default(0)" json:"base"` //是否为本位币
-	Status        status    `xorm:"default(0) notnull" json:"-"`
-	CreateTime    time.Time `xorm:"timestamp created" json:"-"`
-	UpdateTime    time.Time `xorm:"timestamp updated" json:"update_at"`
+	Id            int        `xorm:"pk autoincr int" json:"id"`
+	Symbol        string     `xorm:"varchar(100) notnull unique(symbol)" json:"symbol"`
+	Name          string     `xorm:"varchar(250) notnull" json:"name"`
+	ShowPrecision int        `xorm:"default(0)" json:"show_precision"`
+	MinPrecision  int        `xorm:"default(0)" json:"min_precision"`
+	Base          bool       `xorm:"default(0)" json:"base"` //是否为本位币
+	Status        status     `xorm:"default(0) notnull" json:"-"`
+	CreateTime    time.Time  `xorm:"timestamp created" json:"-"`
+	UpdateTime    utils.Time `xorm:"timestamp updated" json:"update_at"`
 }
 
 type TradingVarieties struct {
@@ -40,7 +40,7 @@ type TradingVarieties struct {
 	FeeRate        utils.FloatString `xorm:"decimal(40,20) default(0)" json:"fee_rate"`
 	Status         status            `xorm:"default(0)" json:"-"`
 	CreateTime     time.Time         `xorm:"timestamp created" json:"-"`
-	UpdateTime     time.Time         `xorm:"timestamp updated" json:"update_at"`
+	UpdateTime     utils.Time        `xorm:"timestamp updated" json:"update_at"`
 	Target         Varieties         `xorm:"-" json:"target"`
-	Base           Varieties         `xorm:"-" json:"Base"`
+	Base           Varieties         `xorm:"-" json:"base"`
 }

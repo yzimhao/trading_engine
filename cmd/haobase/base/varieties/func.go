@@ -1,8 +1,6 @@
-package symbols
+package varieties
 
-import (
-	"github.com/yzimhao/trading_engine/utils/app"
-)
+import "github.com/yzimhao/trading_engine/utils/app"
 
 func NewVarieties(symbol string) *Varieties {
 	db := app.Database().NewSession()
@@ -48,4 +46,14 @@ func newVarietiesById(id int) *Varieties {
 	var row Varieties
 	db.Where("id=?", id).Get(&row)
 	return &row
+}
+
+func AllVarieties() []Varieties {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	var rows []Varieties
+
+	db.Table(new(Varieties)).OrderBy("id asc").Find(&rows)
+	return rows
 }

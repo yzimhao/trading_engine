@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/clearing"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -46,7 +46,7 @@ func main() {
 			{
 				Name: "demo-data",
 				Action: func(ctx *cli.Context) error {
-					symbols.DemoData()
+					varieties.DemoData()
 					assets.DemoData()
 					return nil
 				},
@@ -86,6 +86,6 @@ func main() {
 
 func initDemoBaseData() {
 	if config.App.Main.Mode == config.ModeDemo {
-		symbols.DemoData()
+		varieties.DemoData()
 	}
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
@@ -39,7 +39,7 @@ func initdb(t *testing.T) {
 
 func initAssets(t *testing.T) {
 	assets.Init()
-	symbols.DemoData()
+	varieties.DemoData()
 
 	assets.SysRecharge(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysRecharge(buyUser, testBaseSymbol, "10000.00", "C001")
@@ -59,9 +59,9 @@ func cleanAssets(t *testing.T) {
 
 func cleanSymbols(t *testing.T) {
 	db := app.Database()
-	db.DropIndexes(new(symbols.Varieties))
-	db.DropIndexes(new(symbols.TradingVarieties))
-	err := db.DropTables(new(symbols.Varieties), new(symbols.TradingVarieties))
+	db.DropIndexes(new(varieties.Varieties))
+	db.DropIndexes(new(varieties.TradingVarieties))
+	err := db.DropTables(new(varieties.Varieties), new(varieties.TradingVarieties))
 	if err != nil {
 		t.Logf("mysql droptables: %s", err)
 	}
