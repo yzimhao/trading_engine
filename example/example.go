@@ -34,7 +34,7 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"))
+			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
 			return nil
 		},
 
@@ -48,8 +48,6 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-
-			app.LogsInit("run.log", ctx.Bool("deamon"))
 
 			if ctx.Bool("deamon") {
 				context, d, err := app.Deamon("run.pid", "")

@@ -2,7 +2,6 @@ package www
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
@@ -20,15 +19,13 @@ func Run() {
 }
 
 func http_start() {
-	if config.App.Haoquote.Debug {
-		gin.SetMode(gin.DebugMode)
-	} else {
+	if !config.App.Haoquote.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	logrus.Infof("HTTP服务: %s", config.App.Haoquote.Listen)
 	g := gin.New()
 	router(g)
+	app.Logger.Infof("listen: %s", config.App.Haobase.Listen)
 	g.Run(config.App.Haoquote.Listen)
 }
 

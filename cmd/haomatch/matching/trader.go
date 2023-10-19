@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
@@ -26,7 +26,7 @@ func Run() {
 
 	wg = sync.WaitGroup{}
 	wg.Add(1)
-	logrus.Info("启动撮合程序成功! 如需帮助请参考: https://github.com/yzimhao/trading_engine")
+	app.Logger.Info("启动撮合程序成功! 如需帮助请参考: https://github.com/yzimhao/trading_engine")
 	init_symbols_tengine()
 	wg.Wait()
 }

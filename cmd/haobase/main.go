@@ -26,7 +26,7 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"))
+			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
@@ -53,11 +53,6 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			app.LogsInit("haobase.run", ctx.Bool("deamon"))
-			if config.App.Main.Mode != config.ModeProd {
-				logrus.Infof("当前运行在%s模式下，生产环境时main.mode请务必成prod", config.App.Main.Mode)
-			}
-
 			if ctx.Bool("deamon") {
 				logrus.Info("开始守护进程")
 				context, d, err := app.Deamon("haobase.pid", "")

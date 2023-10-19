@@ -49,7 +49,8 @@ type LocalConfiguration struct {
 }
 
 type HaomatchConfiguration struct {
-	Cache string `mapstructure:"cache"`
+	Cache   string `mapstructure:"cache"`
+	LogFile string `mapstructure:"log_file"`
 }
 
 type HaoquoteConfiguration struct {
@@ -57,9 +58,11 @@ type HaoquoteConfiguration struct {
 	Period []string `mapstructure:"period"`
 	Listen string   `mapstructure:"listen"`
 	Debug  bool     `mapstructure:"debug"`
+	// LogFile string   `mapstructure:"log_file"`
 }
 
 type HaobaseConfiguration struct {
 	Listen string `mapstructure:"listen"`
 	Debug  bool   `mapstructure:"debug"`
+	// LogFile string `mapstructure:"log_file"`
 }

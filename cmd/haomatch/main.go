@@ -13,8 +13,7 @@ import (
 
 func main() {
 	appm := &cli.App{
-		Name: "haotrader",
-		// Version:   version,
+		Name:      "haotrader",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",
 		Usage:     "交易撮合引擎",
 		Flags: []cli.Flag{
@@ -23,7 +22,7 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"))
+			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 			return nil
@@ -49,10 +48,6 @@ func main() {
 					&cli.IntFlag{Name: "n", DefaultText: "1", Value: 1, Usage: "循环插入订单个数"},
 				},
 				Action: func(ctx *cli.Context) error {
-					app.ConfigInit(ctx.String("config"))
-					app.LogsInit("haotrader.run", false)
-					// rc := app.RedisInit()
-
 					if ctx.String("side") == "ask" {
 						// haotrader.InsertAsk(rc, ctx.String("symbol"), ctx.String("type"), ctx.Int("n"), ctx.String("price"), ctx.String("qty"))
 					} else {
@@ -63,8 +58,6 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			app.LogsInit("haotrader.run", ctx.Bool("deamon"))
-
 			if ctx.Bool("deamon") {
 				logrus.Info("开始守护进程")
 				context, d, err := app.Deamon("haotrader.pid", "")
