@@ -5,13 +5,13 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/utils"
-	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func CheckLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user_id := ""
-		if app.RunMode == app.ModeDemo {
+		if config.App.Main.Mode == config.ModeDemo {
 			//自动为demo用户充值三种货币
 			user_id = c.GetHeader("Token")
 			if user_id != "" {

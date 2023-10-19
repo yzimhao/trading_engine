@@ -14,11 +14,12 @@ import (
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Run() {
 	//load symbols
-	local_config_symbols := app.CstringSlice("local.symbols")
+	local_config_symbols := config.App.Local.Symbols
 	db_symbols := base.NewTSymbols().All()
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {

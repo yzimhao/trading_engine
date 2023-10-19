@@ -12,6 +12,8 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/utils/app/config"
+
 	"xorm.io/xorm"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -19,21 +21,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Mode string
-
-const (
-	ModeProd  Mode = "prod"
-	ModeDev   Mode = "dev"
-	ModeDebug Mode = "debug"
-	ModeDemo  Mode = "demo"
-)
-
 var (
-	Version        = "v0.0.0"
-	Goversion      = ""
-	Commit         = ""
-	Build          = ""
-	RunMode   Mode = ModeProd
+	Version   = "v0.0.0"
+	Goversion = ""
+	Commit    = ""
+	Build     = ""
 
 	Logger *logrus.Logger
 
@@ -56,9 +48,17 @@ func ConfigInit(fp string) {
 		panic(err)
 	}
 
-	//
-	time.LoadLocation(viper.GetString("main.time_zone"))
-	RunMode = Mode(viper.GetString("main.mode"))
+	if err := viper.Unmarshal(&config.App); err != nil {
+		fmt.Printf("Error unmarshaling config: %s\n", err)
+		return
+	}
+
+	time.LoadLocation(config.App.Main.TimeZone)
+
+	if config.App.Main.Mode != config.ModeProd {
+		logrus.Infof("当前运行在%s模式下", config.App.Main.Mode)
+	}
+
 }
 
 func RedisInit(addr, password string, db int) {
@@ -96,7 +96,7 @@ func RedisInit(addr, password string, db int) {
 
 func LogsInit(fn string, is_daemon bool) {
 	Logger = logrus.New()
-	level, _ := logrus.ParseLevel(viper.GetString("main.log_level"))
+	level, _ := logrus.ParseLevel(config.App.Main.LogLevel)
 	Logger.SetLevel(level)
 	// Logger.SetReportCaller(true)
 
@@ -110,14 +110,13 @@ func LogsInit(fn string, is_daemon bool) {
 	if !is_daemon {
 		output = append(output, os.Stdout)
 	}
-	if viper.GetString("main.log_path") != "" {
-		save_path := viper.GetString("main.log_path")
-		err := fsutil.Mkdir(save_path, 0755)
+	if config.App.Main.LogPath != "" {
+		err := fsutil.Mkdir(config.App.Main.LogPath, 0755)
 		if err != nil {
 			Logger.Fatal(err)
 		}
 
-		file := fmt.Sprintf("%s/%s_%d.log", save_path, fn, time.Now().Unix())
+		file := fmt.Sprintf("%s/%s_%d.log", config.App.Main.LogPath, fn, time.Now().Unix())
 		f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			Logger.Fatal(err)
@@ -129,20 +128,17 @@ func LogsInit(fn string, is_daemon bool) {
 	Logger.SetOutput(mw)
 }
 
-func DatabaseInit(driver, dsn string, show_sql bool) {
+func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 	if database == nil {
-		// dsn := viper.GetString("database.dsn")
-		// driver := viper.GetString("database.driver")
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
 			Logger.Panic(err)
 		}
 
-		// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, "ex_")
-		// conn.SetTableMapper(tbMapper)
-		// if viper.GetBool("database.show_sql") {
-		// 	conn.ShowSQL(true)
-		// }
+		if prefix != "" {
+			// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, prefix)
+			// conn.SetTableMapper(tbMapper)
+		}
 		if show_sql {
 			conn.ShowSQL(true)
 		}

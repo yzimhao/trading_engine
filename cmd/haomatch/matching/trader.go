@@ -6,10 +6,9 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
@@ -22,7 +21,7 @@ var (
 
 func Run() {
 	teps = make(map[string]*trading_core.TradePair)
-	localdb = filecache.NewStorage(viper.GetString("haomatch.cache"), time.Duration(10))
+	localdb = filecache.NewStorage(config.App.Haomatch.Cache, time.Duration(10))
 	defer localdb.Close()
 
 	wg = sync.WaitGroup{}
@@ -33,7 +32,7 @@ func Run() {
 }
 
 func init_symbols_tengine() {
-	local_config_symbols := app.CstringSlice("local.symbols")
+	local_config_symbols := config.App.Local.Symbols
 	db_symbols := base.NewTSymbols().All()
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
