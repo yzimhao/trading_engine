@@ -38,12 +38,11 @@ func (t *TradeLog) TableName() string {
 	return fmt.Sprintf("trade_log_quote_%s", t.Symbol)
 }
 
-func (t *TradeLog) CreateTable() error {
-	if t.Symbol == "" {
-		return fmt.Errorf("symbol is null")
-	}
-
+func createQuoteTradelogTable(symbol string) error {
 	db := app.Database()
+
+	t := new(TradeLog)
+	t.Symbol = symbol
 
 	exist, err := db.IsTableExist(t.TableName())
 	if err != nil {
@@ -78,8 +77,9 @@ func (t *TradeLog) Save() error {
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
 	logrus.Infof("正在监听%s成交日志...", symbol)
-
 	needPeriods := viper.GetStringSlice("haoquote.period")
+
+	createQuoteTradelogTable(symbol)
 
 	for {
 		func() {
@@ -109,6 +109,8 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				Ask:           data.AskOrderId,
 				Bid:           data.BidOrderId,
 			}
+
+			row.Save()
 
 			// todo 更多的period
 			for _, curp := range period.Periods() {

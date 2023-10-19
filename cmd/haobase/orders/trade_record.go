@@ -54,7 +54,9 @@ func GetTradelogTableName(symbol string) string {
 }
 
 func CreateTradeLogTable(db *xorm.Session, symbol string) error {
-	tr := TradeLog{Symbol: symbol}
+	tr := new(TradeLog)
+	tr.Symbol = symbol
+
 	exist, err := db.IsTableExist(tr)
 	if err != nil {
 		return err

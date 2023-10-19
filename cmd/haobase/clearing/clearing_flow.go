@@ -29,6 +29,7 @@ func newClean(raw trading_core.TradeResult) error {
 
 	//提前创建需要的表, 创建表的操作不能放到事务中
 	orders.CreateTradeLogTable(db, raw.Symbol)
+	//
 
 	item := clean{
 		db:                db,
