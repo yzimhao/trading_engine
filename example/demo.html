@@ -6,6 +6,9 @@
     <title>HaoTrader Simple Example</title>
     <link crossorigin="anonymous" href="/statics/lib/layui-v2.8.17/css/layui.css" rel="stylesheet">
     <script src="/statics/lib/js.cookie.min.js"></script>
+    <script type="text/javascript" src="/statics/lib/klinecharts.min.js"></script>
+    <script crossorigin="anonymous" src="/statics/lib/layui-v2.8.17/layui.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/layui/2.8.17/layui.js"></script> -->
 <style>
 body{
    overflow-x: hidden;
@@ -275,13 +278,12 @@ body{
     
 </script>
 
-    <script type="text/javascript" src="https://unpkg.com/klinecharts/dist/klinecharts.min.js"></script>
-    <script crossorigin="anonymous" src="/statics/lib/layui-v2.8.17/layui.js"></script>
+    
     <script type="text/javascript">
         layui.config({
             base: '/statics/mod/'
         });
-        layui.use(["demo"]);
+        layui.use(["viewdemo"], function(){});
     </script>
 <script type="text/javascript">
     var _hmt = _hmt || [];

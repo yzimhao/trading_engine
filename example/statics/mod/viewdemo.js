@@ -1,41 +1,13 @@
-layui.define(['form',"baseinfo", 'kline', 'websocket'], function(exports){
+layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket'], function(exports){
     var baseinfo = layui.baseinfo;
 
     var layer = layui.layer //弹层
-        // , table = layui.table //表格
         , form = layui.form
-        , $ = layui.$
-        , laytpl = layui.laytpl;
+        , utils = layui.utils
+        , $ = layui.$;
+        
 
-        laytpl.config({open: '{%',close: '%}'});
-
-        function rendertradelog(data) {
-            var logView = $(".trade-log .log"),
-                logTpl = $("#trade-log-tpl").html();
-
-            data['trade_at'] = formatTime(data.trade_at/1e6);
-            laytpl(logTpl).render(data, function (html) {
-                if ($(".log-item").length > 10) {
-                    $(".log-item").last().remove();
-                }
-                logView.after(html);
-            });
-        }
-
-        function renderdepth(info) {
-            var askTpl = $("#depth-ask-tpl").html()
-                , askView = $(".depth-ask")
-                , bidTpl = $("#depth-bid-tpl").html()
-                , bidView = $(".depth-bid");
-
-
-            laytpl(askTpl).render(info.asks.reverse(), function (html) {
-                askView.html(html);
-            });
-            laytpl(bidTpl).render(info.bids, function (html) {
-                bidView.html(html);
-            });
-        }
+        
 
     var obj = {
         bind: function(){
@@ -114,7 +86,7 @@ layui.define(['form',"baseinfo", 'kline', 'websocket'], function(exports){
         load_depth_data: function(){
             $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
                 if(d.ok){
-                    renderdepth(d.data);
+                    utils.renderdepth(d.data);
                 }
             });
         },
@@ -123,7 +95,7 @@ layui.define(['form',"baseinfo", 'kline', 'websocket'], function(exports){
                 if (d.ok) {
                     var data = d.data.reverse();
                     for(var i=0; i<data.length; i++){
-                        rendertradelog(data[i]);
+                        utils.rendertradelog(data[i]);
                     }
 
                 }
@@ -136,13 +108,14 @@ layui.define(['form',"baseinfo", 'kline', 'websocket'], function(exports){
             });
         },
         init: function(){
-            console.log(baseinfo);
             this.bind();
-
+            this.load_system_info();
+            this.load_depth_data();
+            this.load_tradelog_data();
         }
     };
     
     obj.init();
-    exports('demo', obj);
+    exports('viewdemo', obj);
 });
 

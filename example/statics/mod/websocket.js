@@ -1,6 +1,8 @@
-layui.define(function(exports){
-    var layer = layui.layer //弹层
-    
+layui.define(["layer", "utils", "kchart"],function(exports){
+    var layer = layui.layer;
+    var utils = layui.utils;
+    var $ = layui.$;
+
     var socket = function () {
         if (window["WebSocket"]) {
             var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
@@ -33,16 +35,16 @@ layui.define(function(exports){
                     var msg = JSON.parse(messages[i]);
                     console.log(msg);
                     if (msg.type == "depth."+CURRENT_SYMBOL) {
-                        renderdepth(msg.body);
+                        utils.renderdepth(msg.body);
                     } else if (msg.type == "tradelog." +CURRENT_SYMBOL) {
-                        rendertradelog(msg.body);
+                        utils.rendertradelog(msg.body);
                     } else if (msg.type == "new_order."+ CURRENT_SYMBOL) {
                         var myorderView = $(".myorder"),
                             myorderTpl = $("#myorder-tpl").html();
                         
                         var data = msg.body;
 
-                        data['create_time'] = formatTime(data.create_time);
+                        data['create_time'] = utils.formatTime(data.create_time);
                         laytpl(myorderTpl).render(data, function (html) {
                             if ($(".order-item").length > 30) {
                                 $(".order-item").last().remove();
@@ -50,7 +52,6 @@ layui.define(function(exports){
                             myorderView.after(html);
                         });
                     } else if (msg.type == "latest_price."+CURRENT_SYMBOL) {
-                        latest_price = msg.body.latest_price;
                         $(".latest-price").html(msg.body.latest_price);
                     } else if (msg.type =="kline.m1."+CURRENT_SYMBOL) {
                         var data = msg.body;

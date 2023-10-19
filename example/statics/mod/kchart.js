@@ -58,5 +58,5 @@ layui.define(["baseinfo"], function(exports){
     kk.init_chart();
     kk.load_kline_data();
 
-    exports('kline', kk);
+    exports('kchart', kchart);
 });
