@@ -22,6 +22,9 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
+			app.ConfigInit(ctx.String("config"))
+			app.DatabaseInit(app.Cstring("database.driver"), app.Cstring("database.dsn"), app.Cbool("database.show_sql"))
+			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
 			return nil
 		},
 
@@ -35,7 +38,7 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"))
+
 			app.LogsInit("haoquote.run", ctx.Bool("deamon"))
 
 			if viper.GetString("main.mode") != "prod" {
@@ -61,8 +64,6 @@ func main() {
 
 			}
 
-			app.DatabaseInit(app.Cstring("database.driver"), app.Cstring("database.dsn"), app.Cbool("database.show_sql"))
-			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
 			quote.Run()
 			return nil
 		},

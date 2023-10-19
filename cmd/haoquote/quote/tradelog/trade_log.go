@@ -75,8 +75,6 @@ func (t *TradeLog) Save() error {
 	return err
 }
 
-func Init() {}
-
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
 	logrus.Infof("正在监听%s成交日志...", symbol)

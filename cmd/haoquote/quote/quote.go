@@ -1,28 +1,29 @@
 package quote
 
 import (
-	"strings"
-
+	"github.com/gookit/goutil/arrutil"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/tradelog"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/www"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
 func Run() {
 	init_symbols_quote()
-	tradelog.Init()
 	www.Run()
 }
 
 func init_symbols_quote() {
-	symbols := viper.GetStringMap("symbol")
 	filecache.NewStorage(viper.GetString("haoquote.storage_path"), 1)
 
-	for k, attr := range symbols {
-		symbol := strings.ToLower(k)
-		price_digit := attr.(map[string]any)["price_digit"].(int64)
-		qty_digit := attr.(map[string]any)["qty_digit"].(int64)
-		go tradelog.Monitor(symbol, price_digit, qty_digit)
+	local_config_symbols := app.CstringSlice("local.symbols")
+	db_symbols := base.NewTSymbols().All()
+	for _, item := range db_symbols {
+		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
+			// teps[item.Symbol] = NewTengine(item.Symbol, item.PricePrecision, item.QtyPrecision)
+			go tradelog.Monitor(item.Symbol, int64(item.PricePrecision), int64(item.QtyPrecision))
+		}
 	}
 }
