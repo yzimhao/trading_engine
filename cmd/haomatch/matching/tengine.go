@@ -2,13 +2,13 @@ package matching
 
 import (
 	"encoding/json"
-	"strings"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -79,8 +79,8 @@ func (t *tengine) queue_monitor() {
 		if t.tp.TriggerEvent() {
 			raw := Order{
 				OrderId:   qi.GetUniqueId(),
-				Side:      qi.GetOrderSide().String(),
-				OrderType: "limit",
+				Side:      qi.GetOrderSide(),
+				OrderType: trading_core.OrderTypeLimit,
 				Price:     qi.GetPrice().String(),
 				Qty:       qi.GetQuantity().String(),
 				At:        qi.GetCreateTime(),
@@ -96,8 +96,8 @@ func (t *tengine) queue_monitor() {
 		if t.tp.TriggerEvent() {
 			raw := Order{
 				OrderId:   qi.GetUniqueId(),
-				Side:      qi.GetOrderSide().String(),
-				OrderType: "limit",
+				Side:      qi.GetOrderSide(),
+				OrderType: trading_core.OrderTypeLimit,
 				Price:     qi.GetPrice().String(),
 				Qty:       "0",
 				At:        qi.GetCreateTime(),
@@ -133,10 +133,10 @@ func (t *tengine) restore() {
 			var data Order
 			json.Unmarshal(raw, &data)
 
-			if data.Side == "ask" {
-				t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
+			if data.Side == trading_core.OrderSideSell {
+				t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
 			} else {
-				t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
+				t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
 			}
 		}(i, v)
 	}
@@ -181,33 +181,33 @@ func (t *tengine) pull_new_order() {
 
 				if data.OrderId != "" {
 					app.Logger.Debugf("收到新订单: %s", raw)
-					side := strings.ToLower(data.Side)
-					order_type := strings.ToLower(data.OrderType)
+					// side := strings.ToLower(data.Side)
+					// order_type := strings.ToLower(data.OrderType)
 
-					if order_type == string(trading_core.OrderTypeLimit) {
-						if side == trading_core.OrderSideSell.String() {
-							t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
-						} else if side == trading_core.OrderSideBuy.String() {
-							t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
+					if data.OrderType == trading_core.OrderTypeLimit {
+						if data.Side == trading_core.OrderSideSell {
+							t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
+						} else if data.Side == trading_core.OrderSideBuy {
+							t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
 						} else {
 							app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 						}
-					} else if order_type == string(trading_core.OrderTypeMarket) {
-						if d(data.Qty).Cmp(d("0")) > 0 {
+					} else if data.OrderType == trading_core.OrderTypeMarket {
+						if utils.D(data.Qty).Cmp(utils.D("0")) > 0 {
 							// 按成交量
-							if side == trading_core.OrderSideSell.String() {
-								t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, d(data.Qty), data.At))
-							} else if side == trading_core.OrderSideBuy.String() {
-								t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
+							if data.Side == trading_core.OrderSideSell {
+								t.tp.PushNewOrder(trading_core.NewAskMarketQtyItem(data.OrderId, utils.D(data.Qty), data.At))
+							} else if data.Side == trading_core.OrderSideBuy {
+								t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, utils.D(data.Qty), utils.D(data.MaxAmount), data.At))
 							} else {
 								app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 							}
-						} else if d(data.Amount).Cmp(d("0")) > 0 {
+						} else if utils.D(data.Amount).Cmp(utils.D("0")) > 0 {
 							//按成交金额
-							if side == trading_core.OrderSideSell.String() {
-								t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, d(data.Qty), d(data.MaxQty), data.At))
-							} else if side == trading_core.OrderSideBuy.String() {
-								t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
+							if data.Side == trading_core.OrderSideSell {
+								t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, utils.D(data.Qty), utils.D(data.MaxQty), data.At))
+							} else if data.Side == trading_core.OrderSideBuy {
+								t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, utils.D(data.Amount), data.At))
 							} else {
 								app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 							}
@@ -247,10 +247,10 @@ func (t *tengine) pull_cancel_order() {
 
 			if data.OrderId != "" {
 				app.Logger.Debugf("收到取消订单: %s %s", key, raw)
-				side := strings.ToLower(data.Side)
-				if side == "ask" {
+
+				if data.Side == trading_core.OrderSideSell {
 					t.tp.CancelOrder(trading_core.OrderSideSell, data.OrderId)
-				} else if side == "bid" {
+				} else if data.Side == trading_core.OrderSideBuy {
 					t.tp.CancelOrder(trading_core.OrderSideBuy, data.OrderId)
 				} else {
 					app.Logger.Errorf("取消订单参数错误: %s 类型只能是ask/bid", raw)

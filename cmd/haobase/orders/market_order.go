@@ -82,8 +82,8 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := matching.Order{
 			OrderId:   neworder.OrderId,
-			OrderType: neworder.OrderType.String(),
-			Side:      neworder.OrderSide.String(),
+			OrderType: neworder.OrderType,
+			Side:      neworder.OrderSide,
 			Qty:       neworder.Quantity,
 			MaxQty:    neworder.FreezeQty,
 			Amount:    neworder.Amount,
@@ -169,8 +169,8 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := matching.Order{
 			OrderId:   neworder.OrderId,
-			OrderType: neworder.OrderType.String(),
-			Side:      neworder.OrderSide.String(),
+			OrderType: neworder.OrderType,
+			Side:      neworder.OrderSide,
 			Amount:    neworder.Amount,
 			MaxQty:    neworder.FreezeQty,
 			MaxAmount: neworder.FreezeAmount,

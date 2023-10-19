@@ -91,8 +91,8 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
 		data := matching.Order{
 			OrderId:   neworder.OrderId,
-			OrderType: neworder.OrderType.String(),
-			Side:      neworder.OrderSide.String(),
+			OrderType: neworder.OrderType,
+			Side:      neworder.OrderSide,
 			Price:     neworder.Price,
 			Qty:       neworder.Quantity,
 			MaxQty:    "0",
