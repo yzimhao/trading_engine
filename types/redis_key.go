@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type RedisKey string
@@ -22,7 +22,7 @@ const (
 
 func (r RedisKey) Format(symbol string) string {
 	key := strings.Replace(r.String(), "{symbol}", symbol, -1)
-	key = strings.Replace(key, "{prefix}", viper.GetString("redis.prefix"), -1)
+	key = strings.Replace(key, "{prefix}", config.App.Redis.Prefix, -1)
 	return key
 }
 
