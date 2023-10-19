@@ -6,57 +6,74 @@ utils = "github.com/yzimhao/trading_engine/utils/app"
 
 version ?= "1.0.0"
 
+mainname = "haotrader"
 distdir = "./dist"
+exedir = "$(distdir)/$(mainname)"
 
 
 
 test:
 	go test -v ./...
 dist:
-	mkdir -p $(distdir)
+	mkdir -p $(exedir)
 clean:
 	rm -rf $(distdir)
 
 
-define build_haotrader
+define build_haomatch
 	@echo "Building for haotrader $1 $2"
-	mkdir -p $(distdir)/haotrader
-	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(distdir)/haotrader/haotrader$3 cmd/haotrader/main.go
-	cp README.md $(distdir)/haotrader/
-	cp docs/haotrader.md $(distdir)/haotrader/
-	upx -9 $(distdir)/haotrader/haotrader$3
-	
-	$(call build_haoquote,$1,$2,$3,$4)
-	
-	cp -rf cmd/config.toml $(distdir)/haotrader/config.toml_sample
-	
-	# tar
-	cd $(distdir) && tar czvf haotrader.$(version).$1-$2.tar.gz `basename $(distdir)/haotrader`
-	# zip
-	cd $(distdir) && zip -r -m haotrader.$(version).$1-$2.zip `basename $(distdir)/haotrader` -x "*/\.*"
+	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haomatch$3 cmd/haomatch/main.go
+	upx -9 $(exedir)/haomatch$3
 endef
 
 
 define build_haoquote
 	@echo "Building for haoquote $1 $2"
-	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(distdir)/haotrader/haoquote$3 cmd/haoquote/main.go
-	upx -9 $(distdir)/haotrader/haoquote$3
+	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haoquote$3 cmd/haoquote/main.go
+	upx -9 $(exedir)/haoquote$3
 endef
 
 
+define build_haobase
+	@echo "Building for haobase $1 $2"
+	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haobase$3 cmd/haobase/main.go
+	upx -9 $(exedir)/haobase$3
+endef
+
+
+copy_doc:
+	cp README.md $(exedir)/
+	cp -rf cmd/config.toml $(exedir)/config.toml_sample
+
+define zipfile
+	# tar
+	cd $(distdir) && tar czvf $(mainname).$(version).$1-$2.tar.gz `basename $(exedir)`
+	# zip
+	cd $(distdir) && zip -r -m $(mainname).$(version).$1-$2.zip `basename $(exedir)` -x "*/\.*"
+endef
+
 build_linux_amd64:
-	$(call build_haotrader,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
+	@make copy_doc
+	$(call build_haobase,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
+	$(call build_haomatch,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
+	$(call build_haoquote,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
+	
+	$(call zipfile,linux,amd64)
+	
 
 build_darwin_amd64:
-	$(call build_haotrader,darwin,amd64,'','')
+	@make copy_doc
+	$(call build_haobase,darwin,amd64,'','')
+	$(call build_haomatch,darwin,amd64,'','')
+	$(call build_haoquote,darwin,amd64,'','')
+	
+	$(call zipfile,darwin,amd64)
 
-build_windows_amd64:
-	$(call build_haotrader,windows,amd64,'.exe','')
 
 release: clean dist
 	@make build_linux_amd64
 	@make build_darwin_amd64
-	# @make build_windows_amd64
+	
 
 
 app_example:

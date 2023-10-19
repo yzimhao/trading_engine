@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haotrader/matching"
+	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 

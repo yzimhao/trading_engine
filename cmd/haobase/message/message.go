@@ -1,6 +1,8 @@
 package message
 
 import (
+	"encoding/json"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
@@ -9,17 +11,25 @@ import (
 )
 
 func Subscribe() {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
 	topic := types.FormatWsMessage.Format("")
 
 	go func() {
+		rdc := app.RedisPool().Get()
+		defer rdc.Close()
+
 		psc := redis.PubSubConn{Conn: rdc}
 		psc.Subscribe(topic)
 		for {
 			switch v := psc.Receive().(type) {
 			case redis.Message:
-				logrus.Infof("%s: message: %s\n", v.Channel, v.Data)
+				logrus.Infof("广播的消息 %s: message: %s\n", v.Channel, v.Data)
+				var send_data ws.MsgBody
+				err := json.Unmarshal(v.Data, &send_data)
+				if err != nil {
+					app.Logger.Errorf("解析消息出错 %s", v.Data)
+					continue
+				}
+				ws.M.Broadcast <- send_data
 			case redis.Subscription:
 				logrus.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
 			case error:
@@ -36,7 +46,6 @@ func Publish(msg ws.MsgBody) {
 
 	raw := msg.JSON()
 	logrus.Infof("message %s publish: %s", topic, raw)
-
 	if _, err := rdc.Do("Publish", topic, raw); err != nil {
 		logrus.Warnf("广播%s消息: %s err: %s", topic, raw, err.Error())
 	}
