@@ -1,6 +1,8 @@
 package middle
 
 import (
+	"regexp"
+
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
@@ -19,6 +21,13 @@ func CheckLogin() gin.HandlerFunc {
 			}
 
 			if user_id != "" {
+				pp := regexp.MustCompile(`^[a-z0-9]{4,10}$`)
+				if !pp.MatchString(user_id) {
+					utils.ResponseFailJson(c, "用户名不符合规则: ^[a-z0-9]{4,10}$")
+					c.Abort()
+					return
+				}
+
 				if assets.BalanceOfTotal(user_id, "usd").Equal(decimal.Zero) {
 					assets.SysRecharge(user_id, "usd", "10000.00", "sys_recharge")
 				}
