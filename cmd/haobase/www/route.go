@@ -11,7 +11,7 @@ import (
 func Run() {
 	g := gin.New()
 	router(g)
-	g.Run(viper.GetString("haobase.http.host"))
+	g.Run(viper.GetString("haobase.http.listen"))
 }
 
 func router(r *gin.Engine) {

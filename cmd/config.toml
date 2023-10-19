@@ -38,12 +38,12 @@ cache="haoquote.db"
 period=["m1", "m5", "d1", "w1", "mn"]
 
 [haoquote.http]
-host="0.0.0.0:8081"
+listen="0.0.0.0:8081"
 debug=true
 
 
 [haobase.http]
-host="0.0.0.0:8082"
+listen="0.0.0.0:8082"
 debug=true
 
 

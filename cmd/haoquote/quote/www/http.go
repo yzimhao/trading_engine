@@ -16,20 +16,20 @@ var ()
 
 func Run() {
 	publish_depth()
-	http_start(viper.GetString("haoquote.http.host"))
+	http_start()
 }
 
-func http_start(addr string) {
+func http_start() {
 	if viper.GetBool("haoquote.http.debug") {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	logrus.Infof("HTTP服务监听: %s", viper.GetString("haoquote.http.listen"))
 	g := gin.New()
-	logrus.Infof("HTTP服务监听: %s", addr)
 	router(g)
-	g.Run(addr)
+	g.Run(viper.GetString("haoquote.http.listen"))
 }
 
 func router(router *gin.Engine) {
