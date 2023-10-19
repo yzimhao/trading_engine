@@ -1,11 +1,11 @@
-package haoquote
+package quote
 
 import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/haoquote/tradelog"
-	"github.com/yzimhao/trading_engine/haoquote/www"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/tradelog"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/www"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 

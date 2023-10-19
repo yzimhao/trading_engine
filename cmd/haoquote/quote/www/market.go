@@ -3,7 +3,7 @@ package www
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
-	"github.com/yzimhao/trading_engine/haoquote/period"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 )

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/haoquote/period"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )

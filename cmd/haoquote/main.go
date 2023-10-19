@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/haoquote"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -63,7 +63,7 @@ func main() {
 
 			app.DatabaseInit(app.Cstring("database.driver"), app.Cstring("database.dsn"), app.Cbool("database.show_sql"))
 			app.RedisInit(app.Cstring("redis.host"), app.Cstring("redis.password"), app.Cint("redis.db"))
-			haoquote.Run()
+			quote.Run()
 			return nil
 		},
 	}

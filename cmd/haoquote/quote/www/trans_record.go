@@ -3,7 +3,7 @@ package www
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/haoquote/tradelog"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/tradelog"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )

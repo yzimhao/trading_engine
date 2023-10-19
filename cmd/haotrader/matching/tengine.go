@@ -1,4 +1,4 @@
-package haotrader
+package matching
 
 import (
 	"encoding/json"
@@ -167,7 +167,11 @@ func (t *tengine) pull_new_order() {
 				return
 			}
 
-			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
+			raw, err := redis.Bytes(rdc.Do("Lpop", key))
+			if err != nil {
+				logrus.Errorf("lpop %s err: %s", key, err.Error())
+				return
+			}
 
 			go func(raw []byte) {
 				var data Order
