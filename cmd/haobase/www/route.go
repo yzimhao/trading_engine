@@ -2,16 +2,16 @@ package www
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/order"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Run() {
 	g := gin.New()
 	router(g)
-	g.Run(viper.GetString("haobase.http.listen"))
+	g.Run(config.App.Haobase.Listen)
 }
 
 func router(r *gin.Engine) {

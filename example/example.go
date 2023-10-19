@@ -34,6 +34,7 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
+			app.ConfigInit(ctx.String("config"))
 			return nil
 		},
 
@@ -47,12 +48,8 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"))
-			app.LogsInit("run.log", ctx.Bool("deamon"))
 
-			if viper.GetString("main.mode") != "prod" {
-				logrus.Infof("当前运行在%s模式下，生产环境时main.mode请务必成prod", viper.GetString("main.mode"))
-			}
+			app.LogsInit("run.log", ctx.Bool("deamon"))
 
 			if ctx.Bool("deamon") {
 				context, d, err := app.Deamon("run.pid", "")

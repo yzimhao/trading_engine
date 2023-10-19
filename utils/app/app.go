@@ -49,8 +49,7 @@ func ConfigInit(fp string) {
 	}
 
 	if err := viper.Unmarshal(&config.App); err != nil {
-		fmt.Printf("Error unmarshaling config: %s\n", err)
-		return
+		logrus.Panicf("Error unmarshaling config: %s %s\n", fp, err)
 	}
 
 	time.LoadLocation(config.App.Main.TimeZone)

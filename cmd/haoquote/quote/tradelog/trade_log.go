@@ -8,7 +8,6 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
@@ -16,6 +15,7 @@ import (
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 var ()
@@ -76,9 +76,7 @@ func (t *TradeLog) Save() error {
 
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
-	logrus.Infof("正在监听%s成交日志...", symbol)
-	needPeriods := viper.GetStringSlice("haoquote.period")
-
+	logrus.Infof("监听 %s 成交日志...", symbol)
 	createQuoteTradelogTable(symbol)
 
 	for {
@@ -115,7 +113,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 			// todo 更多的period
 			for _, curp := range period.Periods() {
 				func(cp period.PeriodType) {
-					if !arrutil.StringsHas(needPeriods, string(cp)) {
+					if !arrutil.StringsHas(config.App.Haoquote.Period, string(cp)) {
 						return
 					}
 

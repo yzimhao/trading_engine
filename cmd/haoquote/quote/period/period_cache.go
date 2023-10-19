@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
@@ -21,7 +21,7 @@ func (c periodCachekey) Format(pt PeriodType, symbol string, st, et int64) strin
 }
 
 func newCache() *filecache.Storage {
-	return filecache.NewStorage(viper.GetString("haoquote.cache"), 1)
+	return filecache.NewStorage(config.App.Haoquote.Cache, 1)
 }
 
 func GetYesterdayClose(symbol string) (string, bool) {

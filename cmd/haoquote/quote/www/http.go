@@ -3,13 +3,13 @@ package www
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	_ "github.com/yzimhao/trading_engine/docs/api" // main 文件中导入 docs 包
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 var ()
@@ -20,16 +20,16 @@ func Run() {
 }
 
 func http_start() {
-	if viper.GetBool("haoquote.http.debug") {
+	if config.App.Haoquote.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	logrus.Infof("HTTP服务监听: %s", viper.GetString("haoquote.http.listen"))
+	logrus.Infof("HTTP服务: %s", config.App.Haoquote.Listen)
 	g := gin.New()
 	router(g)
-	g.Run(viper.GetString("haoquote.http.listen"))
+	g.Run(config.App.Haoquote.Listen)
 }
 
 func router(router *gin.Engine) {
