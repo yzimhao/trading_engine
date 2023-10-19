@@ -32,7 +32,7 @@ func FreezeTotalAssets(db *xorm.Session, user_id string, symbol string, business
 func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
 
 	if utils.D(freeze_amount).Cmp(utils.D("0")) < 0 {
-		return false, fmt.Errorf("冻结金额必须大于等于0")
+		return false, fmt.Errorf("冻结数量必须大于等于0")
 	}
 
 	item := Assets{UserId: user_id, Symbol: symbol}
@@ -50,7 +50,7 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 	item.Freeze = utils.D(item.Freeze).Add(utils.D(freeze_amount)).String()
 
 	if utils.D(item.Available).Cmp(utils.D("0")) < 0 {
-		return false, fmt.Errorf("冻结金额超出可用资金")
+		return false, fmt.Errorf("冻结数量超出可用个数")
 	}
 
 	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).AllCols().Update(&item)
