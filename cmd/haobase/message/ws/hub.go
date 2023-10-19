@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the
@@ -105,7 +105,7 @@ func (h *Hub) ServeWs(ctx *gin.Context) {
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		logrus.Errorf("[wss] upgrader.Upgrade %s", err)
+		app.Logger.Errorf("[wss] upgrader.Upgrade %s", err)
 		return
 	}
 

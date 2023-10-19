@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -28,10 +27,10 @@ func UnLock(lt LockType, order_id string) {
 
 	key := fmt.Sprintf("%s.%s", lt, order_id)
 	if _, err := rdc.Do("DECR", key); err != nil {
-		logrus.Warnf("clearing unlock %s err: %s", order_id, err.Error())
+		app.Logger.Warnf("clearing unlock %s err: %s", order_id, err.Error())
 	}
 	if _, err := rdc.Do("Expire", key, 300); err != nil {
-		logrus.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
+		app.Logger.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
 	}
 }
 

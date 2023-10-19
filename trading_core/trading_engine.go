@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"github.com/sirupsen/logrus"
 )
 
 type TradePair struct {
@@ -448,7 +447,7 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	}
 
 	if Debug {
-		logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
+		// logrus.Infof("%s tradelog: %+v", t.Symbol, tradelog)
 	}
 
 	t.ChTradeResult <- tradelog

@@ -7,7 +7,6 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
@@ -34,7 +33,7 @@ func run_clearing(symbol string) {
 
 func watch_redis_list(symbol string) {
 	key := types.FormatTradeResult.Format(symbol)
-	logrus.Infof("正在监听%s成交日志 结算...", symbol)
+	app.Logger.Infof("监听%s成交日志，等待结算...", symbol)
 	for {
 		func() {
 			rdc := app.RedisPool().Get()
@@ -46,8 +45,7 @@ func watch_redis_list(symbol string) {
 			}
 
 			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
-			logrus.Infof("%s成交记录: %s", symbol, raw)
-
+			app.Logger.Infof("收到%s成交记录: %s", symbol, raw)
 			go clearing_trade_order(symbol, raw)
 		}()
 
@@ -58,7 +56,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 	var data trading_core.TradeResult
 	err := json.Unmarshal(raw, &data)
 	if err != nil {
-		logrus.Errorf("%s成交日志格式错误: %s %s", symbol, err.Error(), raw)
+		app.Logger.Errorf("%s成交日志格式错误: %s %s", symbol, err.Error(), raw)
 		return
 	}
 
@@ -71,7 +69,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 		go func() {
 			for {
 				time.Sleep(time.Duration(50) * time.Millisecond)
-				logrus.Infof("等待订单 %s 其他结算完成....", data.Last)
+				app.Logger.Infof("等待订单%s 其他成交结算完成...", data.Last)
 				if orders.GetLock(orders.ClearingLock, data.Last) == 1 {
 					newClean(data)
 					break
@@ -85,7 +83,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 	defer rdc.Close()
 	quote_key := types.FormatQuoteTradeResult.Format(symbol)
 	if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
-		logrus.Errorf("rpush %s err: %s", quote_key, err.Error())
+		app.Logger.Errorf("RPUSH %s err: %s", quote_key, err.Error())
 	}
 }
 

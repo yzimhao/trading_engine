@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
@@ -48,7 +47,7 @@ func push_depth_message(symbol string) {
 			func() (err error) {
 				defer func() {
 					if err != nil {
-						logrus.Errorf("push_depth_message err: %s", err.Error())
+						app.Logger.Errorf("push_depth_message err: %s", err.Error())
 						time.Sleep(time.Duration(3) * time.Second)
 					}
 				}()
@@ -83,7 +82,7 @@ func push_depth_message(symbol string) {
 				//计算24H涨跌幅
 				market_24h(symbol, data.Price)
 
-				time.Sleep(time.Duration(1) * time.Second)
+				time.Sleep(time.Duration(300) * time.Millisecond)
 				return nil
 			}()
 		}

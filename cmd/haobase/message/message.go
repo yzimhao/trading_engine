@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -22,7 +21,7 @@ func Subscribe() {
 		for {
 			switch v := psc.Receive().(type) {
 			case redis.Message:
-				logrus.Infof("广播的消息 %s: message: %s\n", v.Channel, v.Data)
+				app.Logger.Infof("收到消息[topic:%s]: %s", v.Channel, v.Data)
 				var send_data ws.MsgBody
 				err := json.Unmarshal(v.Data, &send_data)
 				if err != nil {
@@ -31,9 +30,9 @@ func Subscribe() {
 				}
 				ws.M.Broadcast <- send_data
 			case redis.Subscription:
-				logrus.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
+				app.Logger.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
 			case error:
-				logrus.Errorf("message %s subscribe: %s", topic, v.Error())
+				app.Logger.Errorf("message %s subscribe: %s", topic, v.Error())
 			}
 		}
 	}()
@@ -45,8 +44,8 @@ func Publish(msg ws.MsgBody) {
 	topic := types.FormatWsMessage.Format("")
 
 	raw := msg.JSON()
-	logrus.Infof("message %s publish: %s", topic, raw)
+	app.Logger.Infof("广播消息[topic:%s]: %s", topic, raw)
 	if _, err := rdc.Do("Publish", topic, raw); err != nil {
-		logrus.Warnf("广播%s消息: %s err: %s", topic, raw, err.Error())
+		app.Logger.Warnf("Publish: %s %s err: %s", topic, raw, err.Error())
 	}
 }

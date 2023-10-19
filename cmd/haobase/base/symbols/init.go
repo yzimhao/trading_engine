@@ -1,7 +1,6 @@
 package symbols
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -19,7 +18,7 @@ func init_db() {
 	)
 
 	if err != nil {
-		logrus.Panic(err)
+		app.Logger.Panic(err)
 	}
 }
 
@@ -54,7 +53,7 @@ func DemoData() {
 	if empty, _ := db.IsTableEmpty(new(Varieties)); empty {
 		_, err := db.Insert(symbols)
 		if err != nil {
-			logrus.Error(err)
+			app.Logger.Error(err)
 		}
 	}
 
@@ -94,7 +93,7 @@ func DemoData() {
 	if empty, _ := db.IsTableEmpty(new(TradingVarieties)); empty {
 		_, err := db.Insert(pairs)
 		if err != nil {
-			logrus.Error(err)
+			app.Logger.Error(err)
 		}
 	}
 }

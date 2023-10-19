@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/sevlyar/go-daemon"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -39,10 +38,10 @@ func main() {
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("deamon") {
-				logrus.Info("开始守护进程")
+
 				context, d, err := app.Deamon("haoquote.pid", "")
 				if err != nil {
-					logrus.Fatal("创建守护进程失败, err:", err.Error())
+					app.Logger.Fatal("创建守护进程失败, err:", err.Error())
 				}
 				if d != nil {
 					return nil
@@ -51,7 +50,7 @@ func main() {
 				defer func(context *daemon.Context) {
 					err := context.Release()
 					if err != nil {
-						logrus.Printf("释放失败:%s", err.Error())
+						app.Logger.Printf("释放失败:%s", err.Error())
 					}
 				}(context)
 
@@ -63,6 +62,6 @@ func main() {
 	}
 
 	if err := appm.Run(os.Args); err != nil {
-		logrus.Fatal(err)
+		app.Logger.Fatal(err)
 	}
 }

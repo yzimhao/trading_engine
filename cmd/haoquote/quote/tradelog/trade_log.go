@@ -7,7 +7,6 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
@@ -76,7 +75,7 @@ func (t *TradeLog) Save() error {
 
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
-	logrus.Infof("监听 %s 成交日志...", symbol)
+	app.Logger.Infof("监听 %s 成交日志...", symbol)
 	createQuoteTradelogTable(symbol)
 
 	for {
@@ -93,7 +92,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 			var data trading_core.TradeResult
 			err := json.Unmarshal(raw, &data)
 			if err != nil {
-				logrus.Errorf("%s 解析: %s 错误: %s", key, raw, err)
+				app.Logger.Errorf("%s 解析: %s 错误: %s", key, raw, err)
 				return
 			}
 
@@ -120,7 +119,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 					row := period.NewPeriod(symbol, cp, data)
 					err = save_db(row)
 					if err != nil {
-						logrus.Errorf("保存period数据出错: %s", err)
+						app.Logger.Errorf("保存period数据出错: %s", err)
 						return
 					}
 

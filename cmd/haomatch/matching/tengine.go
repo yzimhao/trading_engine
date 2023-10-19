@@ -7,7 +7,6 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -65,7 +64,7 @@ func (t *tengine) push_depth_to_redis() {
 
 				raw := data.JSON()
 				if _, err := rdc.Do("SET", depth_topic, raw); err != nil {
-					logrus.Errorf("set redis %s err: %s", depth_topic, err)
+					app.Logger.Errorf("set redis %s err: %s", depth_topic, err)
 				}
 			}()
 		default:
@@ -88,7 +87,7 @@ func (t *tengine) queue_monitor() {
 			}
 
 			if qi.GetQuantity().Cmp(decimal.Zero) > 0 {
-				logrus.Debugf("queue event update: %#v", raw)
+				app.Logger.Debugf("queue event update: %#v", raw)
 				go localdb.Set(t.symbol, raw.OrderId, raw.Json())
 			}
 		}
@@ -103,7 +102,7 @@ func (t *tengine) queue_monitor() {
 				Qty:       "0",
 				At:        qi.GetCreateTime(),
 			}
-			logrus.Debugf("queue event remove: %#v", raw)
+			app.Logger.Debugf("queue event remove: %#v", raw)
 			go localdb.Remove(t.symbol, raw.OrderId)
 		}
 
@@ -117,7 +116,7 @@ func (t *tengine) queue_monitor() {
 func (t *tengine) restore() {
 
 	defer func() {
-		logrus.Infof("[%s]数据恢复 已完成", t.symbol)
+		app.Logger.Infof("数据恢复 [%s] 已完成", t.symbol)
 		close(t.restore_done_signal)
 		t.tp.SetTriggerEvent(true)
 		t.tp.SetPauseMatch(false)
@@ -127,10 +126,10 @@ func (t *tengine) restore() {
 
 	//恢复orderbook
 	data := localdb.Find(t.symbol, "")
-	logrus.Infof("正在恢复[%s]数据，共%d条", t.symbol, len(data))
+	app.Logger.Infof("正在恢复[%s]数据，共%d条", t.symbol, len(data))
 	for i, v := range data {
 		func(n int, raw []byte) {
-			logrus.Infof("恢复数据[%s]第%d条: %s", t.symbol, n+1, raw)
+			app.Logger.Infof("恢复数据[%s]第%d条: %s", t.symbol, n+1, raw)
 			var data Order
 			json.Unmarshal(raw, &data)
 
@@ -155,7 +154,7 @@ func (t *tengine) restore() {
 func (t *tengine) pull_new_order() {
 	<-t.restore_done_signal
 	key := types.FormatNewOrder.Format(t.symbol)
-	logrus.Infof("正在监听redis队列: %s", key)
+	app.Logger.Infof("监听队列: %s", key)
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
@@ -169,7 +168,7 @@ func (t *tengine) pull_new_order() {
 
 			raw, err := redis.Bytes(rdc.Do("Lpop", key))
 			if err != nil {
-				logrus.Errorf("lpop %s err: %s", key, err.Error())
+				app.Logger.Errorf("lpop %s err: %s", key, err.Error())
 				return
 			}
 
@@ -177,11 +176,11 @@ func (t *tengine) pull_new_order() {
 				var data Order
 				err := json.Unmarshal(raw, &data)
 				if err != nil {
-					logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
+					app.Logger.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
 				}
 
 				if data.OrderId != "" {
-					logrus.Debugf("%s队列LPop: %s", key, raw)
+					app.Logger.Debugf("收到新订单: %s", raw)
 					side := strings.ToLower(data.Side)
 					order_type := strings.ToLower(data.OrderType)
 
@@ -191,7 +190,7 @@ func (t *tengine) pull_new_order() {
 						} else if side == trading_core.OrderSideBuy.String() {
 							t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, d(data.Price), d(data.Qty), data.At))
 						} else {
-							logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+							app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 						}
 					} else if order_type == string(trading_core.OrderTypeMarket) {
 						if d(data.Qty).Cmp(d("0")) > 0 {
@@ -201,7 +200,7 @@ func (t *tengine) pull_new_order() {
 							} else if side == trading_core.OrderSideBuy.String() {
 								t.tp.PushNewOrder(trading_core.NewBidMarketQtyItem(data.OrderId, d(data.Qty), d(data.MaxAmount), data.At))
 							} else {
-								logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+								app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 							}
 						} else if d(data.Amount).Cmp(d("0")) > 0 {
 							//按成交金额
@@ -210,10 +209,10 @@ func (t *tengine) pull_new_order() {
 							} else if side == trading_core.OrderSideBuy.String() {
 								t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, d(data.Amount), data.At))
 							} else {
-								logrus.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
+								app.Logger.Errorf("新订单参数错误: %s side只能是sell/buy", raw)
 							}
 						} else {
-							logrus.Warnf("市价订单参数错误: %s %s", t.symbol, raw)
+							app.Logger.Warnf("市价订单参数错误: %s", raw)
 						}
 					}
 				}
@@ -227,7 +226,7 @@ func (t *tengine) pull_cancel_order() {
 	<-t.restore_done_signal
 
 	key := types.FormatCancelOrder.Format(t.symbol)
-	logrus.Infof("正在监听redis队列: %s", key)
+	app.Logger.Infof("监听取消订单队列: %s", key)
 	for {
 		func() {
 			rdc := app.RedisPool().Get()
@@ -243,18 +242,18 @@ func (t *tengine) pull_cancel_order() {
 			var data cancel_order
 			err := json.Unmarshal(raw, &data)
 			if err != nil {
-				logrus.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
+				app.Logger.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
 			}
 
 			if data.OrderId != "" {
-				logrus.Debugf("%s队列LPop: %s", key, raw)
+				app.Logger.Debugf("收到取消订单: %s %s", key, raw)
 				side := strings.ToLower(data.Side)
 				if side == "ask" {
 					t.tp.CancelOrder(trading_core.OrderSideSell, data.OrderId)
 				} else if side == "bid" {
 					t.tp.CancelOrder(trading_core.OrderSideBuy, data.OrderId)
 				} else {
-					logrus.Errorf("取消订单参数错误: %s 类型只能是ask/bid", raw)
+					app.Logger.Errorf("取消订单参数错误: %s 类型只能是ask/bid", raw)
 				}
 			}
 
@@ -271,7 +270,7 @@ func (t *tengine) monitor_result() {
 			go func() {
 				raw, err := json.Marshal(data)
 				if err != nil {
-					logrus.Warnf("log: %v %s", data, err.Error())
+					app.Logger.Warnf("log: %v %s", data, err.Error())
 					return
 				}
 				t.push_match_result(raw)
@@ -290,7 +289,7 @@ func (t *tengine) monitor_result() {
 
 				raw, _ := json.Marshal(data)
 				if _, err := rdc.Do("RPUSH", key, raw); err != nil { //rdc.RPush(cx, key, raw).Err()
-					logrus.Warnf("%s队列RPush: %s %s", key, raw, err)
+					app.Logger.Warnf("%s队列RPush: %s %s", key, raw, err)
 				}
 			}()
 
@@ -307,7 +306,7 @@ func (t *tengine) push_match_result(data []byte) {
 
 	key := types.FormatTradeResult.Format(t.symbol)
 	if _, err := rdc.Do("RPUSH", key, data); err != nil {
-		logrus.Warnf("往%s队列RPush: %s %s", key, data, err)
+		app.Logger.Warnf("撮合结果推送 %s 失败: %s %s", key, data, err)
 	}
 
 }

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	"github.com/sirupsen/logrus"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 type Storage struct {
@@ -18,7 +18,7 @@ func NewStorage(filename string, timeout time.Duration) *Storage {
 	if obj == nil {
 		db, err := bolt.Open(filename, 0600, &bolt.Options{Timeout: timeout * time.Second})
 		if err != nil {
-			logrus.Panic(fmt.Sprintf("打开%s %s", filename, err))
+			app.Logger.Panic(fmt.Sprintf("打开%s失败 %s", filename, err))
 		}
 		obj = &Storage{
 			db: db,

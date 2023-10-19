@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -22,7 +21,7 @@ func Init() {
 		new(assetsFreeze),
 	)
 	if err != nil {
-		logrus.Errorf("sync2: %s", err)
+		app.Logger.Errorf("sync2: %s", err)
 	}
 }
 

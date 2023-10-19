@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -30,11 +29,11 @@ func generate_order_id(prefix string) string {
 
 func push_new_order_to_redis(symbol string, data []byte) {
 	topic := types.FormatNewOrder.Format(symbol)
-	logrus.Infof("push %s new: %s", topic, data)
+	app.Logger.Infof("推送新订单%s: %s", topic, data)
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 	if _, err := rdc.Do("RPUSH", topic, data); err != nil {
-		logrus.Errorf("push %s err: %s", topic, err.Error())
+		app.Logger.Errorf("RPUSH %s err: %s", topic, err.Error())
 	}
 }

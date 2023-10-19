@@ -3,7 +3,6 @@ package clearing
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/symbols"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
@@ -53,11 +52,11 @@ func (c *clean) flow() error {
 	defer func() {
 		if c.err != nil {
 			if err := c.db.Rollback(); err != nil {
-				logrus.Errorf("结算事务回滚失败: %s", err.Error())
+				app.Logger.Errorf("结算事务回滚失败: %s", err.Error())
 			}
 		} else {
 			if err := c.db.Commit(); err != nil {
-				logrus.Errorf("结算事务提交失败: %s", err.Error())
+				app.Logger.Errorf("结算事务提交失败: %s", err.Error())
 			}
 		}
 	}()
@@ -72,7 +71,6 @@ func (c *clean) flow() error {
 }
 
 func (c *clean) check_order() error {
-	logrus.Info("检查订单状态")
 	_, err := c.db.Table(orders.GetOrderTableName(c.tlog.Symbol)).Where("order_id=?", c.tlog.AskOrderId).ForUpdate().Get(&c.ask)
 	if err != nil {
 		return err
@@ -205,7 +203,7 @@ func (c *clean) transfer() error {
 
 	//市价单解除全部冻结
 	if c.tlog.Last != "" {
-		logrus.Infof("市价订单 %s 解除剩余全部资产", c.tlog.Last)
+		app.Logger.Infof("市价订单%s完成 解除剩余全部资产", c.tlog.Last)
 		if c.ask.OrderType == trading_core.OrderTypeMarket {
 			_, err = assets.UnfreezeAllAssets(c.db, c.ask.UserId, c.ask.OrderId)
 			if err != nil {

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 const (
@@ -80,7 +80,7 @@ func (c *Client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logrus.Errorf("[wss ] IsUnexpectedCloseError: %v", err)
+				app.Logger.Errorf("[wss ] IsUnexpectedCloseError: %v", err)
 			}
 			break
 		}
@@ -147,7 +147,7 @@ func (c *Client) handleRecvData(body []byte) {
 		c.setAttr(attr)
 	}
 
-	logrus.Debugf("[wss] recv: %v", msg)
+	app.Logger.Debugf("[wss] recv: %v", msg)
 }
 
 func (c *Client) setAttr(tag string) {
