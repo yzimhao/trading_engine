@@ -22,7 +22,7 @@ var (
 
 func Run() {
 	teps = make(map[string]*trading_core.TradePair)
-	localdb = filecache.NewStorage(viper.GetString("haotrader.storage_path"), time.Duration(10))
+	localdb = filecache.NewStorage(viper.GetString("haomatch.cache"), time.Duration(10))
 	defer localdb.Close()
 
 	wg = sync.WaitGroup{}

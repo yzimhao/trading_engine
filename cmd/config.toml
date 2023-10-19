@@ -22,24 +22,18 @@ dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 # dsn = "host=localhost port=15432 user=postgres password=postgres dbname=haotrader sslmode=disable"
 
 
-show_sql = false
+show_sql = true
 
 
-# [local] 
-# symbols=["usdjpy"]
+[local] 
+symbols=[]
 
-[haotrader]
-storage_path="haotrader.db"
-# 是否直接通知到haoquote行情系统，正式环境时建议在结算完成后再通知
-notify_quote=false
-# 广播交易对的depth数据
-broadcast_depth=true
-
-
+[haomatch]
+cache="haomatch.db"
 
 
 [haoquote]
-storage_path="haoquote.db"
+cache="haoquote.db"
 # 支持的周期 "m1", "m3", "m5", "m15", "m30", "h1", "h2", "h4", "h6", "h8", "h12", "d1", "d3", "w1", "mn"
 period=["m1", "m5", "d1", "w1", "mn"]
 

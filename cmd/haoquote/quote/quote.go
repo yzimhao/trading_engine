@@ -16,7 +16,7 @@ func Run() {
 }
 
 func init_symbols_quote() {
-	filecache.NewStorage(viper.GetString("haoquote.storage_path"), 1)
+	filecache.NewStorage(viper.GetString("haoquote.cache"), 1)
 
 	local_config_symbols := app.CstringSlice("local.symbols")
 	db_symbols := base.NewTSymbols().All()

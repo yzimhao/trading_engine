@@ -21,7 +21,7 @@ func (c periodCachekey) Format(pt PeriodType, symbol string, st, et int64) strin
 }
 
 func newCache() *filecache.Storage {
-	return filecache.NewStorage(viper.GetString("haoquote.storage_path"), 1)
+	return filecache.NewStorage(viper.GetString("haoquote.cache"), 1)
 }
 
 func GetYesterdayClose(symbol string) (string, bool) {
