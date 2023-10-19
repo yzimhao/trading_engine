@@ -1,4 +1,4 @@
-(function(){
+layui.define(function(exports){
     var kchart = klinecharts.init('klinechart')
     var initKline = function () {
         // 初始化图表
@@ -30,6 +30,5 @@
         });
     };
     initKline()
-
-    window["kchart"] = kchart;
-})()
+    exports('kchart', kchart);
+});
