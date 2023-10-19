@@ -3,7 +3,7 @@ layui.define(["layer"], function(exports){
         , $ = layui.$;
 
     var base = {
-        BaseInfo: {},
+        cfg_info: {},
         load_info: function(){
             var me = this;
             $.ajax({
@@ -17,7 +17,7 @@ layui.define(["layer"], function(exports){
                 success: function (d) {
                     console.log(d);
                     if(d.ok){
-                        me.BaseInfo = d.data;
+                        me.cfg_info = d.data;
                     }
                 }
             });
