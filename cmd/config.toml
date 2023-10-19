@@ -22,29 +22,25 @@ dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 # dsn = "host=localhost port=15432 user=postgres password=postgres dbname=haotrader sslmode=disable"
 
 
-show_sql = true
+show_sql = false
 
 
 [local] 
-symbols=[]
+symbols=["abc"]
 
 [haomatch]
 cache="haomatch.db"
 
 
 [haoquote]
+listen="0.0.0.0:8081"
 cache="haoquote.db"
 # 支持的周期 "m1", "m3", "m5", "m15", "m30", "h1", "h2", "h4", "h6", "h8", "h12", "d1", "d3", "w1", "mn"
-period=["m1", "m5", "d1", "w1", "mn"]
-
-[haoquote.http]
-listen="0.0.0.0:8081"
-debug=true
+period=["m1", "d1"]
 
 
-[haobase.http]
+[haobase]
 listen="0.0.0.0:8082"
-debug=true
 
 
 
