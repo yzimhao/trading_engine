@@ -1,5 +1,6 @@
-layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket'], function(exports){
+layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], function(exports){
     var baseinfo = layui.baseinfo;
+    var login = layui.login;
 
     var layer = layui.layer //弹层
         , form = layui.form
@@ -7,10 +8,9 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket'], function(expor
         , $ = layui.$;
         
 
-        
-
     var obj = {
         bind: function(){
+            var me = this;
             form.on('select(order_type)', function (data) {
                 if (data.value == "limit") {
                     $(".item-price").show();
@@ -75,6 +75,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket'], function(expor
                     success: function (d) {
                         if(d.ok){
                             layer.msg("下单成功");
+                            me.load_assets();
                         }else{
                             layer.msg(d.reason);
                         }
@@ -107,11 +108,39 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket'], function(expor
                 $(".build").html(d.build);
             });
         },
+        load_assets: function(){
+            $.ajax({
+                url: API_HAOBASE_HOST+ "/api/v1/base/assets",
+                type: "get",
+                beforeSend: function(r) {
+                    r.setRequestHeader("token", login.user_id);
+                },
+                data:{
+                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
+                },
+                success: function (d) {
+                    console.log("load_assets: ", d);
+                    if(!d.ok) {
+                        layer.msg(d.reason);
+                        return;
+                    }
+
+                    var html = [];
+                    for(var i=0; i<d.data.length; i++){
+                        html.push(d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
+                    }
+                    $(".assets .list").html(html.join(" "));
+                }
+            });
+        },
         init: function(){
+            console.log(baseinfo);
+            login.init();
             this.bind();
             this.load_system_info();
             this.load_depth_data();
             this.load_tradelog_data();
+            this.load_assets();
         }
     };
     

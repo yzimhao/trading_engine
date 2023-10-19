@@ -1,27 +1,9 @@
-layui.define(function(exports){
+layui.define(["layer"], function(exports){
     var layer = layui.layer
         , $ = layui.$;
 
     var login = {
         user_id: "",
-        load_user_assets: function(){
-            var me = this;
-            $.ajax({
-                url: API_HAOBASE_HOST+ "/api/v1/base/assets",
-                type: "get",
-                data: {
-                    symbols: SymbolInfo.target.symbol + "," +SymbolInfo.base.symbol,
-                },
-                dataType: "json",
-                contentType: "application/json",
-                beforeSend: function(r) {
-                    r.setRequestHeader("token", me.user_id);
-                },
-                success: function (d) {
-                    console.log(d);
-                }
-            });
-        },
         show_setting_user_id: function(){
             var me = this;
             layer.prompt({
@@ -41,14 +23,10 @@ layui.define(function(exports){
                 this.show_setting_user_id();
             }else{
                 this.user_id = Cookies.get("user_id");
-                layui.$(".user").html(this.user_id);
-                this.load_user_assets();
+                $(".user").html(this.user_id);
             }
         }
     };
-    login.init();
-    
-    
     exports('login', login);
 });
 
