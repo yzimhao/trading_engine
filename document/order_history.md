@@ -8,7 +8,7 @@
 
 ##### 3) 接口描述：
 
-> 历史订单
+> 历史订单,不包含未成交的订单
 
 ##### 4) 请求参数:
 > 需要登陆
@@ -34,7 +34,35 @@
 ##### 5) 请求返回结果:
 
 ```
-
+{
+    "data": [
+        {
+            "symbol": "usdjpy",
+            "order_id": "B23102016253044451073",
+            "order_side": "buy",
+            "order_type": "limit",
+            "price": "89.000",
+            "quantity": "10.00",
+            "finished_qty": "10.00",
+            "finished_amount": "890.000",
+            "status": "done",
+            "create_time": 1697790330462963000
+        },
+        {
+            "symbol": "usdjpy",
+            "order_id": "B23102016243355986072",
+            "order_side": "buy",
+            "order_type": "market",
+            "price": "0.000",
+            "quantity": "100.00",
+            "finished_qty": "30.00",
+            "finished_amount": "30.000",
+            "status": "done",
+            "create_time": 1697790273583929000
+        }
+    ],
+    "ok": 1
+}
 ```
 
 

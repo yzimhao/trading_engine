@@ -27,9 +27,11 @@ func router(r *gin.Engine) {
 
 	api := r.Group("/api/v1/base")
 	{
-		api.GET("/ping", func(ctx *gin.Context) { ctx.JSON(200, gin.H{}) })
+		api.GET("/ping", func(ctx *gin.Context) {
+			utils.ResponseOkJson(ctx, gin.H{})
+		})
 		api.GET("/time", func(ctx *gin.Context) {
-			ctx.JSON(200, gin.H{
+			utils.ResponseOkJson(ctx, gin.H{
 				"server_time": time.Now().Unix(),
 			})
 		})
@@ -40,12 +42,14 @@ func router(r *gin.Engine) {
 
 		api.Use(middle.CheckLogin())
 		{
-			api.GET("/assets/recharge_for_demo", recharge_for_demo)
+			if config.App.Main.Mode == config.ModeDemo {
+				api.GET("/assets/recharge_for_demo", recharge_for_demo)
+			}
 
 			api.GET("/assets", assets_balance)
 			api.POST("/order/create", order.Create)
 			api.POST("/order/cancel", order.Cancel)
-			api.GET("/order/hisotry", order.History)
+			api.GET("/order/history", order.History)
 			api.GET("/order/unfinished", order.Unfinished)
 		}
 	}
