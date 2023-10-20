@@ -18,7 +18,7 @@ func SysRecharge(to string, symbol string, amount string, business_id string) (s
 	defer db.Close()
 
 	db.Begin()
-	success, err = transfer(db, UserRoot, to, symbol, amount, "", Behavior_Recharge)
+	success, err = transfer(db, UserRoot, to, symbol, amount, business_id, Behavior_Recharge)
 	if err != nil {
 		db.Rollback()
 	}

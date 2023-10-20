@@ -7,6 +7,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -20,6 +21,8 @@ func CheckLogin() gin.HandlerFunc {
 				user_id = c.Query("user_id")
 			}
 
+			app.Logger.Infof("[%s]: %s %s", c.ClientIP(), c.Request.Method, c.Request.RequestURI)
+
 			if user_id != "" {
 				pp := regexp.MustCompile(`^[a-z0-9]{4,10}$`)
 				if !pp.MatchString(user_id) {
@@ -29,13 +32,14 @@ func CheckLogin() gin.HandlerFunc {
 				}
 
 				if assets.BalanceOfTotal(user_id, "usd").Equal(decimal.Zero) {
-					assets.SysRecharge(user_id, "usd", "10000.00", "sys_recharge")
+					assets.SysRecharge(user_id, "usd", "10000.00", "sys.give:"+user_id)
 				}
 				if assets.BalanceOfTotal(user_id, "jpy").Equal(decimal.Zero) {
-					assets.SysRecharge(user_id, "jpy", "10000.00", "sys_recharge")
+					assets.SysRecharge(user_id, "jpy", "10000.00", "sys.give:"+user_id)
+
 				}
 				if assets.BalanceOfTotal(user_id, "eur").Equal(decimal.Zero) {
-					assets.SysRecharge(user_id, "eur", "10000.00", "sys_recharge")
+					assets.SysRecharge(user_id, "eur", "10000.00", "sys.give:"+user_id)
 				}
 			}
 		}
