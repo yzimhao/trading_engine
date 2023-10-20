@@ -7,13 +7,17 @@
 * [API](api.md)
     * [内部API](internal_api_token.md)
         * [设置Token](internal_api_token.md)
+        * [充值](internal_api_deposit.md)
+        * [提现](internal_api_withdraw.md)
 
     * [基础](ping.md)
         * [测试连通性](ping.md)
         * [获取服务器时间](server_time.md)
+        
     * [交易品种](varieties.md)
         * [所有交易对](varieties.md)
         * [交易品种规格](varieties_config.md)
+        
     * [资产](assets.md)
         * [资产查询](assets.md)
 

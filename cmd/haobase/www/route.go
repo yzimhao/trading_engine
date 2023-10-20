@@ -31,6 +31,9 @@ func router(r *gin.Engine) {
 		//todo 加入ip限制
 
 		internal.POST("/settoken", internal_api.SetToken)
+		//内部充值
+		internal.POST("/deposit", internal_api.Deposit)
+		internal.POST("/withdraw", internal_api.Withdraw)
 	}
 
 	api := r.Group("/api/v1/base")
