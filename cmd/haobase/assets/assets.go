@@ -37,12 +37,12 @@ type Assets struct {
 // 用户资产变动记录
 type assetsLog struct {
 	Id         int64      `xorm:"pk autoincr bigint"`
-	UserId     string     `xorm:"varchar(30) unique(userid_businessid) index notnull"`
-	Symbol     string     `xorm:"varchar(30) unique(userid_businessid) index notnull"`
-	Before     string     `xorm:"decimal(40,20) default(0)"`                                         // 变动前
-	Amount     string     `xorm:"decimal(40,20) default(0)"`                                         // 变动数
-	After      string     `xorm:"decimal(40,20) default(0)"`                                         // 变动后
-	BusinessId string     `xorm:"varchar(100) unique(userid_businessid) index(business_id) notnull"` //业务相关的id
+	UserId     string     `xorm:"varchar(30) index notnull"`
+	Symbol     string     `xorm:"varchar(30) index notnull"`
+	Before     string     `xorm:"decimal(40,20) default(0)"`               // 变动前
+	Amount     string     `xorm:"decimal(40,20) default(0)"`               // 变动数
+	After      string     `xorm:"decimal(40,20) default(0)"`               // 变动后
+	BusinessId string     `xorm:"varchar(100) index(business_id) notnull"` //业务相关的id
 	Behavior   OpBehavior `xorm:"varchar(15)"`
 	Info       string     `xorm:"varchar(64)"`
 	CreateTime time.Time  `xorm:"timestamp created"`

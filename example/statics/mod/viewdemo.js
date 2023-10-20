@@ -65,6 +65,22 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                         }
                     }
                 });
+            }).on("click", ".get_original_assets", function(){
+                $.ajax({
+                    url: API_HAOBASE_HOST+ "/api/v1/base/assets/recharge_for_demo",
+                    type: "get",
+                    contentType: "application/json",
+                    beforeSend: function(r) {
+                        r.setRequestHeader("token", Cookies.get("user_id"));
+                    },
+                    success: function (d) {
+                        if(d.ok){
+                            me.load_assets();
+                        }else{
+                            layer.msg(d.reason);
+                        }
+                    }
+                });
             });
 
             //新订单
@@ -158,9 +174,14 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     }
 
                     var html = [];
-                    for(var i=0; i<d.data.length; i++){
-                        html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
+                    if(d.data.length > 0){
+                        for(var i=0; i<d.data.length; i++){
+                            html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
+                        }
+                    }else{
+                        html.push("<a href='javascript:;' class='get_original_assets'>点我获取资产</a>");
                     }
+                    console.log(html);
                     $(".assets .list").html(html.join(" "));
                 }
             });

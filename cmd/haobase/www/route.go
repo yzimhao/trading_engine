@@ -39,11 +39,15 @@ func router(r *gin.Engine) {
 		api.GET("/varieties/config", varieties_config)
 
 		api.Use(middle.CheckLogin())
-		api.GET("/assets", assets_balance)
-		api.POST("/order/create", order.Create)
-		api.POST("/order/cancel", order.Cancel)
-		api.GET("/order/hisotry", order.History)
-		api.GET("/order/unfinished", order.Unfinished)
+		{
+			api.GET("/assets/recharge_for_demo", recharge_for_demo)
+
+			api.GET("/assets", assets_balance)
+			api.POST("/order/create", order.Create)
+			api.POST("/order/cancel", order.Cancel)
+			api.GET("/order/hisotry", order.History)
+			api.GET("/order/unfinished", order.Unfinished)
+		}
 	}
 
 }

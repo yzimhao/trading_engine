@@ -11,6 +11,7 @@ import (
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"xorm.io/xorm/log"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -29,6 +30,7 @@ var (
 func initdb(t *testing.T) {
 	app.ConfigInit("", false)
 	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
+	app.Database().SetLogLevel(log.LOG_DEBUG)
 	app.RedisInit("127.0.0.1:6379", "", 15)
 
 	cleanSymbols(t)

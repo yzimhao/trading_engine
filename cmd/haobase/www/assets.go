@@ -4,11 +4,28 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
+
+func recharge_for_demo(ctx *gin.Context) {
+	user_id := ctx.MustGet("user_id").(string)
+	//自动为demo用户充值
+	if config.App.Main.Mode == config.ModeDemo {
+		default_amount := "10000.00"
+		all := base.NewSymbols().All()
+		for _, item := range all {
+			if assets.BalanceOfTotal(user_id, item.Symbol).Equal(decimal.Zero) {
+				assets.SysRecharge(user_id, item.Symbol, default_amount, "sys.give:"+user_id)
+			}
+		}
+	}
+	utils.ResponseOkJson(ctx, "")
+}
 
 func assets_balance(ctx *gin.Context) {
 	user_id := ctx.MustGet("user_id").(string)
