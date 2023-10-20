@@ -1,6 +1,8 @@
 package www
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/order"
@@ -25,6 +27,12 @@ func router(r *gin.Engine) {
 
 	api := r.Group("/api/v1/base")
 	{
+		api.GET("/ping", func(ctx *gin.Context) { ctx.JSON(200, gin.H{}) })
+		api.GET("/time", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{
+				"server_time": time.Now().Unix(),
+			})
+		})
 		//全部交易品类
 		api.GET("/trading/varieties", trading_varieties)
 		//指定交易品类

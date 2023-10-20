@@ -1,6 +1,8 @@
 package www
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
@@ -39,8 +41,14 @@ func router(router *gin.Engine) {
 	})
 
 	api := router.Group("/api/v1/quote")
+	api.Use(utils.CorsMiddleware())
 	{
-		api.Use(utils.CorsMiddleware())
+		api.GET("/ping", func(ctx *gin.Context) { ctx.JSON(200, gin.H{}) })
+		api.GET("/time", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{
+				"server_time": time.Now().Unix(),
+			})
+		})
 		api.GET("/depth", qutoe_depth)
 		api.GET("/trans/record", trans_record)
 		api.GET("/kline", kline)
