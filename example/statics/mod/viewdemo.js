@@ -42,7 +42,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 var side = $(this).hasClass("sell") ? "sell" : "buy";
                 var order_type = $("select[name='order_type']").val();
                 var mtype = $("input[name='mtype']:checked").val();
-
+                
                 $.ajax({
                     url: API_HAOBASE_HOST+ "/api/v1/base/order/create",
                     type: "post",
@@ -75,7 +75,9 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     success: function (d) {
                         if(d.ok){
                             layer.msg("下单成功");
+                            
                             me.load_assets();
+                            me.load_order_unfinished();
                         }else{
                             layer.msg(d.reason);
                         }
@@ -127,9 +129,32 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
 
                     var html = [];
                     for(var i=0; i<d.data.length; i++){
-                        html.push(d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
+                        html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
                     }
                     $(".assets .list").html(html.join(" "));
+                }
+            });
+        },
+        load_order_unfinished: function(){
+            $.ajax({
+                url: API_HAOBASE_HOST+ "/api/v1/base/order/unfinished",
+                type: "get",
+                beforeSend: function(r) {
+                    r.setRequestHeader("token", login.user_id);
+                },
+                data:{
+                    symbol: baseinfo.cfg_info.symbol,
+                    limit: 4
+                },
+                success: function (d) {
+                    console.log("load_order_unfinished: ", d);
+                    if(d.ok){
+                        $(".myorder-item").remove();
+                        d.data = d.data.reverse();
+                        for(var i=0; i<d.data.length; i++){
+                            utils.rendermyorder(d.data[i]);
+                        }
+                    }
                 }
             });
         },
@@ -141,6 +166,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             this.load_depth_data();
             this.load_tradelog_data();
             this.load_assets();
+            this.load_order_unfinished();
         }
     };
     

@@ -27,6 +27,8 @@ layui.define(["layer"], function(exports){
             Cookies.remove("user_id");
             window.location.reload();
         },
+
+        
         init: function(){
             var me = this;
             if(!Cookies.get("user_id")) {

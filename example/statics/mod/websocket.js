@@ -1,6 +1,7 @@
 layui.define(["layer", "utils", "kchart"],function(exports){
     var layer = layui.layer;
     var utils = layui.utils;
+    var kchart = layui.kchart;
     var $ = layui.$;
 
     var socket = function () {

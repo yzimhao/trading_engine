@@ -35,6 +35,16 @@ layui.define(['laytpl'], function(exports){
             laytpl(bidTpl).render(info.bids, function (html) {
                 bidView.html(html);
             });
+        },
+
+        rendermyorder: function(data) {
+            var orderTpl = $("#myorder-tpl").html();
+
+            data['create_time'] = this.formatTime(data.create_time/1e6);
+            data['order_side'] = data['order_side'].toUpperCase();
+            laytpl(orderTpl).render(data, function(html){
+                $(".myorder-table-title").after(html);
+            });
         }
     };
     

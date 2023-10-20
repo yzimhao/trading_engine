@@ -79,6 +79,18 @@ func (o *Order) TableName() string {
 	return GetOrderTableName(o.Symbol)
 }
 
+func (o *Order) FormatDecimal(price_digit, qty_digit int) Order {
+	o.Amount = utils.FormatDecimal(o.Amount, price_digit)
+	o.AvgPrice = utils.FormatDecimal(o.AvgPrice, price_digit)
+	o.Fee = utils.FormatDecimal(o.Fee, price_digit)
+	o.FinishedAmount = utils.FormatDecimal(o.FinishedAmount, price_digit)
+	o.Price = utils.FormatDecimal(o.Price, price_digit)
+
+	o.Quantity = utils.FormatDecimal(o.Quantity, qty_digit)
+	o.FinishedQty = utils.FormatDecimal(o.FinishedQty, qty_digit)
+	return *o
+}
+
 func GetOrderTableName(symbol string) string {
 	return fmt.Sprintf("order_%s", symbol)
 }

@@ -63,15 +63,13 @@ body{
   </script>
 
 <script id="myorder-tpl" type="text/html">
-    <tr class="order-item" order-id="{% d.order_id%}">
-        <td>{% d.price_type %}</td>
+    <tr class="myorder-item" order-id="{% d.order_id%}">
+        <td>{% d.order_side %}</td>
         <td>{% d.price %}</td>
-        <td>{% d.quantity %}/<span class="qty_ok">0</span></td>
-        <td>{%# if(d.amount==0) { %} - {%#  } else { %}  {% d.amount %} {%# } %}</td>
+        <td>{% d.quantity %} / <span class="qty_ok">{% d.finished_qty %}</span> / <span>{% d.finished_amount %}</span> </td>
         <td>{% d.create_time %}</td>
-        <td><a class="cancel" href="javascript:;">撤单</a></td>
     </tr>
-  </script>
+</script>
 
 <body>
 
@@ -146,7 +144,21 @@ body{
                         <div class="layui-card-body">
                             
                             <div class="layui-row">
-                                <div class="layui-col-md6">
+                                <div class="layui-col-md8">
+                                    <table class="layui-table myorder">
+                                        <tr>
+                                            <th colspan="4" style="text-align: center;">当前挂单</th>
+                                        </tr> 
+                                        <tr class="myorder-table-title">
+                                            <th>类型</th>
+                                            <th>价格</th>
+                                            <th>挂单量/已成交/成交额</th>
+                                            <th>时间</th>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div class="layui-col-md4">
                                     <form class="layui-form" onsubmit="return false">
                                         <div class="layui-form-item">
                                             <label class="layui-form-label">订单类型</label>
