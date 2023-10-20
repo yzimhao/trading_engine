@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/order"
 	"github.com/yzimhao/trading_engine/utils"
@@ -24,6 +25,12 @@ func Run() {
 
 func router(r *gin.Engine) {
 	r.Use(utils.CorsMiddleware())
+
+	internal := r.Group("/api/v1/internal")
+	{
+		//内部通信接口
+		internal.POST("/settoken", internal_api.SetToken)
+	}
 
 	api := r.Group("/api/v1/base")
 	{
