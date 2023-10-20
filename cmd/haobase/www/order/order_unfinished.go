@@ -13,16 +13,10 @@ func Unfinished(ctx *gin.Context) {
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := ctx.Query("symbol")
 
-	cfg, err := base.NewTSymbols().Get(symbol)
-	if err != nil {
-		utils.ResponseFailJson(ctx, "不存在的交易对")
-		return
-	}
-
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	var rows []orders.Order
+	rows := make([]orders.Order, 0)
 	query := db.Table(new(orders.UnfinishedOrder))
 
 	if symbol != "" {
@@ -31,6 +25,7 @@ func Unfinished(ctx *gin.Context) {
 	query.Where("user_id=?", user_id).OrderBy("create_time desc").Limit(limit).Find(&rows)
 
 	for i, v := range rows {
+		cfg, _ := base.NewTSymbols().Get(v.Symbol)
 		rows[i] = v.FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 	}
 

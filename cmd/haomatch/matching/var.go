@@ -18,12 +18,27 @@ type Order struct {
 	At        int64                  `json:"at"`
 }
 
-type cancel_order struct {
+func (o *Order) Json() []byte {
+	raw, _ := json.Marshal(o)
+	return raw
+}
+
+type StructCancelOrder struct {
 	Side    trading_core.OrderSide `json:"side"`
 	OrderId string                 `json:"order_id"`
 }
 
-func (o *Order) Json() []byte {
+func (o *StructCancelOrder) Json() []byte {
+	raw, _ := json.Marshal(o)
+	return raw
+}
+
+type StructCancelOrderResult struct {
+	OrderId string `json:"order_id"`
+	Status  string `json:"status"`
+}
+
+func (o *StructCancelOrderResult) Json() []byte {
 	raw, _ := json.Marshal(o)
 	return raw
 }

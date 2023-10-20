@@ -2,6 +2,7 @@ package order
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/utils"
 )
 
@@ -16,6 +17,9 @@ func Cancel(ctx *gin.Context) {
 		return
 	}
 
-	//todo
+	if err := orders.SubmitOrderCancel(req.OrderId); err != nil {
+		utils.ResponseFailJson(ctx, err.Error())
+		return
+	}
 	utils.ResponseOkJson(ctx, "")
 }

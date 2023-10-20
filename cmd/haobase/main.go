@@ -10,6 +10,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/clearing"
+	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -74,6 +75,7 @@ func main() {
 
 			initDemoBaseData()
 			clearing.Run()
+			orders.Run()
 			www.Run()
 			return nil
 		},

@@ -28,10 +28,11 @@ func Run() {
 }
 
 func run_clearing(symbol string) {
-	go watch_redis_list(symbol)
+	//成交日志队列
+	go watch_tradeok_list(symbol)
 }
 
-func watch_redis_list(symbol string) {
+func watch_tradeok_list(symbol string) {
 	key := types.FormatTradeResult.Format(symbol)
 	app.Logger.Infof("监听%s成交日志，等待结算...", symbol)
 	for {

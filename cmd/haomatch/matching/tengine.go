@@ -239,7 +239,7 @@ func (t *tengine) pull_cancel_order() {
 
 			raw, _ := redis.Bytes(rdc.Do("LPOP", key)) // rdc.LPop(cx, key).Bytes()
 
-			var data cancel_order
+			var data StructCancelOrder
 			err := json.Unmarshal(raw, &data)
 			if err != nil {
 				app.Logger.Warnf("%s 解析json: %s 错误: %s", key, raw, err)
@@ -279,15 +279,15 @@ func (t *tengine) monitor_result() {
 			go func() {
 				key := types.FormatCancelResult.Format(t.symbol)
 
-				data := map[string]any{
-					"order_id": uniq,
-					"cancel":   "success",
+				data := StructCancelOrderResult{
+					OrderId: uniq,
+					Status:  "success",
 				}
 
 				rdc := app.RedisPool().Get()
 				defer rdc.Close()
 
-				raw, _ := json.Marshal(data)
+				raw := data.Json()
 				if _, err := rdc.Do("RPUSH", key, raw); err != nil { //rdc.RPush(cx, key, raw).Err()
 					app.Logger.Warnf("%s队列RPush: %s %s", key, raw, err)
 				}

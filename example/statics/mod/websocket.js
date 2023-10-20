@@ -23,6 +23,8 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                         "latest_price."+CURRENT_SYMBOL,
                         "kline.m1."+CURRENT_SYMBOL,
                         "market.24h."+CURRENT_SYMBOL,
+                        //订阅登陆用户相关消息，会对应多种消息格式
+                        "user."+ Cookies.get("user_id"),
                     ],
                 };
                 console.log(JSON.stringify(msg));
@@ -66,6 +68,14 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                         });
                     }else if(msg.type=="market.24h."+CURRENT_SYMBOL) {
                         $(".price_p").html(msg.body.price_change_percent);
+                    }else if(msg.type =="user.order.cancel." +CURRENT_SYMBOL) {
+                        var order_id = msg.body.order_id;
+                        layer.msg("订单 "+ order_id +" 取消成功");
+                        $(".myorder-item").each(function(){
+                            if ($(this).attr("order-id")== order_id){
+                                $(this).remove();
+                            }
+                        })
                     }
                 }
             };

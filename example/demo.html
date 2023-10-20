@@ -68,6 +68,9 @@ body{
         <td>{% d.price %}</td>
         <td>{% d.quantity %} / <span class="qty_ok">{% d.finished_qty %}</span> / <span>{% d.finished_amount %}</span> </td>
         <td>{% d.create_time %}</td>
+        <td style="text-align: center;">
+            <a href="javascript:;" class="cancel-order" title="撤单"><i class="layui-icon">&#x1006;</i></a> 
+        </td>
     </tr>
 </script>
 
@@ -139,7 +142,7 @@ body{
                     <div class="layui-card">
                         <div class="layui-card-header">
                             <b>模拟下单</b>
-                            <span class="assets" style="margin-left: 20px;">持有资产:  <b class="list">USD=0.00</b></span>
+                            <span class="assets" style="margin-left: 20px;"><b>{{ .symbol | upper }}</b> 持有资产:  <b class="list">USD=0.00</b></span>
                         </div>
                         <div class="layui-card-body">
                             
@@ -154,6 +157,7 @@ body{
                                             <th>价格</th>
                                             <th>挂单量/已成交/成交额</th>
                                             <th>时间</th>
+                                            <th>操作</th>
                                         </tr>
                                     </table>
                                 </div>

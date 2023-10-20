@@ -37,7 +37,37 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 }
             });
 
+            //取消订单
+            $("body").on("click", ".cancel-order", function(){
+                var order_id = $(this).parents("tr").attr("order-id");
+                console.log(order_id);
 
+                $.ajax({
+                    url: API_HAOBASE_HOST+ "/api/v1/base/order/cancel",
+                    type: "post",
+                    dataType: "json",
+                    contentType: "application/json",
+                    beforeSend: function(r) {
+                        r.setRequestHeader("token", Cookies.get("user_id"));
+                    },
+                    data: function () {
+                        var data = {
+                            symbol: CURRENT_SYMBOL,
+                            order_id: order_id,
+                        };
+                        return JSON.stringify(data)
+                    }(),
+                    success: function (d) {
+                        if(d.ok){
+                            layer.msg("已提交")
+                        }else{
+                            layer.msg(d.reason);
+                        }
+                    }
+                });
+            });
+
+            //新订单
             $(".opt").on("click", function () {
                 var side = $(this).hasClass("sell") ? "sell" : "buy";
                 var order_type = $("select[name='order_type']").val();
@@ -150,9 +180,11 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     console.log("load_order_unfinished: ", d);
                     if(d.ok){
                         $(".myorder-item").remove();
-                        d.data = d.data.reverse();
-                        for(var i=0; i<d.data.length; i++){
-                            utils.rendermyorder(d.data[i]);
+                        if(d.data.length > 0){
+                            var data = d.data.reverse();
+                            for(var i=0; i<data.length; i++){
+                                utils.rendermyorder(data[i]);
+                            }
                         }
                     }
                 }

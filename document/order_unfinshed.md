@@ -8,7 +8,7 @@
 
 ##### 3) 接口描述：
 
-> 获取交易对的所有当前挂单
+> 获取还未完全成交的订单列表
 
 ##### 4) 请求参数:
 > 需要登陆
@@ -29,7 +29,35 @@
 ##### 5) 请求返回结果:
 
 ```
-[]
+{
+    "data": [
+        {
+            "symbol": "usdjpy",
+            "order_id": "A23102015240522027723",
+            "order_side": "sell",
+            "order_type": "limit",
+            "price": "1.000",
+            "quantity": "10.00",
+            "finished_qty": "0.00",
+            "finished_amount": "0.000",
+            "status": "new",
+            "create_time": 1697786645236014000
+        },
+        {
+            "symbol": "usdjpy",
+            "order_id": "A23102015240331493947",
+            "order_side": "sell",
+            "order_type": "limit",
+            "price": "1.000",
+            "quantity": "10.00",
+            "finished_qty": "0.00",
+            "finished_amount": "0.000",
+            "status": "new",
+            "create_time": 1697786643331832000
+        }
+    ],
+    "ok": 1
+}
 ```
 
 
