@@ -211,11 +211,31 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 }
             });
         },
+        load_all_tsymbols: function(){
+            $.ajax({
+                url: API_HAOBASE_HOST+ "/api/v1/base/trading/varieties",
+                type: "get",
+                success: function (d) {
+                    console.log("/trading/varieties: ", d);
+                    if(d.ok){
+                        var data = d.data;
+                        if(data.length > 0){
+                            var html = [];
+                            for(var i=0; i<data.length; i++){
+                                html.push('<a href="/'+ data[i].symbol +'"><b>'+ data[i].symbol.toUpperCase() +'</b></a>');
+                            }
+                            $(".header-all-symbols").html(html.join(""))
+                        }
+                    }
+                }
+            });
+        },
         init: function(){
             console.log(baseinfo);
             login.init();
             this.bind();
             this.load_system_info();
+            this.load_all_tsymbols();
             this.load_depth_data();
             this.load_tradelog_data();
             this.load_assets();

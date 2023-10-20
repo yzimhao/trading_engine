@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>HaoTrader Simple Example</title>
+    <title>HaoTrader simple example</title>
     <link crossorigin="anonymous" href="/statics/lib/layui-v2.8.17/css/layui.css" rel="stylesheet">
     <script src="/statics/lib/js.cookie.min.js"></script>
     <script type="text/javascript" src="/statics/lib/klinecharts.min.js"></script>
@@ -126,7 +126,10 @@ body{
     <div class="main ">
         <div class="header layui-row" style="line-height: 40px; height: 40px;">
             <div class="layui-row">
-                <div class="layui-col-md10 layui-col-space10">-</div>
+                <div class="layui-col-md10 layui-col-space10 header-all-symbols" style="padding-left: 50px;">
+                    <!-- <a href="/usdjpy"><b>USDJPY</b></a>
+                    <a href="/eurusd"><b>EURUSD</b></a> -->
+                </div>
                 <div class="layui-col-md2 layui-col-space10"><p style="padding-left: 20px;">Hi, <span class="user">Guest</span> <a class="logout" style="display: none;">[退出]</a></p></div>
             </div>
         </div>
@@ -281,6 +284,7 @@ body{
 
 
         <div class="footer layui-row" style="height: 30px; line-height: 30px; text-align: center; vertical-align: bottom;">
+            <p><a href="https://yzimhao.github.io/trading_engine/" target="_blank">API Document</a></p>
             <p>Version: <i class="version"></i> Build: <i class="build"></i></p>
         </div>
     </div>
