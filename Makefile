@@ -114,17 +114,13 @@ example_clean:
 
 
 
-doc:
-	swag init -g cmd/haoquote/main.go -o docs/api/
-
-
 require:
 	brew tap messense/macos-cross-toolchains
 	# install x86_64-unknown-linux-gnu toolchain
 	brew install x86_64-unknown-linux-gnu
 	
 	brew install upx
-	go install github.com/swaggo/swag/cmd/swag@latest
+	
 
 
 tag:
