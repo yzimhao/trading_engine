@@ -6,7 +6,8 @@
 * [配置](setting.md)
 * [API](api.md)
     * [内部API](internal_api_token.md)
-        * [设置Token] (internal_api_token.md)
+        * [设置Token](internal_api_token.md)
+
     * [基础](ping.md)
         * [测试连通性](ping.md)
         * [获取服务器时间](server_time.md)

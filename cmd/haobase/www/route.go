@@ -27,8 +27,9 @@ func router(r *gin.Engine) {
 	r.Use(utils.CorsMiddleware())
 
 	internal := r.Group("/api/v1/internal")
-	{
-		//内部通信接口
+	{ //内部通信接口
+		//todo 加入ip限制
+
 		internal.POST("/settoken", internal_api.SetToken)
 	}
 

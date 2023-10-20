@@ -4,6 +4,7 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -12,8 +13,9 @@ import (
 func CheckLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user_id := ""
+		token := c.GetHeader("Token")
 		if config.App.Main.Mode == config.ModeDemo {
-			user_id = c.GetHeader("Token")
+			user_id = token
 			if user_id == "" {
 				user_id = c.Query("user_id")
 			}
@@ -28,6 +30,9 @@ func CheckLogin() gin.HandlerFunc {
 					return
 				}
 			}
+		} else {
+			//从redis的token中获取登陆用户ID
+			user_id = internal_api.GetUserIdFromToken(token)
 		}
 
 		if user_id == "" {
