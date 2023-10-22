@@ -164,7 +164,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     r.setRequestHeader("token", login.user_id);
                 },
                 data:{
-                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
+                    // symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
                 },
                 success: function (d) {
                     console.log("load_assets: ", d);
@@ -179,7 +179,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                             html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
                         }
                     }else{
-                        html.push("<a href='javascript:;' class='get_original_assets'>点我获取资产</a>");
+                        html.push("<a href='javascript:;' style='color:red;' class='get_original_assets'>点我获取资产</a>");
                     }
                     console.log(html);
                     $(".assets .list").html(html.join(" "));
