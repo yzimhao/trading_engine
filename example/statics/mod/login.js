@@ -8,7 +8,7 @@ layui.define(["layer"], function(exports){
             var me = this;
             layer.prompt({
                 formType: 0,
-                value: "10000",
+                placeholder: "10000",
                 title: '请设置您的用户名，只允许数字和字母,长度4~10',
                 area: ['400px', '50px'] // 自定义文本域宽高
             }, function(value, index, elem){
