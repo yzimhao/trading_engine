@@ -1,4 +1,4 @@
-## Haotrader
+## HaoTrader
   
 <p align="center">
     <img src="https://img.shields.io/github/stars/yzimhao/trading_engine?style=social">
@@ -8,10 +8,13 @@
 	<img src="https://img.shields.io/github/license/yzimhao/trading_engine">
 </p>
 
-  Haotrader适用于各种金融证券交易场景。拥有高性能的订单撮合、实时生成委托深度，以及提供最新成交价格等功能。支持数据持久化，故障重启快速恢复数据。配置灵活，允许用户根据自身需求自定义规则和参数。使用Go开发，跨平台支持，可以在不同操作系统上运行。
+  HaoTrader适用于各种金融证券交易场景。拥有高性能的订单撮合、实时结算、行情计算、实时推送等功能。支持数据持久化，故障重启快速恢复数据。
+  
+  配置灵活，允许用户根据自身需求自定义配置各模块独立运行。
+  
 
-## 流程
-  ![image](https://github.com/yzimhao/trading_engine/blob/master/docs/images/haotrader.png?raw=true)
+<!-- ## 流程
+  ![image](https://github.com/yzimhao/trading_engine/blob/master/docs/images/haotrader.png?raw=true) -->
 
 ## 演示
   <a href="http://144.91.108.90:20001/" target="_blank">在线体验</a> 
@@ -19,13 +22,13 @@
 
 
 
-## Haotrader功能
-  - [x] 委托深度
-  - [x] 限价委托  
-  - [x] 市价委托
-    - [x] 市价按数量买入/卖出
-    - [x] 市价按金额买入/卖出
-  - [x] 取消委托
+## HaoTrader系统包含模块
+  - [x] 交易品种 --> [haobase]
+  - [x] 资产模块 --> [haobase]
+  - [x] 订单模块 --> [haobase]
+  - [x] 撮合模块 --> [haomatch]
+  - [x] 结算模块 --> [haobase]
+  - [x] 行情模块 --> [haoquote]
   
 
 
@@ -103,8 +106,11 @@
 
 
 
-## 相关链接
+## 参考
   <a href="https://www.liaoxuefeng.com/article/1185272483766752" target="_blank">证券交易系统设计与开发</a>
+
+## 需求讨论
+   <img src="https://github.com/yzimhao/trading_engine/blob/master/document/images/wechat.jpg?raw=true" width = "150"/>
 
 ## 声明
   - 本项目仅供参考和学习之用，不建议将其用于生产环境或重要交易场景。
