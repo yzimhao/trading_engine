@@ -7,7 +7,6 @@ import (
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
-	_ "github.com/yzimhao/trading_engine/docs/api" // main 文件中导入 docs 包
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
