@@ -2,6 +2,7 @@
 
 * [Introduction](README.md)
 * [简介](README.md)
+* [开发](develop.md)
 * [安装](install.md)
 * [配置](setting.md)
 * [API](api.md)
