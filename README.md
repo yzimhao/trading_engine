@@ -23,6 +23,7 @@
 
 
 ## HaoTrader系统包含模块
+  - [ ] 运营管理 --> [haoadmin]
   - [x] 交易品种 --> [haobase]
   - [x] 资产模块 --> [haobase]
   - [x] 订单模块 --> [haobase]
