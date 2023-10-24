@@ -12,7 +12,7 @@ import (
 
 func main() {
 	appm := &cli.App{
-		Name:      "haotrader",
+		Name:      "haomatch",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",
 		Usage:     "交易撮合引擎",
 		Flags: []cli.Flag{
@@ -58,7 +58,7 @@ func main() {
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("deamon") {
-				context, d, err := app.Deamon("haotrader.pid", "")
+				context, d, err := app.Deamon("haomatch.pid", "")
 				if err != nil {
 					app.Logger.Fatal("创建守护进程失败, err:", err.Error())
 				}
