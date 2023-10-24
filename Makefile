@@ -106,10 +106,10 @@ example_start:
 
 example_stop:
    	
-	ssh demo 'kill `cat haotrader/haobase.pid`'
-	ssh demo 'kill `cat haotrader/haomatch.pid`'
-	ssh demo 'kill `cat haotrader/haoquote.pid`'
-	ssh demo 'cd trading_engine_example/ && kill `cat run.pid`'
+	ssh demo 'if [ -n "$(pgrep haobase)" ]; then kill $(pgrep haobase); else echo "没有找到匹配的 haobase 进程."; fi'
+	ssh demo 'if [ -n "$(pgrep haomatch)" ]; then kill $(pgrep haomatch); else echo "没有找到匹配的 haomatch 进程."; fi'
+	ssh demo 'if [ -n "$(pgrep haoquote)" ]; then kill $(pgrep haoquote); else echo "没有找到匹配的 haoquote 进程."; fi'
+	ssh demo 'if [ -n "$(pgrep example)" ]; then kill $(pgrep example); else echo "没有找到匹配的 example 进程."; fi'
 
 
 example_reload:
