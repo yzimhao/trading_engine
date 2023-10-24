@@ -53,7 +53,7 @@ func (t *tengine) push_depth_to_redis() {
 			go func() {
 				price, at := t.tp.LatestPrice()
 				data := types.RedisDepthData{
-					Price: price.String(),
+					Price: t.tp.Price2String(price),
 					At:    at,
 					Asks:  t.tp.GetAskDepth(50),
 					Bids:  t.tp.GetBidDepth(50),
