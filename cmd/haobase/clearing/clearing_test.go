@@ -43,8 +43,8 @@ func initAssets(t *testing.T) {
 	assets.Init()
 	varieties.DemoData()
 
-	assets.SysRecharge(sellUser, testTargetSymbol, "10000.00", "C001")
-	assets.SysRecharge(buyUser, testBaseSymbol, "10000.00", "C001")
+	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
+	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
 func cleanAssets(t *testing.T) {

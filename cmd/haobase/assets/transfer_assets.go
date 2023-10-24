@@ -13,12 +13,27 @@ func Transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	return transfer(db, from, to, symbol, amount, business_id, behavior)
 }
 
-func SysRecharge(to string, symbol string, amount string, business_id string) (success bool, err error) {
+// 充值
+func SysDeposit(to string, symbol string, amount string, business_id string) (success bool, err error) {
 	db := app.Database().NewSession()
 	defer db.Close()
 
 	db.Begin()
 	success, err = transfer(db, UserRoot, to, symbol, amount, business_id, Behavior_Recharge)
+	if err != nil {
+		db.Rollback()
+	}
+	db.Commit()
+	return success, err
+}
+
+// 提现
+func SysWithdraw(user_id string, symbol string, amount string, business_id string) (success bool, err error) {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	db.Begin()
+	success, err = transfer(db, user_id, UserRoot, symbol, amount, business_id, Behavior_Withdraw)
 	if err != nil {
 		db.Rollback()
 	}
@@ -40,7 +55,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	}
 	//非根账户检查余额
 	if from != UserRoot {
-		if utils.D(from_user.Available).Cmp(utils.D("0")) < 0 {
+		if utils.D(from_user.Available).Cmp(utils.D("0")) <= 0 {
 			return false, fmt.Errorf("可用资产不足")
 		}
 	}

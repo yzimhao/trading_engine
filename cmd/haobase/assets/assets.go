@@ -17,7 +17,7 @@ const (
 	FreezeStatusDone FreezeStatus = 1
 
 	Behavior_Trade    OpBehavior = "trade"
-	Behavior_Recharge OpBehavior = "recharge"
+	Behavior_Recharge OpBehavior = "deposit"
 	Behavior_Withdraw OpBehavior = "withdraw"
 	Behavior_Transfer OpBehavior = "transfer"
 )
@@ -94,4 +94,12 @@ func BalanceOfAvailable(user_id, symbol string) decimal.Decimal {
 		return utils.D(row.Available)
 	}
 	return decimal.Zero
+}
+
+func QueryAssetsLogBusIdIsExist(user_id string, business_id string) bool {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	ok, _ := db.Table(new(assetsLog)).Where("user_id=? and business_id=?", user_id, business_id).Exist()
+	return ok
 }

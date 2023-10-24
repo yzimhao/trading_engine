@@ -18,7 +18,7 @@ func recharge_for_demo(ctx *gin.Context) {
 	all := base.NewSymbols().All()
 	for _, item := range all {
 		if assets.BalanceOfTotal(user_id, item.Symbol).Equal(decimal.Zero) {
-			assets.SysRecharge(user_id, item.Symbol, default_amount, "sys.give:"+user_id)
+			assets.SysDeposit(user_id, item.Symbol, default_amount, "sys.give:"+user_id)
 		}
 	}
 	utils.ResponseOkJson(ctx, "")

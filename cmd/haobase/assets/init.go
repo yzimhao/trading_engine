@@ -40,8 +40,8 @@ func UserAssets(user_id string, symbol []string) []Assets {
 }
 
 func DemoData() {
-	SysRecharge("user1", "usd", "10000.00", "C001")
-	SysRecharge("user1", "jpy", "10000.00", "C002")
-	SysRecharge("user2", "usd", "10000.00", "C001")
-	SysRecharge("user2", "jpy", "10000.00", "C002")
+	SysDeposit("user1", "usd", "10000.00", "C001")
+	SysDeposit("user1", "jpy", "10000.00", "C002")
+	SysDeposit("user2", "usd", "10000.00", "C001")
+	SysDeposit("user2", "jpy", "10000.00", "C002")
 }

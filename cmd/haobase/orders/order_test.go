@@ -41,8 +41,8 @@ func initAssets(t *testing.T) {
 	assets.Init()
 	varieties.DemoData()
 
-	assets.SysRecharge(sellUser, testTargetSymbol, "10000.00", "C001")
-	assets.SysRecharge(buyUser, testBaseSymbol, "10000.00", "C001")
+	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
+	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
 func cleanAssets(t *testing.T) {
@@ -111,7 +111,7 @@ func TestNewOrderCase1(t *testing.T) {
 	defer cleanAssets(t)
 
 	Convey("用户反向有挂单 测试新开限价单", t, func() {
-		assets.SysRecharge(sellUser, testBaseSymbol, "10000.00", "C001")
+		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")
 
 		//先挂单一个单价1.00的卖
 		_, err := limit_order(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
@@ -139,7 +139,7 @@ func TestNewOrderCase2(t *testing.T) {
 	defer cleanAssets(t)
 
 	Convey("用户反向有挂单 测试新开市价单", t, func() {
-		assets.SysRecharge(sellUser, testBaseSymbol, "10000.00", "C001")
+		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")
 
 		//先挂单一个单价1.00的卖
 		_, err := limit_order(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
