@@ -23,14 +23,21 @@
 
 
 ## HaoTrader系统包含模块
-  - [ ] 运营管理 --> [haoadmin]
-  - [x] 交易品种 --> [haobase]
-  - [x] 资产模块 --> [haobase]
-  - [x] 订单模块 --> [haobase]
-  - [x] 撮合模块 --> [haomatch]
-  - [x] 结算模块 --> [haobase]
-  - [x] 行情模块 --> [haoquote]
-  
+  - [ ] [haoadm]
+  - [x] [haobase]
+    - [x] 交易品种
+    - [x] 资产模块
+    - [x] 订单模块
+    - [x] 结算模块
+    - [x] 充值提现
+
+  - [x] [haomatch]
+    - [x] 撮合模块
+  - [x] [haoquote]
+    - [x] 深度行情
+    - [x] Kline数据
+    - [x] websocket推送
+
 
 
 ## 引入包接入
