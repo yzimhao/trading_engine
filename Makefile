@@ -106,10 +106,11 @@ example_start:
 
 example_stop:
    	
-	ssh demo 'if [ -n "$(pgrep haobase)" ]; then kill $(pgrep haobase); else echo "没有找到匹配的 haobase 进程."; fi'
-	ssh demo 'if [ -n "$(pgrep haomatch)" ]; then kill $(pgrep haomatch); else echo "没有找到匹配的 haomatch 进程."; fi'
-	ssh demo 'if [ -n "$(pgrep haoquote)" ]; then kill $(pgrep haoquote); else echo "没有找到匹配的 haoquote 进程."; fi'
-	ssh demo 'if [ -n "$(pgrep example)" ]; then kill $(pgrep example); else echo "没有找到匹配的 example 进程."; fi'
+	ssh demo 'pgrep haobase | xargs kill'
+	ssh demo 'pgrep haomatch | xargs kill'
+	ssh demo 'pgrep haoquote | xargs kill'
+	ssh demo 'pgrep example | xargs kill'
+	
 
 
 example_reload:
