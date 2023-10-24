@@ -79,8 +79,8 @@ release: clean dist
 upload_example:
 	mkdir -p $(distdir)/trading_engine_example
 	cd example && GOOS=linux GOARCH=amd64 go build -o ../$(distdir)/trading_engine_example/example example.go
-	cp -rf example/statics $(distdir)/trading_engine_example/
 	upx -9 $(distdir)/trading_engine_example/example
+	cp -rf example/statics $(distdir)/trading_engine_example/
 	cp -rf example/demo.html $(distdir)/trading_engine_example/
 	scp -r $(distdir)/trading_engine_example/ demo:~/
 	
