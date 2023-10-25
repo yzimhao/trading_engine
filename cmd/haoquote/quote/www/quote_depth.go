@@ -37,7 +37,7 @@ func limitSize(arr [][2]string, n int) [][2]string {
 		n = a
 	}
 	if n <= 0 {
-		n = 1
+		n = 0
 	}
 	return arr[0:n]
 }
