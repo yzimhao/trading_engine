@@ -60,8 +60,8 @@ func push_depth_message(symbol string) {
 					Response: ws.Response{
 						Type: to_msg_depth,
 						Body: gin.H{
-							"asks": data.Asks,
-							"bids": data.Bids,
+							"asks": limitSize(data.Asks, 10),
+							"bids": limitSize(data.Bids, 10),
 						},
 					},
 				})
