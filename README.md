@@ -32,19 +32,15 @@
     - [x] 充值提现
 
   - [x] [haomatch]
-    - [x] 撮合模块
+    - [x] 撮合模块  <a href="/document/match.md">文档</a>
+
   - [x] [haoquote]
     - [x] 深度行情
     - [x] Kline数据
     - [x] websocket推送
 
-## 文档
+## 开发文档
   <a href="https://yzimhao.github.io/trading_engine/">交易系统文档</a>
-
-
-
-## package接入
-  <a href="/document/match.md">撮合文档</a>
 
 
 
