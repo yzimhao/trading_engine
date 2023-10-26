@@ -103,20 +103,20 @@ func (m *SystemMenu) GetMenuList() []*MenuTreeList {
 
 	if len(menuList) == 0 {
 		menuList = []SystemMenu{
-			SystemMenu{Id: 1, Pid: 0, Title: "系统", Icon: "fa fa-address-book", Href: "", Target: "_self"},
-			SystemMenu{Id: 2, Pid: 0, Title: "交易", Icon: "fa fa-address-book", Href: "", Target: "_self"},
-			SystemMenu{Id: 3, Pid: 0, Title: "用户", Icon: "fa fa-address-book", Href: "", Target: "_self"},
-			SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-address-book", Href: "", Target: "_self"},
+			SystemMenu{Id: 1, Pid: 0, Title: "系统", Icon: "fa fa-wrench", Href: "", Target: "_self"},
+			SystemMenu{Id: 2, Pid: 0, Title: "交易", Icon: "fa fa-usd", Href: "", Target: "_self"},
+			SystemMenu{Id: 3, Pid: 0, Title: "用户", Icon: "fa fa-user", Href: "", Target: "_self"},
+			SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "", Target: "_self"},
 
-			SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-cloud", Href: "", Target: "_self"},
+			SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "", Target: "_self"},
 
-			SystemMenu{Id: 20, Pid: 2, Title: "资产", Icon: "fa fa-cloud", Href: "", Target: "_self"},
-			SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-cloud", Href: "", Target: "_self"},
-			SystemMenu{Id: 22, Pid: 2, Title: "交易标的", Icon: "fa fa-cloud", Href: "", Target: "_self"},
+			SystemMenu{Id: 20, Pid: 2, Title: "资产列表", Icon: "fa fa-btc", Href: "", Target: "_self"},
+			SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "", Target: "_self"},
+			SystemMenu{Id: 22, Pid: 2, Title: "交易列表", Icon: "fa fa-retweet", Href: "", Target: "_self"},
 
-			SystemMenu{Id: 30, Pid: 3, Title: "用户资产", Icon: "fa fa-cloud", Href: "", Target: "_self"},
-			SystemMenu{Id: 31, Pid: 3, Title: "用户订单", Icon: "fa fa-cloud", Href: "", Target: "_self"},
-			SystemMenu{Id: 32, Pid: 3, Title: "用户挂单", Icon: "fa fa-cloud", Href: "", Target: "_self"},
+			SystemMenu{Id: 30, Pid: 3, Title: "用户资产", Icon: "fa fa-user", Href: "", Target: "_self"},
+			SystemMenu{Id: 31, Pid: 3, Title: "用户订单", Icon: "fa fa-reorder", Href: "", Target: "_self"},
+			SystemMenu{Id: 32, Pid: 3, Title: "用户挂单", Icon: "fa fa-newspaper-o", Href: "", Target: "_self"},
 		}
 	}
 
