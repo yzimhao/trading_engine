@@ -21,6 +21,7 @@ type Configuration struct {
 	Haobase  HaobaseConfiguration  `mapstructure:"haobase"`
 	Haomatch HaomatchConfiguration `mapstructure:"haomatch"`
 	Haoquote HaoquoteConfiguration `mapstructure:"haoquote"`
+	Haoadm   HaoadmConfiguration   `mapstructure:"haoadm"`
 }
 
 type MainConfiguration struct {
@@ -65,4 +66,10 @@ type HaobaseConfiguration struct {
 	Listen string `mapstructure:"listen"`
 	Debug  bool   `mapstructure:"debug"`
 	// LogFile string `mapstructure:"log_file"`
+}
+
+type HaoadmConfiguration struct {
+	Listen   string `mapstructure:"listen"`
+	Debug    bool   `mapstructure:"debug"`
+	SiteName string `mapstructure:"site_name"`
 }

@@ -28,6 +28,12 @@ show_sql = false
 [local] 
 symbols=[]
 
+
+[haoadm]
+site_name="HaoTrader运营管理系统"
+listen="0.0.0.0:8079"
+
+
 [haomatch]
 cache="haomatch.db"
 
