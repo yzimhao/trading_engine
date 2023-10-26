@@ -26,8 +26,8 @@ type User struct {
 func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 	var identityKey = "UserId"
 	return jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "frkuainet",
-		Key:         []byte("4ec85fbbeb9e3b90764da09d99b0e6dc"),
+		Realm:       "764da09d99b0e6dc",
+		Key:         []byte("4ec85fbbeb9e3b90"),
 		Timeout:     time.Hour * time.Duration(24),
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
@@ -117,7 +117,7 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 }
 
 func Login(ctx *gin.Context) {
-	ctx.HTML(200, "admin/login.html", gin.H{})
+	ctx.HTML(200, "login", gin.H{})
 }
 
 func Logout(ctx *gin.Context) {
