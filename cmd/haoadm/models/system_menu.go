@@ -83,7 +83,7 @@ func (m *SystemMenu) GetSystemInit() SystemInit {
 
 	// 首页
 	systemInit.HomeInfo.Title = "首页"
-	systemInit.HomeInfo.Href = "/admin/index"
+	systemInit.HomeInfo.Href = "/admin"
 
 	// logo
 	systemInit.LogoInfo.Title = "HaoTrader"

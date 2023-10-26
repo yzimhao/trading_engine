@@ -64,7 +64,7 @@ func setupPages(router *gin.Engine) {
 
 	// radmin.Use(auth.MiddlewareFunc())
 	{
-		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
+		setMethods(radmin, []string{"GET"}, "/", admin.Index)
 	}
 
 	api := router.Group("/admin/api")
