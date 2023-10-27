@@ -6,19 +6,19 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type FloatString string
+type DeciStr string
 
-func (t FloatString) MarshalJSON() ([]byte, error) {
+func (t DeciStr) MarshalJSON() ([]byte, error) {
 	tt, _ := decimal.NewFromString(string(t))
 	s := fmt.Sprintf("\"%s\"", tt.String())
 	return []byte(s), nil
 }
 
-func (t FloatString) String() string {
+func (t DeciStr) String() string {
 	return string(t)
 }
 
-func (t FloatString) Decimal() decimal.Decimal {
+func (t DeciStr) Decimal() decimal.Decimal {
 	tt, _ := decimal.NewFromString(string(t))
 	return tt
 }
