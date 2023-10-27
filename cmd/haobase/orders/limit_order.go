@@ -1,6 +1,8 @@
 package orders
 
 import (
+	"fmt"
+
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
@@ -15,7 +17,9 @@ func NewLimitOrder(user_id string, symbol string, side trading_core.OrderSide, p
 
 func limit_order(user_id string, symbol string, side trading_core.OrderSide, price, qty string) (order *Order, err error) {
 	varieties := varieties.NewTradingVarieties(symbol)
-
+	if varieties.Id == 0 {
+		return nil, fmt.Errorf("symbol %s invaild", symbol)
+	}
 	neworder := Order{
 		OrderId:        generate_order_id_by_side(side),
 		Symbol:         symbol,

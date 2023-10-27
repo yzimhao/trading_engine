@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
@@ -33,16 +32,22 @@ func initdb(t *testing.T) {
 	app.Database().SetLogLevel(log.LOG_DEBUG)
 	app.RedisInit("127.0.0.1:6379", "", 15)
 
+	cleandb(t)
+}
+
+func cleandb(t *testing.T) {
 	cleanSymbols(t)
 	cleanAssets(t)
 	cleanOrders(t)
-	base.Init()
+}
+
+func initSymbols(t *testing.T) {
+	varieties.Init()
+	varieties.DemoData()
 }
 
 func initAssets(t *testing.T) {
 	assets.Init()
-	varieties.DemoData()
-
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
@@ -82,12 +87,10 @@ func cleanOrders(t *testing.T) {
 }
 
 func TestLimitOrder(t *testing.T) {
-	initdb(t)
 	Convey("限价单完全成交结算测试", t, func() {
+		initdb(t)
+		initSymbols(t)
 		initAssets(t)
-		defer cleanSymbols(t)
-		defer cleanOrders(t)
-		defer cleanAssets(t)
 
 		sell, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -132,12 +135,11 @@ func TestLimitOrder(t *testing.T) {
 }
 
 func TestMarketCase1(t *testing.T) {
-	initdb(t)
+
 	Convey("市价买指定的数量,完全成交", t, func() {
+		initdb(t)
+		initSymbols(t)
 		initAssets(t)
-		defer cleanSymbols(t)
-		defer cleanOrders(t)
-		defer cleanAssets(t)
 
 		s1, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -201,12 +203,11 @@ func TestMarketCase1(t *testing.T) {
 }
 
 func TestMarketCase2(t *testing.T) {
-	initdb(t)
+
 	Convey("市价多单测试", t, func() {
+		initdb(t)
+		initSymbols(t)
 		initAssets(t)
-		// defer cleanSymbols(t)
-		// defer cleanOrders(t)
-		// defer cleanAssets(t)
 
 		s1, _ := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		s2, _ := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "2.00", "1")

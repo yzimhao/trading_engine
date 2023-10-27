@@ -4,13 +4,11 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-var ()
-
 func Init() {
-	init_db()
+	CreateTable()
 }
 
-func init_db() {
+func CreateTable() {
 	db := app.Database()
 	err := db.Sync2(
 		new(Varieties),

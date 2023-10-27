@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -30,19 +29,24 @@ func initdb(t *testing.T) {
 	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
 	app.Database().SetLogLevel(log.LOG_DEBUG)
 	app.RedisInit("127.0.0.1:6379", "", 15)
+	cleandb(t)
+}
 
+func cleandb(t *testing.T) {
 	cleanSymbols(t)
 	cleanAssets(t)
 	cleanOrders(t)
-	base.Init()
 }
 
 func initAssets(t *testing.T) {
 	assets.Init()
-	varieties.DemoData()
-
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
+}
+
+func initSymbols(t *testing.T) {
+	varieties.Init()
+	varieties.DemoData()
 }
 
 func cleanAssets(t *testing.T) {
@@ -50,6 +54,7 @@ func cleanAssets(t *testing.T) {
 	db.DropIndexes(new(assets.Assets))
 	db.DropIndexes("assets_freeze")
 	db.DropIndexes("assets_log")
+
 	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
 	if err != nil {
 		t.Logf("mysql droptables: %s", err)
@@ -80,10 +85,8 @@ func cleanOrders(t *testing.T) {
 
 func TestNewOrder(t *testing.T) {
 	initdb(t)
+	initSymbols(t)
 	initAssets(t)
-
-	defer cleanOrders(t)
-	defer cleanAssets(t)
 
 	Convey("新限价单下单", t, func() {
 		_, err := NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
@@ -105,10 +108,8 @@ func TestNewOrder(t *testing.T) {
 
 func TestNewOrderCase1(t *testing.T) {
 	initdb(t)
+	initSymbols(t)
 	initAssets(t)
-
-	defer cleanOrders(t)
-	defer cleanAssets(t)
 
 	Convey("用户反向有挂单 测试新开限价单", t, func() {
 		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")
@@ -133,10 +134,8 @@ func TestNewOrderCase1(t *testing.T) {
 
 func TestNewOrderCase2(t *testing.T) {
 	initdb(t)
+	initSymbols(t)
 	initAssets(t)
-
-	defer cleanOrders(t)
-	defer cleanAssets(t)
 
 	Convey("用户反向有挂单 测试新开市价单", t, func() {
 		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")

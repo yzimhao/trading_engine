@@ -35,8 +35,8 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 		return false, fmt.Errorf("冻结数量必须大于等于0")
 	}
 
-	item := Assets{UserId: user_id, Symbol: symbol}
-	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).ForUpdate().Get(&item)
+	item := Assets{}
+	_, err = db.Table(new(Assets)).Where("user_id=? and symbol=?", user_id, symbol).Get(&item)
 	if err != nil {
 		return false, err
 	}
