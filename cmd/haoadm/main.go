@@ -6,7 +6,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haoadm/www"
+	"github.com/yzimhao/trading_engine/cmd/haoadm/view"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
@@ -56,7 +56,7 @@ func main() {
 				}(context)
 
 			}
-			www.Run()
+			view.Run()
 			return nil
 		},
 	}

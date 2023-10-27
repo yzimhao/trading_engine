@@ -1,4 +1,4 @@
-package www
+package view
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/yzimhao/trading_engine/cmd/haoadm/www/admin"
+	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -65,9 +65,10 @@ func setupPages(router *gin.Engine) {
 	// radmin.Use(auth.MiddlewareFunc())
 	{
 		setMethods(radmin, []string{"GET"}, "/", admin.Index)
+		setMethods(radmin, []string{"GET"}, "/system/settings", admin.Index)
 	}
 
-	api := router.Group("/admin/api")
+	api := router.Group("/api/v1/admin")
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 	}

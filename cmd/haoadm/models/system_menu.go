@@ -83,11 +83,11 @@ func (m *SystemMenu) GetSystemInit() SystemInit {
 
 	// 首页
 	systemInit.HomeInfo.Title = "首页"
-	systemInit.HomeInfo.Href = "/admin"
+	systemInit.HomeInfo.Href = "/admin/"
 
 	// logo
 	systemInit.LogoInfo.Title = "HaoTrader"
-	systemInit.LogoInfo.Image = "/images/logo.png"
+	systemInit.LogoInfo.Image = "/admin/images/logo.png"
 
 	// 菜单
 	systemInit.MenuInfo = m.GetMenuList()
@@ -108,11 +108,11 @@ func (m *SystemMenu) GetMenuList() []*MenuTreeList {
 			SystemMenu{Id: 3, Pid: 0, Title: "用户", Icon: "fa fa-user", Href: "", Target: "_self"},
 			SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "", Target: "_self"},
 
-			SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "", Target: "_self"},
+			SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "/admin/system/settings", Target: "_self"},
 
-			SystemMenu{Id: 20, Pid: 2, Title: "资产列表", Icon: "fa fa-btc", Href: "", Target: "_self"},
-			SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "", Target: "_self"},
-			SystemMenu{Id: 22, Pid: 2, Title: "交易列表", Icon: "fa fa-retweet", Href: "", Target: "_self"},
+			SystemMenu{Id: 20, Pid: 2, Title: "资产列表", Icon: "fa fa-btc", Href: "/admin/assets/list", Target: "_self"},
+			SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "/admin/symbols/category", Target: "_self"},
+			SystemMenu{Id: 22, Pid: 2, Title: "交易列表", Icon: "fa fa-retweet", Href: "/admin/trade/list", Target: "_self"},
 
 			SystemMenu{Id: 30, Pid: 3, Title: "用户资产", Icon: "fa fa-user", Href: "", Target: "_self"},
 			SystemMenu{Id: 31, Pid: 3, Title: "用户订单", Icon: "fa fa-reorder", Href: "", Target: "_self"},

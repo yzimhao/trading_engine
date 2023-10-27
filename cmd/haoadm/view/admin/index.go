@@ -5,5 +5,5 @@ import (
 )
 
 func Index(ctx *gin.Context) {
-	ctx.HTML(200, "index", gin.H{})
+	ctx.HTML(200, "layout_index", gin.H{})
 }
