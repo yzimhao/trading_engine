@@ -87,10 +87,11 @@ func cleanOrders(t *testing.T) {
 }
 
 func TestLimitOrder(t *testing.T) {
+	initdb(t)
+	initSymbols(t)
+	initAssets(t)
+
 	Convey("限价单完全成交结算测试", t, func() {
-		initdb(t)
-		initSymbols(t)
-		initAssets(t)
 
 		sell, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -107,7 +108,14 @@ func TestLimitOrder(t *testing.T) {
 			TradeTime:     time.Now().UnixNano(),
 		}
 		clearing_trade_order(testSymbol, result.Json())
-		time.Sleep(5 * time.Second)
+
+		for {
+			if orders.GetLock(orders.ClearingLock, sell.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
 		//检查资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
 		sell_assets_standard := assets.FindSymbol(sellUser, testBaseSymbol)
@@ -136,10 +144,11 @@ func TestLimitOrder(t *testing.T) {
 
 func TestMarketCase1(t *testing.T) {
 
+	initdb(t)
+	initSymbols(t)
+	initAssets(t)
+
 	Convey("市价买指定的数量,完全成交", t, func() {
-		initdb(t)
-		initSymbols(t)
-		initAssets(t)
 
 		s1, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -170,7 +179,14 @@ func TestMarketCase1(t *testing.T) {
 		clearing_trade_order(testSymbol, result2.Json())
 		clearing_trade_order(testSymbol, result1.Json())
 
-		time.Sleep(5 * time.Second)
+		for {
+			if orders.GetLock(orders.ClearingLock, s1.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, s2.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
 
 		//检查买卖双方订单状态及资产
 		s1 = orders.Find(testSymbol, s1.OrderId)
@@ -203,11 +219,11 @@ func TestMarketCase1(t *testing.T) {
 }
 
 func TestMarketCase2(t *testing.T) {
+	initdb(t)
+	initSymbols(t)
+	initAssets(t)
 
 	Convey("市价多单测试", t, func() {
-		initdb(t)
-		initSymbols(t)
-		initAssets(t)
 
 		s1, _ := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		s2, _ := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "2.00", "1")
@@ -227,7 +243,16 @@ func TestMarketCase2(t *testing.T) {
 		clearing_trade_order(testSymbol, result1.Json())
 		clearing_trade_order(testSymbol, result3.Json())
 
-		time.Sleep(5 * time.Second)
+		for {
+			if orders.GetLock(orders.ClearingLock, s1.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, s2.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, s3.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, s4.OrderId) == 0 &&
+				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
 
 		//资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
