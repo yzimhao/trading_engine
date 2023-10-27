@@ -103,7 +103,7 @@ func (m *SystemMenu) GetMenuList() []*MenuTreeList {
 
 	if len(menuList) == 0 {
 		menuList = []SystemMenu{
-			SystemMenu{Id: 1, Pid: 0, Title: "系统", Icon: "fa fa-wrench", Href: "javascript:;", Target: "_self"},
+			// SystemMenu{Id: 1, Pid: 0, Title: "系统", Icon: "fa fa-wrench", Href: "javascript:;", Target: "_self"},
 			SystemMenu{Id: 2, Pid: 0, Title: "交易", Icon: "fa fa-usd", Href: "javascript:;", Target: "_self"},
 			SystemMenu{Id: 3, Pid: 0, Title: "用户", Icon: "fa fa-user", Href: "javascript:;", Target: "_self"},
 			SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "javascript:;", Target: "_self"},
