@@ -1,8 +1,6 @@
 package varieties
 
 import (
-	"time"
-
 	"github.com/yzimhao/trading_engine/utils"
 )
 
@@ -20,13 +18,13 @@ type Varieties struct {
 	ShowPrecision int        `xorm:"default(0)" json:"show_precision"`
 	MinPrecision  int        `xorm:"default(0)" json:"min_precision"`
 	Base          bool       `xorm:"default(0)" json:"base"` //是否为本位币
-	Status        status     `xorm:"default(0) notnull" json:"-"`
-	CreateTime    time.Time  `xorm:"timestamp created" json:"-"`
-	UpdateTime    utils.Time `xorm:"timestamp updated" json:"update_at"`
+	Status        status     `xorm:"default(0) notnull" json:"status"`
+	CreateTime    utils.Time `xorm:"timestamp created" json:"create_time"`
+	UpdateTime    utils.Time `xorm:"timestamp updated" json:"update_time"`
 }
 
 type TradingVarieties struct {
-	Id             int               `xorm:"pk autoincr int" json:"-"`
+	Id             int               `xorm:"pk autoincr int" json:"id"`
 	Symbol         string            `xorm:"varchar(100) notnull unique(symbol)" json:"symbol"`
 	Name           string            `xorm:"varchar(250) notnull" json:"name"`
 	TargetSymbolId int               `xorm:"default(0) unique(symbol_base)" json:"target_symbol_id"` //交易物品
@@ -38,9 +36,9 @@ type TradingVarieties struct {
 	AllowMinAmount utils.FloatString `xorm:"decimal(40,20) default(0.01)" json:"allow_min_amount"`
 	AllowMaxAmount utils.FloatString `xorm:"decimal(40,20) default(999999)" json:"allow_max_amount"`
 	FeeRate        utils.FloatString `xorm:"decimal(40,20) default(0)" json:"fee_rate"`
-	Status         status            `xorm:"default(0)" json:"-"`
-	CreateTime     time.Time         `xorm:"timestamp created" json:"-"`
-	UpdateTime     utils.Time        `xorm:"timestamp updated" json:"update_at"`
+	Status         status            `xorm:"default(0)" json:"status"`
+	CreateTime     utils.Time        `xorm:"timestamp created" json:"create_time"`
+	UpdateTime     utils.Time        `xorm:"timestamp updated" json:"update_time"`
 	Target         Varieties         `xorm:"-" json:"target"`
 	Base           Varieties         `xorm:"-" json:"base"`
 }

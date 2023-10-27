@@ -4,24 +4,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func recharge_for_demo(ctx *gin.Context) {
-	user_id := ctx.MustGet("user_id").(string)
-	//自动为demo用户充值
-	default_amount := "10000.00"
-	all := base.NewSymbols().All()
-	for _, item := range all {
-		if assets.BalanceOfTotal(user_id, item.Symbol).Equal(decimal.Zero) {
-			assets.SysDeposit(user_id, item.Symbol, default_amount, "sys.give:"+user_id)
-		}
-	}
-	utils.ResponseOkJson(ctx, "")
+// 用户资产余额返回
+type response_assets struct {
+	Symbol     string     `json:"symbol"`
+	Total      string     `json:"total"`
+	Freeze     string     `json:"freeze"`
+	Available  string     `json:"avail"`
+	UpdateTime utils.Time `json:"update_time"`
 }
 
 func assets_balance(ctx *gin.Context) {
@@ -33,19 +28,25 @@ func assets_balance(ctx *gin.Context) {
 		symbols = strings.Split(ss, ",")
 	}
 	rows := assets.UserAssets(user_id, symbols)
-	//todo 格式化资产数字
 
-	for i, v := range rows {
+	data := make([]response_assets, 0)
+
+	for _, v := range rows {
 		cfg, err := base.NewSymbols().Get(v.Symbol)
 		if err != nil {
 			app.Logger.Errorf("获取资产%s失败 %s", v.Symbol, err.Error())
 			continue
 		}
 
-		rows[i].Total = utils.FormatDecimal(v.Total, cfg.ShowPrecision)
-		rows[i].Freeze = utils.FormatDecimal(v.Freeze, cfg.ShowPrecision)
-		rows[i].Available = utils.FormatDecimal(v.Available, cfg.ShowPrecision)
+		item := response_assets{
+			Symbol:    v.Symbol,
+			Total:     utils.FormatDecimal(v.Total, cfg.ShowPrecision),
+			Freeze:    utils.FormatDecimal(v.Freeze, cfg.ShowPrecision),
+			Available: utils.FormatDecimal(v.Available, cfg.ShowPrecision),
+		}
+
+		data = append(data, item)
 	}
 
-	utils.ResponseOkJson(ctx, rows)
+	utils.ResponseOkJson(ctx, data)
 }

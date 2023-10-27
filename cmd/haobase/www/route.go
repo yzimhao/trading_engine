@@ -53,10 +53,6 @@ func router(r *gin.Engine) {
 
 		api.Use(middle.CheckLogin())
 		{
-			if config.App.Main.Mode == config.ModeDemo {
-				api.GET("/assets/recharge_for_demo", recharge_for_demo)
-			}
-
 			api.GET("/assets", assets_balance)
 			api.POST("/order/create", order.Create)
 			api.POST("/order/cancel", order.Cancel)

@@ -66,6 +66,11 @@ func setupPages(router *gin.Engine) {
 	{
 		setMethods(radmin, []string{"GET"}, "/", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/system/settings", admin.Index)
+		setMethods(radmin, []string{"GET"}, "/varieties/list", admin.VarietiesList)
+		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)
+		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
+		setMethods(radmin, []string{"GET"}, "/user/order", admin.UserOrder)
+		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)
 	}
 
 	api := router.Group("/api/v1/admin")
