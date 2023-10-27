@@ -48,14 +48,11 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		return false, fmt.Errorf("invalid to")
 	}
 
-	from_user := Assets{}
-	has_from, err := db.Table(new(Assets)).Where("user_id=? and symbol=?", from, symbol).ForUpdate().Get(&from_user)
+	from_user := Assets{UserId: from, Symbol: symbol}
+	has_from, err := db.Table(new(Assets)).ForUpdate().Get(&from_user)
 	if err != nil {
 		return false, err
 	}
-
-	from_user.UserId = from
-	from_user.Symbol = symbol
 
 	//非根账户检查余额
 	if from != UserRoot {
@@ -64,14 +61,12 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		}
 	}
 
-	to_user := Assets{}
-	has_to, err := db.Table(new(Assets)).Where("user_id=? and symbol=?", to, symbol).ForUpdate().Get(&to_user)
+	to_user := Assets{UserId: to, Symbol: symbol}
+	has_to, err := db.Table(new(Assets)).ForUpdate().Get(&to_user)
 	if err != nil {
 		return false, err
 	}
 
-	to_user.UserId = to
-	to_user.Symbol = symbol
 	from_before := utils.D(from_user.Total)
 	from_user.Total = utils.D(from_user.Total).Sub(utils.D(amount)).String()
 	from_user.Available = utils.D(from_user.Available).Sub(utils.D(amount)).String()
