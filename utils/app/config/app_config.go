@@ -69,7 +69,9 @@ type HaobaseConfiguration struct {
 }
 
 type HaoadmConfiguration struct {
-	Listen   string `mapstructure:"listen"`
-	Debug    bool   `mapstructure:"debug"`
-	SiteName string `mapstructure:"site_name"`
+	Listen           string `mapstructure:"listen"`
+	Debug            bool   `mapstructure:"debug"`
+	SiteName         string `mapstructure:"site_name"`
+	ServerName       string `mapstructure:"server_name"`
+	StaticServerName string `mapstructure:"static_server_name"`
 }
