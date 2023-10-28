@@ -28,6 +28,13 @@ layui.define(["jquery"], function (exports) {
             return formattedDate;
         },
 
+        format_status: function(d) {
+            if (d==0) {
+                return '<i class="fa fa-check"></i>';
+            }
+            return '<i class="fa fa-close"></i>';
+        },
+
         format_num: function(d, spec) {
             const a = parseFloat(d);
             if(spec > -1) {

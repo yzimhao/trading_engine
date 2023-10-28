@@ -1,6 +1,7 @@
 package varieties
 
 import (
+	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -27,21 +28,21 @@ func DemoData() {
 			Name:          "美元",
 			ShowPrecision: 2,
 			MinPrecision:  8,
-			Status:        StatusEnabled,
+			Status:        types.StatusEnabled,
 		},
 		Varieties{
 			Symbol:        "eur",
 			Name:          "欧元",
 			ShowPrecision: 2,
 			MinPrecision:  8,
-			Status:        StatusEnabled,
+			Status:        types.StatusEnabled,
 		},
 		Varieties{
 			Symbol:        "jpy",
 			Name:          "日元",
 			ShowPrecision: 2,
 			MinPrecision:  8,
-			Status:        StatusEnabled,
+			Status:        types.StatusEnabled,
 		},
 	}
 
@@ -66,7 +67,7 @@ func DemoData() {
 			BaseSymbolId:   jpy.Id,
 			PricePrecision: 3,
 			QtyPrecision:   2,
-			Status:         StatusEnabled,
+			Status:         types.StatusEnabled,
 			AllowMinQty:    "0.01",
 			AllowMaxQty:    "0",
 			AllowMinAmount: "1",
@@ -80,7 +81,7 @@ func DemoData() {
 			BaseSymbolId:   usd.Id,
 			PricePrecision: 5,
 			QtyPrecision:   2,
-			Status:         StatusEnabled,
+			Status:         types.StatusEnabled,
 			AllowMinQty:    "0.01",
 			AllowMaxQty:    "0",
 			AllowMinAmount: "1",

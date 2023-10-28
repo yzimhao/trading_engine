@@ -22,7 +22,7 @@ dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 # dsn = "host=localhost port=15432 user=postgres password=postgres dbname=haotrader sslmode=disable"
 
 
-show_sql = false
+show_sql = true
 
 
 [local] 

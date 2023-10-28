@@ -5,9 +5,45 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
+	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
+
+func VarietiesAdd(ctx *gin.Context) {
+	id := utils.S2Int(ctx.Query("id"))
+
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	if ctx.Request.Method == "GET" {
+		data := varieties.Varieties{Id: id}
+
+		if id > 0 {
+			db.Table(new(varieties.Varieties)).Get(&data)
+		}
+
+		ctx.HTML(200, "varieties_add", gin.H{
+			"data": data,
+		})
+	} else {
+		data := varieties.Varieties{
+			Id: id,
+			// Symbol:        ctx.PostForm("symbol"),
+			Name:          ctx.PostForm("name"),
+			MinPrecision:  utils.S2Int(ctx.PostForm("min_precision")),
+			ShowPrecision: utils.S2Int(ctx.PostForm("show_precision")),
+			Status:        types.ParseStatusString(ctx.PostForm("status")),
+		}
+
+		_, err := db.Table(new(varieties.Varieties)).Where("id=?", id).Cols("name,min_precision,show_precision,status").Update(&data)
+		if err != nil {
+			utils.ResponseFailJson(ctx, err.Error())
+			return
+		}
+		utils.ResponseOkJson(ctx, "")
+	}
+}
 
 type varietiesSearch struct {
 	Symbol string `json:"symbol"`
