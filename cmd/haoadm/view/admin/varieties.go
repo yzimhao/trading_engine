@@ -200,7 +200,7 @@ func TradingVarietiesList(ctx *gin.Context) {
 		}
 
 		cond := q.Conds()
-		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
+		err := q.OrderBy("sort asc, id desc").Limit(limit, offset).Find(&data)
 		if err != nil {
 			render(ctx, 1, err.Error(), 0, "")
 			return
