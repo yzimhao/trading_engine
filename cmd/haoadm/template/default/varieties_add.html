@@ -34,6 +34,14 @@
             </div>
 
             <div class="layui-form-item">
+                <label class="layui-form-label required">排序</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort" lay-reqtext="" placeholder="0" value="" class="layui-input">
+                    <tip>值越小越靠前</tip>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
                 <label class="layui-form-label required">状态</label>
                 <div class="layui-input-block">
                     <input type="radio" name="status" value="0" title="正常" checked="">
@@ -104,6 +112,7 @@
             "name": {{ .data.Name }},
             "min_precision": {{ .data.MinPrecision }},
             "show_precision": {{ .data.ShowPrecision }},
+            "sort": {{ .data.Sort }},
             "status": {{ .data.Status }}
         });
 

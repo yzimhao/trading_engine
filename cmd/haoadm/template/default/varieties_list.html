@@ -43,7 +43,7 @@
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
-                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
+                <!-- <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button> -->
             </div>
         </script>
 
@@ -51,7 +51,7 @@
 
         <script type="text/html" id="currentTableBar">
             <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <!-- <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a> -->
         </script>
 
     </div>
@@ -81,7 +81,7 @@
                 {field: 'name', width: 80, title: '名称'},
                 {field: 'show_precision', title: '展示精度', minWidth: 150},
                 {field: 'min_precision', title: '最小精度', sort: true},
-                {field: 'sort', title: '排序', edit:"text", sort: true},
+                {field: 'sort', title: '排序', sort: true},
                 {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},

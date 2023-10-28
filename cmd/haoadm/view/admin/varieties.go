@@ -2,6 +2,7 @@ package admin
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
@@ -33,10 +34,18 @@ func VarietiesAdd(ctx *gin.Context) {
 			Name:          ctx.PostForm("name"),
 			MinPrecision:  utils.S2Int(ctx.PostForm("min_precision")),
 			ShowPrecision: utils.S2Int(ctx.PostForm("show_precision")),
+			Sort:          utils.S2Int64(ctx.PostForm("sort")),
 			Status:        types.ParseStatusString(ctx.PostForm("status")),
 		}
 
-		_, err := db.Table(new(varieties.Varieties)).Where("id=?", id).Cols("name,min_precision,show_precision,status").Update(&data)
+		var err error
+		if id > 0 {
+			_, err = db.Table(new(varieties.Varieties)).Where("id=?", id).Cols("name,min_precision,show_precision,sort,status").Update(&data)
+		} else {
+			data.Symbol = strings.Trim(ctx.PostForm("symbol"), " ")
+			_, err = db.Table(new(varieties.Varieties)).Insert(&data)
+		}
+
 		if err != nil {
 			utils.ResponseFailJson(ctx, err.Error())
 			return
@@ -86,7 +95,7 @@ func VarietiesList(ctx *gin.Context) {
 		}
 
 		cond := q.Conds()
-		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
+		err := q.OrderBy("sort asc, id desc").Limit(limit, offset).Find(&data)
 		if err != nil {
 			render(ctx, 1, err.Error(), 0, "")
 			return
