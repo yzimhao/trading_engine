@@ -30,7 +30,7 @@ func init() {
 		SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "/admin/system/settings", Target: "_self"},
 
 		SystemMenu{Id: 20, Pid: 2, Title: "资产种类", Icon: "fa fa-btc", Href: "/admin/varieties/list", Target: "_self"},
-		SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "/admin/symbols/category", Target: "_self"},
+		// SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "/admin/symbols/category", Target: "_self"},
 		SystemMenu{Id: 22, Pid: 2, Title: "交易列表", Icon: "fa fa-retweet", Href: "/admin/tradingvarieties/list", Target: "_self"},
 
 		SystemMenu{Id: 30, Pid: 3, Title: "用户资产", Icon: "fa fa-user", Href: "/admin/user/assets", Target: "_self"},

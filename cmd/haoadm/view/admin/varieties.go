@@ -56,7 +56,7 @@ func VarietiesList(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := q.And(cond).Count()
+		total, _ := db.Table(new(varieties.Varieties)).And(cond).Count()
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
@@ -109,7 +109,7 @@ func TradingVarietiesList(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := q.And(cond).Count()
+		total, _ := db.Table(new(varieties.TradingVarieties)).And(cond).Count()
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
