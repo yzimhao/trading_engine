@@ -12,7 +12,7 @@ import (
 func templateFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"app_power_by": func() string {
-			return fmt.Sprintf("powered by <a target='_blank' href='https://github.com/yzimhao/trading_engine'>HaoTrader %s</a>", app.Version)
+			return fmt.Sprintf("powered by HaoTrader %s", app.Version)
 		},
 		"app_short_name": func() string {
 			return "HT"
