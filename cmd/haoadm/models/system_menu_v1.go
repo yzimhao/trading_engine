@@ -31,7 +31,7 @@ func (m *SystemMenu) GetV1SystemInit() SystemV1Init {
 
 	// logo
 	init.LogoInfo.Title = "HaoTrader"
-	init.LogoInfo.Image = "/admin/images/logo.png"
+	init.LogoInfo.Image = "/images/logo.png"
 
 	// 菜单
 	init.MenuInfo = m.GetV1MenuList()
