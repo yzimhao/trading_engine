@@ -32,6 +32,7 @@ type TradingVarieties struct {
 	AllowMaxAmount utils.DeciStr `xorm:"decimal(40,20) default(999999)" json:"allow_max_amount"`
 	FeeRate        utils.DeciStr `xorm:"decimal(40,20) default(0)" json:"fee_rate"`
 	Status         types.Status  `xorm:"default(0)" json:"status"`
+	Sort           int64         `xorm:"default(0)" json:"sort"`
 	CreateTime     utils.Time    `xorm:"timestamp created" json:"create_time"`
 	UpdateTime     utils.Time    `xorm:"timestamp updated" json:"update_time"`
 	Target         Varieties     `xorm:"-" json:"target"`

@@ -70,6 +70,7 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET"}, "/varieties/list", admin.VarietiesList)
 		setMethods(radmin, []string{"GET", "POST"}, "/varieties/add", admin.VarietiesAdd)
 		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)
+		setMethods(radmin, []string{"GET", "POST"}, "/tradingvarieties/add", admin.TradingVarietiesAdd)
 		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
 		setMethods(radmin, []string{"GET"}, "/user/order", admin.UserOrder)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)

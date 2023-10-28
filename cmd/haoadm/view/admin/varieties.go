@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
@@ -110,6 +111,57 @@ func VarietiesList(ctx *gin.Context) {
 			})
 		}
 		return
+	}
+}
+
+func TradingVarietiesAdd(ctx *gin.Context) {
+	id := utils.S2Int(ctx.Query("id"))
+
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	if ctx.Request.Method == "GET" {
+		data := varieties.TradingVarieties{Id: id}
+
+		if id > 0 {
+			db.Table(new(varieties.TradingVarieties)).Get(&data)
+		}
+
+		ctx.HTML(200, "tradingvarieties_add", gin.H{
+			"data":           data,
+			"all_variteties": base.NewSymbols().All(),
+		})
+	} else {
+		data := varieties.TradingVarieties{
+			Id:             id,
+			Name:           ctx.PostForm("name"),
+			PricePrecision: utils.S2Int(ctx.PostForm("price_precision")),
+			QtyPrecision:   utils.S2Int(ctx.PostForm("qty_precision")),
+			AllowMinQty:    utils.DeciStr(ctx.PostForm("allow_min_qty")),
+			AllowMaxQty:    utils.DeciStr(ctx.PostForm("allow_max_qty")),
+			AllowMinAmount: utils.DeciStr(ctx.PostForm("allow_min_amount")),
+			AllowMaxAmount: utils.DeciStr(ctx.PostForm("allow_max_amount")),
+			FeeRate:        utils.DeciStr(ctx.PostForm("fee_rate")),
+			Sort:           utils.S2Int64(ctx.PostForm("sort")),
+			Status:         types.ParseStatusString(ctx.PostForm("status")),
+		}
+
+		var err error
+		if id > 0 {
+			_, err = db.Table(new(varieties.TradingVarieties)).Where("id=?", id).
+				Cols("name,price_precision,qty_precision,allow_min_qty,allow_max_qty,allow_min_amount,allow_max_amount,fee_rate,sort,status").Update(&data)
+		} else {
+			data.Symbol = strings.Trim(ctx.PostForm("symbol"), " ")
+			data.TargetSymbolId = utils.S2Int(ctx.PostForm("target_symbol_id"))
+			data.BaseSymbolId = utils.S2Int(ctx.PostForm("base_symbol_id"))
+			_, err = db.Table(new(varieties.TradingVarieties)).Insert(&data)
+		}
+
+		if err != nil {
+			utils.ResponseFailJson(ctx, err.Error())
+			return
+		}
+		utils.ResponseOkJson(ctx, "")
 	}
 }
 

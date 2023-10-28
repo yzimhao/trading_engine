@@ -15,6 +15,10 @@ func D(a string) decimal.Decimal {
 	return d
 }
 
+func S2F64(a string) float64 {
+	v, _ := strconv.ParseFloat(a, 64)
+	return v
+}
 func S2Int(a string) int {
 	v, _ := strconv.ParseInt(a, 10, 64)
 	return int(v)

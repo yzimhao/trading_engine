@@ -37,5 +37,6 @@ func (t *Symbols) Get(symbol string) (*varieties.Varieties, error) {
 }
 
 func (t *Symbols) All() []varieties.Varieties {
+	t.init()
 	return t.all_varieties
 }

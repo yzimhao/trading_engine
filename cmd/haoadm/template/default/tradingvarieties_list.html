@@ -34,6 +34,7 @@
                         
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">清空</button>
                         </div>
                     </div>
                 </form>
@@ -43,7 +44,7 @@
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
                 <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
-                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
+                <!-- <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button> -->
             </div>
         </script>
 
@@ -51,7 +52,7 @@
 
         <script type="text/html" id="currentTableBar">
             <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <!-- <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a> -->
         </script>
 
     </div>
@@ -88,7 +89,9 @@
                 {field: 'update_time', width: 280, title: '更新时间',templet: function(d){
                     return utils.format_timestamp(d.update_time*1000);
                 }},
-                {field: 'status', width: 135, title: '状态', sort: true},
+                {field: 'status', width: 135, title: '状态', sort: true, templet: function(d){
+                    return utils.format_status(d.status);
+                }},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
@@ -100,10 +103,7 @@
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
-            // layer.alert(result, {
-            //     title: '最终的搜索信息'
-            // });
-
+            
             //执行搜索重载
             table.reload('currentTableId', {
                 page: {
@@ -120,11 +120,11 @@
         // 监听添加操作
         $(".data-add-btn").on("click", function () {
 
-            var content = layuimini.getHrefContent('page/table/add.html');
+            var content = layuimini.getHrefContent('/admin/tradingvarieties/add');
             var openWH = layuimini.getOpenWidthHeight();
 
             var index = layer.open({
-                title: '添加用户',
+                title: '添加',
                 type: 1,
                 shade: 0.2,
                 maxmin:true,
@@ -156,11 +156,11 @@
             var data = obj.data;
             if (obj.event === 'edit') {
 
-                var content = layuimini.getHrefContent('page/table/add.html');
+                var content = layuimini.getHrefContent('/admin/tradingvarieties/add?id='+ data.id);
                 var openWH = layuimini.getOpenWidthHeight();
 
                 var index = layer.open({
-                    title: '编辑用户',
+                    title: '编辑',
                     type: 1,
                     shade: 0.2,
                     maxmin:true,
