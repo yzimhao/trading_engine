@@ -17,3 +17,7 @@ func render(ctx *gin.Context, code int, msg string, total int, data interface{})
 func Index(ctx *gin.Context) {
 	ctx.HTML(200, "layout_index", gin.H{})
 }
+
+func Welcome(ctx *gin.Context) {
+	ctx.HTML(200, "welcome", gin.H{})
+}

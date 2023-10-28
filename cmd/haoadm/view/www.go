@@ -65,6 +65,7 @@ func setupPages(router *gin.Engine) {
 	// radmin.Use(auth.MiddlewareFunc())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
+		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
 		setMethods(radmin, []string{"GET"}, "/system/settings", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/varieties/list", admin.VarietiesList)
 		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)

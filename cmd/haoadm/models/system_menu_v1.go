@@ -24,7 +24,7 @@ func (m *SystemMenu) GetV1SystemInit() SystemV1Init {
 
 	// 首页
 	init.HomeInfo.Title = "首页"
-	init.HomeInfo.Href = "/admin/"
+	init.HomeInfo.Href = "/admin/welcome"
 	init.HomeInfo.Icon = "fa fa-home"
 
 	init.ClearInfo.ClearUrl = "/admin/api/clear.json"
