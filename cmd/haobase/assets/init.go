@@ -8,7 +8,7 @@ const (
 	//根账户，所有的进出账都从这个账户开始，所有列的资产求和应该为0
 	UserRoot string = "root"
 	//系统收取手续费用放在该用户ID下
-	UserSystemFee string = "system_fee"
+	UserSystemFee string = "fee"
 )
 
 func Init() {
