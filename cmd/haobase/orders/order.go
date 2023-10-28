@@ -27,7 +27,7 @@ type Order struct {
 	OrderId        string                 `xorm:"varchar(30) unique(order_id) notnull" json:"order_id"`
 	OrderSide      trading_core.OrderSide `xorm:"varchar(10) index(order_side)" json:"order_side"`
 	OrderType      trading_core.OrderType `xorm:"varchar(10)" json:"order_type"` //价格策略，市价单，限价单
-	UserId         string                 `xorm:"index(userid) notnull" json:"-"`
+	UserId         string                 `xorm:"index(userid) notnull" json:"user_id"`
 	Price          string                 `xorm:"decimal(40,20) notnull default(0)" json:"price"`
 	Quantity       string                 `xorm:"decimal(40,20) notnull default(0)" json:"quantity"`
 	FeeRate        string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`

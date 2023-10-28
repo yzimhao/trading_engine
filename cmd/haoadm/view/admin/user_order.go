@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -62,6 +63,10 @@ func UserOrder(ctx *gin.Context) {
 	}
 }
 
+type orderSearch struct {
+	Symbol string `json:"symbol"`
+}
+
 func UserOrderUnfinished(ctx *gin.Context) {
 	db := app.Database().NewSession()
 	defer db.Close()
@@ -71,7 +76,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		limit := utils.S2Int(ctx.Query("limit"))
 		searchParams := ctx.Query("searchParams")
 
-		var search varietiesSearch
+		var search orderSearch
 		json.Unmarshal([]byte(searchParams), &search)
 
 		if page <= 0 {
@@ -82,18 +87,12 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		}
 		offset := (page - 1) * limit
 
-		data := []orders.UnfinishedOrder{}
+		data := []orders.Order{}
 
 		q := db.Table(new(orders.UnfinishedOrder))
 
 		if search.Symbol != "" {
 			q = q.Where("symbol like ?", "%"+search.Symbol+"%")
-		}
-		if search.Name != "" {
-			q = q.Where("name like ?", "%"+search.Name+"%")
-		}
-		if search.Status != "" {
-			q = q.Where("status = ?", search.Status)
 		}
 
 		cond := q.Conds()
@@ -103,7 +102,16 @@ func UserOrderUnfinished(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := q.And(cond).Count()
+		total, _ := db.Table(new(orders.UnfinishedOrder)).And(cond).Count()
+
+		for i, v := range data {
+			cfg, _ := base.NewTSymbols().Get(v.Symbol)
+			data[i].Price = utils.FormatDecimal(v.Price, cfg.PricePrecision)
+			data[i].Quantity = utils.FormatDecimal(v.Quantity, cfg.QtyPrecision)
+			data[i].FinishedQty = utils.FormatDecimal(v.FinishedQty, cfg.QtyPrecision)
+			data[i].FinishedAmount = utils.FormatDecimal(v.FinishedAmount, cfg.PricePrecision)
+		}
+
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {

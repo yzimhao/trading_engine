@@ -149,9 +149,10 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		}
 		if show_sql {
 			conn.ShowSQL(true)
+		} else {
+			conn.SetLogLevel(log.LOG_ERR)
 		}
 
-		conn.SetLogLevel(log.LOG_ERR)
 		conn.DatabaseTZ = time.Local
 		conn.TZLocation = time.Local
 		database = conn

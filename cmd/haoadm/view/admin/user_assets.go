@@ -51,7 +51,7 @@ func AssetsList(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := q.And(cond).Count()
+		total, _ := db.Table(new(assets.Assets)).And(cond).Count()
 		if ctx.Query("api") == "1" {
 
 			for i, v := range data {
