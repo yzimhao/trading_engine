@@ -6,7 +6,14 @@ import (
 )
 
 func SystemMenu(ctx *gin.Context) {
-	s := models.SystemMenu{}
-	data := s.GetSystemInit()
-	ctx.JSON(200, data)
+	if ctx.Query("v") == "v2" {
+		s := models.SystemMenu{}
+		data := s.GetV1SystemInit()
+		ctx.JSON(200, data)
+	} else {
+		s := models.SystemMenu{}
+		data := s.GetV1SystemInit()
+		ctx.JSON(200, data)
+	}
+
 }

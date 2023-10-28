@@ -1,7 +1,7 @@
 <style>
     .layui-form-item .layui-input-company {width: auto;padding-right: 10px;line-height: 38px;}
 </style>
-<div class="layuimini-container layuimini-page-anim">
+<div class="layuimini-container layui-anim layui-anim-upbit">
     <div class="layuimini-main">
 
         <div class="layui-form layuimini-form">
@@ -33,17 +33,17 @@
 
             <div class="layui-form-item">
                 <div class="layui-input-block">
-                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+                    <button class="layui-btn" lay-submit lay-filter="saveBtn">确认保存</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <script>
-    layui.use(['form','miniPage'], function () {
+    layui.use(['form','layuimini'], function () {
         var form = layui.form,
             layer = layui.layer,
-            miniPage = layui.miniPage;
+            layuimini = layui.layuimini;
 
         /**
          * 初始化表单，要加上，不然刷新部分组件可能会不加载
@@ -56,7 +56,7 @@
                 title: '最终的提交信息'
             }, function () {
                 layer.close(index);
-                miniPage.hashHome();
+                layuimini.hash('page/welcome-1.html?v');
             });
             return false;
         });

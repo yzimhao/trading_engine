@@ -58,13 +58,13 @@
 </div>
 
 <script>
-    layui.use(['form', 'table','miniPage','element'], function () {
+    layui.use(['form', 'table','layuimini','element'], function () {
         var $ = layui.jquery,
             form = layui.form,
             table = layui.table,
-            miniPage = layui.miniPage;
+            layuimini = layui.layuimini;
 
-        table.render({
+            table.render({
             elem: '#currentTableId',
             url: '/admin/varieties/list?api=1',
             toolbar: '#toolbarDemo',
@@ -91,6 +91,7 @@
             skin: 'line'
         });
 
+
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
@@ -111,32 +112,34 @@
             return false;
         });
 
-        /**
-         * toolbar事件监听
-         */
-        table.on('toolbar(currentTableFilter)', function (obj) {
-            if (obj.event === 'add') {   // 监听添加操作
-                var content = miniPage.getHrefContent('page/table/add.html');
-                var openWH = miniPage.getOpenWidthHeight();
+        // 监听添加操作
+        $(".data-add-btn").on("click", function () {
 
-                var index = layer.open({
-                    title: '添加用户',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('currentTableId')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
-            }
+            var content = layuimini.getHrefContent('page/table/add.html');
+            var openWH = layuimini.getOpenWidthHeight();
+
+            var index = layer.open({
+                title: '添加用户',
+                type: 1,
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: [openWH[0] + 'px', openWH[1] + 'px'],
+                offset: [openWH[2] + 'px', openWH[3] + 'px'],
+                content: content,
+            });
+            $(window).on("resize", function () {
+                layer.full(index);
+            });
+
+            return false;
+        });
+
+        // 监听删除操作
+        $(".data-delete-btn").on("click", function () {
+            var checkStatus = table.checkStatus('currentTableId')
+                , data = checkStatus.data;
+            layer.alert(JSON.stringify(data));
         });
 
         //监听表格复选框选择
@@ -148,8 +151,8 @@
             var data = obj.data;
             if (obj.event === 'edit') {
 
-                var content = miniPage.getHrefContent('page/table/add.html');
-                var openWH = miniPage.getOpenWidthHeight();
+                var content = layuimini.getHrefContent('page/table/add.html');
+                var openWH = layuimini.getOpenWidthHeight();
 
                 var index = layer.open({
                     title: '编辑用户',
@@ -175,3 +178,4 @@
 
     });
 </script>
+
