@@ -31,7 +31,7 @@ func AllTradingVarieties() []TradingVarieties {
 
 	var rows []TradingVarieties
 
-	db.Table(new(TradingVarieties)).OrderBy("id asc").Find(&rows)
+	db.Table(new(TradingVarieties)).OrderBy("sort asc, id desc").Find(&rows)
 	for i, item := range rows {
 		rows[i].Target = *newVarietiesById(item.TargetSymbolId)
 		rows[i].Base = *newVarietiesById(item.BaseSymbolId)
