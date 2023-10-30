@@ -32,7 +32,8 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 	}
 
 	if row.Status == FreezeStatusDone {
-		return false, fmt.Errorf("订单 %s 已经解冻", row.BusinessId)
+		//return false, fmt.Errorf("订单 %s 已经解冻", row.BusinessId)
+		return true, nil
 	}
 
 	//解冻金额为0，则解冻全部
