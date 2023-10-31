@@ -4,7 +4,7 @@ BUILDTIME = `date +'%Y-%m-%d_%T'`
 GOVER = `go env GOVERSION`
 utils = "github.com/yzimhao/trading_engine/utils/app"
 
-version ?= "1.0.0"
+version ?= "0.0.0"
 
 mainname = "haotrader"
 distdir = "./dist"
