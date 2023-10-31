@@ -38,6 +38,7 @@ static_server_name=""
 
 [haomatch]
 cache="haomatch.db"
+listen="0.0.0.0:8083"
 
 
 

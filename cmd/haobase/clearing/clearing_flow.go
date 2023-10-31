@@ -31,7 +31,11 @@ func newClean(raw trading_core.TradeResult) error {
 	orders.CreateTradeLogTable(db, raw.Symbol)
 	//
 
-	tv, _ := base.NewTSymbols().Get(raw.Symbol)
+	tv, err := base.NewTSymbols().Get(raw.Symbol)
+	if err != nil {
+		app.Logger.Errorf("tsymbol error: %s", err)
+		return err
+	}
 	item := clean{
 		db:                db,
 		trading_varieties: tv,
@@ -40,7 +44,7 @@ func newClean(raw trading_core.TradeResult) error {
 		tlog:              raw,
 	}
 
-	err := item.flow()
+	err = item.flow()
 
 	//解锁
 	orders.UnLock(orders.ClearingLock, item.ask.OrderId)

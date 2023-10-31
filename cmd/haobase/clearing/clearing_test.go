@@ -1,6 +1,7 @@
 package clearing
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -26,55 +27,58 @@ var (
 	testBaseSymbol   = "jpy"
 )
 
-func initdb(t *testing.T) {
+func init() {
+	initdb()
+}
+
+func initdb() {
 	app.ConfigInit("", false)
 	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
 	app.Database().SetLogLevel(log.LOG_DEBUG)
 	app.RedisInit("127.0.0.1:6379", "", 15)
-
-	cleandb(t)
+	cleanSymbols()
+	initSymbols()
 }
 
-func cleandb(t *testing.T) {
-	cleanSymbols(t)
-	cleanAssets(t)
-	cleanOrders(t)
-}
-
-func initSymbols(t *testing.T) {
+func initSymbols() {
 	varieties.Init()
 	varieties.DemoData()
 }
 
-func initAssets(t *testing.T) {
+func cleandb() {
+	cleanAssets()
+	cleanOrders()
+}
+
+func initAssets() {
 	assets.Init()
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
-func cleanAssets(t *testing.T) {
+func cleanAssets() {
 	db := app.Database()
 	db.DropIndexes(new(assets.Assets))
 	db.DropIndexes("assets_freeze")
 	db.DropIndexes("assets_log")
 	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
 	if err != nil {
-		t.Logf("mysql droptables: %s", err)
+		fmt.Errorf("mysql droptables: %s", err)
 	}
 
 }
 
-func cleanSymbols(t *testing.T) {
+func cleanSymbols() {
 	db := app.Database()
 	db.DropIndexes(new(varieties.Varieties))
 	db.DropIndexes(new(varieties.TradingVarieties))
 	err := db.DropTables(new(varieties.Varieties), new(varieties.TradingVarieties))
 	if err != nil {
-		t.Logf("mysql droptables: %s", err)
+		fmt.Errorf("mysql droptables: %s", err)
 	}
 }
 
-func cleanOrders(t *testing.T) {
+func cleanOrders() {
 	db := app.Database()
 	db.DropIndexes(orders.GetOrderTableName(testSymbol))
 	db.DropIndexes(new(orders.UnfinishedOrder))
@@ -87,9 +91,8 @@ func cleanOrders(t *testing.T) {
 }
 
 func TestLimitOrder(t *testing.T) {
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("限价单完全成交结算测试", t, func() {
 
@@ -144,9 +147,8 @@ func TestLimitOrder(t *testing.T) {
 
 func TestMarketCase1(t *testing.T) {
 
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("市价买指定的数量,完全成交", t, func() {
 
@@ -219,9 +221,8 @@ func TestMarketCase1(t *testing.T) {
 }
 
 func TestMarketCase2(t *testing.T) {
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("市价多单测试", t, func() {
 

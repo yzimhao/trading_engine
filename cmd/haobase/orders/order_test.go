@@ -2,6 +2,7 @@ package orders
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
@@ -24,69 +25,72 @@ var (
 	testBaseSymbol   = "jpy"
 )
 
-func initdb(t *testing.T) {
+func init() {
+	initdb()
+}
+
+func initdb() {
 	app.ConfigInit("", false)
 	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
 	app.Database().SetLogLevel(log.LOG_DEBUG)
 	app.RedisInit("127.0.0.1:6379", "", 15)
-	cleandb(t)
+	cleanSymbols()
+	initSymbols()
 }
 
-func cleandb(t *testing.T) {
-	cleanSymbols(t)
-	cleanAssets(t)
-	cleanOrders(t)
+func initSymbols() {
+	varieties.Init()
+	varieties.DemoData()
 }
 
-func initAssets(t *testing.T) {
+func cleandb() {
+	cleanAssets()
+	cleanOrders()
+}
+
+func initAssets() {
 	assets.Init()
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
-func initSymbols(t *testing.T) {
-	varieties.Init()
-	varieties.DemoData()
-}
-
-func cleanAssets(t *testing.T) {
+func cleanAssets() {
 	db := app.Database()
 	db.DropIndexes(new(assets.Assets))
 	db.DropIndexes("assets_freeze")
 	db.DropIndexes("assets_log")
-
 	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
 	if err != nil {
-		t.Logf("mysql droptables: %s", err)
+		fmt.Errorf("mysql droptables: %s", err)
 	}
 
 }
 
-func cleanSymbols(t *testing.T) {
+func cleanSymbols() {
 	db := app.Database()
 	db.DropIndexes(new(varieties.Varieties))
 	db.DropIndexes(new(varieties.TradingVarieties))
 	err := db.DropTables(new(varieties.Varieties), new(varieties.TradingVarieties))
 	if err != nil {
-		t.Logf("mysql droptables: %s", err)
+		fmt.Errorf("mysql droptables: %s", err)
 	}
 }
 
-func cleanOrders(t *testing.T) {
+func cleanOrders() {
 	db := app.Database()
-
-	db.DropIndexes(new(UnfinishedOrder))
 	db.DropIndexes(GetOrderTableName(testSymbol))
-	err := db.DropTables(new(UnfinishedOrder), GetOrderTableName(testSymbol))
-	if err != nil {
-		t.Logf("mysql droptables: %s", err)
-	}
+	db.DropIndexes(new(UnfinishedOrder))
+	db.DropIndexes(GetTradelogTableName(testSymbol))
+
+	db.DropTables(GetOrderTableName(testSymbol))
+	db.DropTables(new(UnfinishedOrder))
+	db.DropTables(GetTradelogTableName(testSymbol))
+
 }
 
 func TestNewOrder(t *testing.T) {
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("新限价单下单", t, func() {
 		_, err := NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
@@ -107,9 +111,8 @@ func TestNewOrder(t *testing.T) {
 }
 
 func TestNewOrderCase1(t *testing.T) {
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("用户反向有挂单 测试新开限价单", t, func() {
 		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")
@@ -133,9 +136,8 @@ func TestNewOrderCase1(t *testing.T) {
 }
 
 func TestNewOrderCase2(t *testing.T) {
-	initdb(t)
-	initSymbols(t)
-	initAssets(t)
+	cleandb()
+	initAssets()
 
 	Convey("用户反向有挂单 测试新开市价单", t, func() {
 		assets.SysDeposit(sellUser, testBaseSymbol, "10000.00", "C001")
