@@ -66,3 +66,11 @@ func find_user_unfinished_orders(user_id string, symbol string, side trading_cor
 	db.Table(new(UnfinishedOrder)).Where("user_id=? and symbol=? and order_side=?", user_id, symbol, side.String()).OrderBy("price asc").Find(&rows)
 	return rows
 }
+
+func find_unfinished_orders_count(symbol string, side trading_core.OrderSide) int64 {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	cnt, _ := db.Table(new(UnfinishedOrder)).Where("symbol=? and order_side=?", symbol, side.String()).Count()
+	return cnt
+}

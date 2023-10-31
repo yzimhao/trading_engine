@@ -127,6 +127,15 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 
 	//反向订单检查，不能让用户自己的订单撮合成交
 	if info.OrderSide == trading_core.OrderSideBuy {
+
+		//市价订单，检查市场反向是否有挂单
+		if info.OrderType == trading_core.OrderTypeMarket {
+			n := find_unfinished_orders_count(info.Symbol, trading_core.OrderSideSell)
+			if n == 0 {
+				return false, errors.New("市场无挂单")
+			}
+		}
+
 		//检查卖单是否有挂单
 		sell_orders := find_user_unfinished_orders(info.UserId, info.Symbol, trading_core.OrderSideSell)
 		if len(sell_orders) > 0 {
@@ -135,6 +144,14 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 			}
 		}
 	} else if info.OrderSide == trading_core.OrderSideSell {
+		//市价订单，检查市场反向是否有挂单
+		if info.OrderType == trading_core.OrderTypeMarket {
+			n := find_unfinished_orders_count(info.Symbol, trading_core.OrderSideBuy)
+			if n == 0 {
+				return false, errors.New("市场无挂单")
+			}
+		}
+
 		buy_orders := find_user_unfinished_orders(info.UserId, info.Symbol, trading_core.OrderSideBuy)
 		n := len(buy_orders)
 		if n > 0 {
