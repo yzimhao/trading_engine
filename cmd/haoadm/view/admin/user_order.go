@@ -6,11 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func UserOrder(ctx *gin.Context) {
+func UserOrderHistory(ctx *gin.Context) {
 	db := app.Database().NewSession()
 	defer db.Close()
 
@@ -19,7 +20,7 @@ func UserOrder(ctx *gin.Context) {
 		limit := utils.S2Int(ctx.Query("limit"))
 		searchParams := ctx.Query("searchParams")
 
-		var search varietiesSearch
+		var search orderSearch
 		json.Unmarshal([]byte(searchParams), &search)
 
 		if page <= 0 {
@@ -32,18 +33,19 @@ func UserOrder(ctx *gin.Context) {
 
 		data := []orders.Order{}
 
-		q := db.Table(new(orders.Order))
-
-		if search.Symbol != "" {
-			q = q.Where("symbol like ?", "%"+search.Symbol+"%")
-		}
-		if search.Name != "" {
-			q = q.Where("name like ?", "%"+search.Name+"%")
-		}
-		if search.Status != "" {
-			q = q.Where("status = ?", search.Status)
+		if search.Symbol == "" {
+			for _, item := range base.NewTSymbols().All() {
+				tb := orders.GetOrderTableName(item.Symbol)
+				if dbtables.Exist(db, tb) {
+					search.Symbol = item.Symbol
+					break
+				}
+			}
 		}
 
+		tablename := orders.GetOrderTableName(search.Symbol)
+		q := db.Table(tablename)
+		q = q.Where("symbol = ?", search.Symbol)
 		cond := q.Conds()
 		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
 		if err != nil {
@@ -51,12 +53,13 @@ func UserOrder(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := q.And(cond).Count()
+		total, _ := q.Table(tablename).And(cond).Count()
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
-			ctx.HTML(200, "user_order", gin.H{
+			ctx.HTML(200, "user_order_history", gin.H{
 				"searchParams": searchParams,
+				"all_symbols":  base.NewTSymbols().All(),
 			})
 		}
 		return

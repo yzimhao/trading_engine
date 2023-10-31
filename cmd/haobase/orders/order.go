@@ -7,6 +7,7 @@ import (
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -44,13 +45,18 @@ type Order struct {
 }
 
 func (o *Order) Save(db *xorm.Session) error {
-	//todo 频繁查询表是否存在，后面考虑缓存一下
-
-	exist, err := db.IsTableExist(o.TableName())
-	if err != nil {
+	o.CreateTime = time.Now().UnixNano()
+	if _, err := db.Table(o).Insert(o); err != nil {
 		return err
 	}
-	if !exist {
+	return nil
+}
+
+func (o *Order) AutoCreateTable() error {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	if !dbtables.Exist(db, o.TableName()) {
 		err := db.CreateTable(o)
 		if err != nil {
 			return err
@@ -65,12 +71,6 @@ func (o *Order) Save(db *xorm.Session) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	o.CreateTime = time.Now().UnixNano()
-	_, err = db.Table(o).Insert(o)
-	if err != nil {
-		return err
 	}
 	return nil
 }
