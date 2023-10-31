@@ -13,17 +13,17 @@ import (
 	"xorm.io/xorm"
 )
 
-type orderStatus string
+type orderStatus int
 
 const (
-	OrderStatusNew    orderStatus = "new"
-	OrderStatusDone   orderStatus = "done"
-	OrderStatusCancel orderStatus = "cancel"
+	OrderStatusNew    orderStatus = 0
+	OrderStatusDone   orderStatus = 1
+	OrderStatusCancel orderStatus = 3
 )
 
 // 委托记录表
 type Order struct {
-	Id             int64                  `xorm:"pk autoincr bigint" json:"-"`
+	Id             int64                  `xorm:"pk autoincr bigint" json:"id"`
 	Symbol         string                 `xorm:"varchar(30)" json:"symbol"`
 	OrderId        string                 `xorm:"varchar(30) unique(order_id) notnull" json:"order_id"`
 	OrderSide      trading_core.OrderSide `xorm:"varchar(10) index(order_side)" json:"order_side"`
@@ -31,15 +31,15 @@ type Order struct {
 	UserId         string                 `xorm:"index(userid) notnull" json:"user_id"`
 	Price          string                 `xorm:"decimal(40,20) notnull default(0)" json:"price"`
 	Quantity       string                 `xorm:"decimal(40,20) notnull default(0)" json:"quantity"`
-	FeeRate        string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`
-	Amount         string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`
-	FreezeQty      string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`
-	FreezeAmount   string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`
-	AvgPrice       string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"` //订单撮合成功 结算逻辑写入的字段
+	FeeRate        string                 `xorm:"decimal(40,20) notnull default(0)" json:"fee_rate"`
+	Amount         string                 `xorm:"decimal(40,20) notnull default(0)" json:"amount"`
+	FreezeQty      string                 `xorm:"decimal(40,20) notnull default(0)" json:"freeze_qty"`
+	FreezeAmount   string                 `xorm:"decimal(40,20) notnull default(0)" json:"freeze_amount"`
+	AvgPrice       string                 `xorm:"decimal(40,20) notnull default(0)" json:"avg_price"` //订单撮合成功 结算逻辑写入的字段
 	FinishedQty    string                 `xorm:"decimal(40,20) notnull default(0)" json:"finished_qty"`
 	FinishedAmount string                 `xorm:"decimal(40,20) notnull default(0)" json:"finished_amount"`
-	Fee            string                 `xorm:"decimal(40,20) notnull default(0)" json:"-"`
-	Status         orderStatus            `xorm:"varchar(10)" json:"status"`
+	Fee            string                 `xorm:"decimal(40,20) notnull default(0)" json:"fee"`
+	Status         orderStatus            `xorm:"tinyint(1) default(0)" json:"status"`
 	CreateTime     int64                  `xorm:"bigint" json:"create_time"` //时间戳 精确到纳秒
 	UpdateTime     time.Time              `xorm:"timestamp updated" json:"-"`
 }
