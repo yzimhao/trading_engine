@@ -21,7 +21,7 @@ func Subscribe() {
 		for {
 			switch v := psc.Receive().(type) {
 			case redis.Message:
-				app.Logger.Infof("收到消息[topic:%s]: %s", v.Channel, v.Data)
+				// app.Logger.Infof("收到消息[topic:%s]: %s", v.Channel, v.Data)
 				var send_data ws.MsgBody
 				err := json.Unmarshal(v.Data, &send_data)
 				if err != nil {
@@ -30,7 +30,7 @@ func Subscribe() {
 				}
 				ws.M.Broadcast <- send_data
 			case redis.Subscription:
-				app.Logger.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
+				// app.Logger.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
 			case error:
 				app.Logger.Errorf("message %s subscribe: %s", topic, v.Error())
 			}
@@ -44,7 +44,7 @@ func Publish(msg ws.MsgBody) {
 	topic := types.FormatWsMessage.Format("")
 
 	raw := msg.JSON()
-	app.Logger.Infof("广播消息[topic:%s]: %s", topic, raw)
+	// app.Logger.Infof("广播消息[topic:%s]: %s", topic, raw)
 	if _, err := rdc.Do("Publish", topic, raw); err != nil {
 		app.Logger.Warnf("Publish: %s %s err: %s", topic, raw, err.Error())
 	}
