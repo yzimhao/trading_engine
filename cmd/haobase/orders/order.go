@@ -41,7 +41,7 @@ type Order struct {
 	Fee            string                 `xorm:"decimal(40,20) notnull default(0)" json:"fee"`
 	Status         orderStatus            `xorm:"tinyint(1) default(0)" json:"status"`
 	CreateTime     int64                  `xorm:"bigint" json:"create_time"` //时间戳 精确到纳秒
-	UpdateTime     time.Time              `xorm:"timestamp updated" json:"-"`
+	UpdateTime     time.Time              `xorm:"timestamp updated" json:"update_time"`
 }
 
 func (o *Order) Save(db *xorm.Session) error {
