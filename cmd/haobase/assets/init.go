@@ -17,8 +17,8 @@ func Init() {
 	//同步表结构
 	err := db_engine.Sync2(
 		new(Assets),
-		new(assetsLog),
-		new(assetsFreeze),
+		new(AssetsLog),
+		new(AssetsFreeze),
 	)
 	if err != nil {
 		app.Logger.Errorf("sync2: %s", err)

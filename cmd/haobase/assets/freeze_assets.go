@@ -7,9 +7,9 @@ import (
 	"xorm.io/xorm"
 )
 
-func QueryFreeze(db *xorm.Session, business_id string) (*assetsFreeze, error) {
-	row := assetsFreeze{}
-	has, err := db.Table(new(assetsFreeze)).Where("business_id=?", business_id).Get(&row)
+func QueryFreeze(db *xorm.Session, business_id string) (*AssetsFreeze, error) {
+	row := AssetsFreeze{}
+	has, err := db.Table(new(AssetsFreeze)).Where("business_id=?", business_id).Get(&row)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 	}
 
 	//freeze log
-	lg := assetsFreeze{
+	lg := AssetsFreeze{
 		UserId:       user_id,
 		Symbol:       symbol,
 		Amount:       freeze_amount,
@@ -69,7 +69,7 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 		Info:         string(behavior),
 	}
 
-	_, err = db.Table(new(assetsFreeze)).Insert(&lg)
+	_, err = db.Table(new(AssetsFreeze)).Insert(&lg)
 	if err != nil {
 		return false, err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm/log"
@@ -80,13 +81,18 @@ func cleanSymbols() {
 
 func cleanOrders() {
 	db := app.Database()
-	db.DropIndexes(orders.GetOrderTableName(testSymbol))
-	db.DropIndexes(new(orders.UnfinishedOrder))
-	db.DropIndexes(orders.GetTradelogTableName(testSymbol))
 
-	db.DropTables(orders.GetOrderTableName(testSymbol))
-	db.DropTables(new(orders.UnfinishedOrder))
-	db.DropTables(orders.GetTradelogTableName(testSymbol))
+	tables := []any{
+		orders.GetOrderTableName(testSymbol),
+		new(orders.UnfinishedOrder).TableName(),
+		orders.GetTradelogTableName(testSymbol),
+	}
+
+	for _, table := range tables {
+		db.DropIndexes(table)
+		db.DropTables(table)
+		dbtables.Del(table.(string))
+	}
 
 }
 

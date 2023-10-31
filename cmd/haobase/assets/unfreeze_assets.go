@@ -21,8 +21,8 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 		return false, fmt.Errorf("解冻金额必须大于等于0")
 	}
 
-	row := assetsFreeze{}
-	has, err := db.Table(new(assetsFreeze)).Where("business_id=?", business_id).ForUpdate().Get(&row)
+	row := AssetsFreeze{}
+	has, err := db.Table(new(AssetsFreeze)).Where("business_id=?", business_id).ForUpdate().Get(&row)
 	if err != nil {
 		return false, err
 	}
@@ -52,7 +52,7 @@ func unfreezeAssets(db *xorm.Session, user_id string, business_id, unfreeze_amou
 	}
 
 	row.FreezeAmount = freeze_amount.String()
-	_, err = db.Table(new(assetsFreeze)).Where("business_id=?", business_id).AllCols().Update(&row)
+	_, err = db.Table(new(AssetsFreeze)).Where("business_id=?", business_id).AllCols().Update(&row)
 	if err != nil {
 		return false, err
 	}

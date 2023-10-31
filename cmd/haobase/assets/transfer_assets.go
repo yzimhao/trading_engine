@@ -94,7 +94,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 	}
 
 	//双方日志
-	from_log := assetsLog{
+	from_log := AssetsLog{
 		UserId:     from,
 		Symbol:     symbol,
 		Before:     from_before.String(),
@@ -104,12 +104,12 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Behavior:   behavior,
 		Info:       fmt.Sprintf("to: %s", to),
 	}
-	_, err = db.Table(new(assetsLog)).Insert(&from_log)
+	_, err = db.Table(new(AssetsLog)).Insert(&from_log)
 	if err != nil {
 		return false, err
 	}
 
-	to_log := assetsLog{
+	to_log := AssetsLog{
 		UserId:     to,
 		Symbol:     symbol,
 		Before:     to_before.String(),
@@ -119,7 +119,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Behavior:   behavior,
 		Info:       fmt.Sprintf("from: %s", from),
 	}
-	_, err = db.Table(new(assetsLog)).Insert(&to_log)
+	_, err = db.Table(new(AssetsLog)).Insert(&to_log)
 	if err != nil {
 		return false, err
 	}

@@ -1,8 +1,6 @@
 package assets
 
 import (
-	"time"
-
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -34,36 +32,7 @@ type Assets struct {
 	UpdateTime utils.Time `xorm:"timestamp updated" json:"update_time"`
 }
 
-// 用户资产变动记录
-type assetsLog struct {
-	Id         int64      `xorm:"pk autoincr bigint"`
-	UserId     string     `xorm:"varchar(30) index notnull"`
-	Symbol     string     `xorm:"varchar(30) index notnull"`
-	Before     string     `xorm:"decimal(40,20) default(0)"`               // 变动前
-	Amount     string     `xorm:"decimal(40,20) default(0)"`               // 变动数
-	After      string     `xorm:"decimal(40,20) default(0)"`               // 变动后
-	BusinessId string     `xorm:"varchar(100) index(business_id) notnull"` //业务相关的id
-	Behavior   OpBehavior `xorm:"varchar(15)"`
-	Info       string     `xorm:"varchar(64)"`
-	CreateTime time.Time  `xorm:"timestamp created"`
-	UpdateTime time.Time  `xorm:"timestamp updated"`
-}
-
-type assetsFreeze struct {
-	Id           int64        `xorm:"pk autoincr bigint"`
-	UserId       string       `xorm:"varchar(30) index notnull"`
-	Symbol       string       `xorm:"varchar(30) index notnull"`
-	Amount       string       `xorm:"decimal(40,20) default(0) notnull"`        // 冻结总量
-	FreezeAmount string       `xorm:"decimal(40,20) default(0) notnull"`        // 冻结着的量
-	Status       FreezeStatus `xorm:"tinyint(1)"`                               // 状态 冻结中, 已解冻
-	BusinessId   string       `xorm:"varchar(100) unique(business_id) notnull"` //业务相关的id
-	Info         string       `xorm:"varchar(64)"`
-	CreateTime   time.Time    `xorm:"timestamp created"`
-	UpdateTime   time.Time    `xorm:"timestamp updated"`
-}
-
 func FindSymbol(user_id string, symbol string) *Assets {
-
 	db := app.Database().NewSession()
 	defer db.Close()
 
@@ -94,12 +63,4 @@ func BalanceOfAvailable(user_id, symbol string) decimal.Decimal {
 		return utils.D(row.Available)
 	}
 	return decimal.Zero
-}
-
-func QueryAssetsLogBusIdIsExist(user_id string, business_id string) bool {
-	db := app.Database().NewSession()
-	defer db.Close()
-
-	ok, _ := db.Table(new(assetsLog)).Where("user_id=? and business_id=?", user_id, business_id).Exist()
-	return ok
 }

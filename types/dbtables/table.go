@@ -22,3 +22,7 @@ func Exist(db *xorm.Session, table_name string) bool {
 	return exist
 
 }
+
+func Del(table_name string) {
+	MTables.Delete(table_name)
+}
