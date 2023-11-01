@@ -4,7 +4,7 @@
         <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="" lay-filter="searchform">
+                <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
                             <label class="layui-form-label">交易对</label>
@@ -23,8 +23,8 @@
                             <div class="layui-input-inline">
                                 <select name="status">
                                     <option value="">全部</option>
-                                    <option value="1">已成交</option>
-                                    <option value="2">已取消</option>
+                                    <option value="1">启用</option>
+                                    <option value="0">禁用</option>
                                 </select>
                             </div>
                         </div>
@@ -41,8 +41,8 @@
 
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
-                <!-- <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
-                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button> -->
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
             </div>
         </script>
 
@@ -67,7 +67,7 @@
 
             table.render({
             elem: '#currentTableId',
-            url: '/admin/user/order/history?api=1',
+            url: '/admin/user/trade/history?api=1',
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
@@ -76,23 +76,19 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'user_id', title: '用户ID', sort: true},
-                {field: 'symbol', width: 80, title: '交易对'},
-                {field: 'order_type', title: '类型', templet:function(d){
-                    return utils.format_order_type(d.order_type) + "-" +utils.format_order_side(d.order_side);
-                }},
-                {field: 'price', title: '挂单价格/成交均价', minWidth: 150, templet:function(d){
-                    return d.price + "/" + d.avg_price;
-                }},
+                {field: 'trade_id', title: 'ID', sort: true},
+                {field: 'ask', title: '卖方订单'},
+                {field: 'bid', title: '买方订单'},
+                {field: 'price', title: '成交价格'},
                 {field: 'quantity', title: '数量', sort: true},
-                {field: 'finished_qty', title: '已成交', sort: true},
-                {field: 'finished_amount', title: '成交金额', sort: true},
-                {field: 'status', title: '状态', sort: true, templet:function(d){
-                    return utils.format_order_status(d.status);
-                }},
+                {field: 'amount', title: '成交金额', sort: true},
+                {field: 'ask_fee_rate', title: '卖方费率', sort: true},
+                {field: 'ask_fee', title: '卖方手续费', sort: true},
+                {field: 'bid_fee_rate', title: '买方费率', sort: true},
+                {field: 'bid_fee', title: '买方手续费', sort: true},
                 
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
-                    return utils.format_timestamp(d.create_time/1e6);
+                {field: 'create_time', width: 280, title: '成交时间', sort: true, templet: function(d){
+                    return utils.format_timestamp(d.create_time*1000);
                 }},
                 
                 // {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
@@ -181,9 +177,9 @@
                 return false;
             } else if (obj.event === 'delete') {
                 layer.confirm('真的删除行么', function (index) {
-                obj.del();
-                layer.close(index);
-            });
+                    obj.del();
+                    layer.close(index);
+                });
             }
         });
 

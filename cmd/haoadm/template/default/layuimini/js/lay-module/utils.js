@@ -35,6 +35,32 @@ layui.define(["jquery"], function (exports) {
             return '<i class="fa fa-close"></i>';
         },
 
+        format_order_type: function(d){
+            if(d=="limit") {
+                return "限价";
+            }else if(d=="market") {
+                return "市价";
+            }
+        },
+
+        format_order_side: function(d){
+            if(d=="buy"){
+                return "买入";
+            }else{
+                return "卖出";
+            }
+        },
+
+        format_order_status: function(d){
+            if(d==0) {
+                return "未成交";
+            }else if(d == 1){
+                return "已成交";
+            }else if(d==2) {
+                return "已取消";
+            }
+        },
+
         format_num: function(d, spec) {
             const a = parseFloat(d);
             if(spec > -1) {

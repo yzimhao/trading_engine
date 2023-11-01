@@ -18,7 +18,7 @@ type orderStatus int
 const (
 	OrderStatusNew    orderStatus = 0
 	OrderStatusDone   orderStatus = 1
-	OrderStatusCancel orderStatus = 3
+	OrderStatusCancel orderStatus = 2
 )
 
 // 委托记录表
@@ -41,7 +41,7 @@ type Order struct {
 	Fee            string                 `xorm:"decimal(40,20) notnull default(0)" json:"fee"`
 	Status         orderStatus            `xorm:"tinyint(1) default(0)" json:"status"`
 	CreateTime     int64                  `xorm:"bigint" json:"create_time"` //时间戳 精确到纳秒
-	UpdateTime     time.Time              `xorm:"timestamp updated" json:"update_time"`
+	UpdateTime     utils.Time             `xorm:"timestamp updated" json:"update_time"`
 }
 
 func (o *Order) Save(db *xorm.Session) error {
@@ -88,6 +88,10 @@ func (o *Order) FormatDecimal(price_digit, qty_digit int) Order {
 
 	o.Quantity = utils.FormatDecimal(o.Quantity, qty_digit)
 	o.FinishedQty = utils.FormatDecimal(o.FinishedQty, qty_digit)
+
+	o.FeeRate = utils.FormatDecimal(o.FeeRate, price_digit)
+	o.FreezeQty = utils.FormatDecimal(o.FreezeQty, qty_digit)
+	o.FreezeAmount = utils.FormatDecimal(o.FreezeAmount, price_digit)
 	return *o
 }
 
