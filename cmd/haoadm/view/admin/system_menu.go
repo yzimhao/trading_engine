@@ -30,5 +30,9 @@ func SystemInfo(ctx *gin.Context) {
 		name := strings.Split(item, ".")[1]
 		data = append(data, name)
 	}
-	utils.ResponseOkJson(ctx, data)
+	utils.ResponseOkJson(ctx, gin.H{
+		"module":   data,
+		"version":  app.Version,
+		"build_at": app.Build,
+	})
 }

@@ -28,7 +28,7 @@
         <div class="layui-row layui-col-space15">
             <div class="layui-col-md8">
                 <div class="layui-row layui-col-space15">
-                    <div class="layui-col-md6">
+                    <div class="layui-col-md12">
                         <div class="layui-card">
                             <div class="layui-card-header"><i class="fa fa-warning icon"></i>数据统计</div>
                             <div class="layui-card-body">
@@ -96,7 +96,7 @@
                         </div>
                     </div>
                     <div class="layui-col-md6">
-                        <div class="layui-card">
+                        <div class="layui-card" style="display: none;">
                             <div class="layui-card-header"><i class="fa fa-credit-card icon icon-blue"></i>快捷入口</div>
                             <div class="layui-card-body">
                                 <div class="welcome-module">
@@ -168,7 +168,7 @@
 
             <div class="layui-col-md4">
 
-                <div class="layui-card">
+                <div class="layui-card" style="display: none;">
                     <div class="layui-card-header"><i class="fa fa-bullhorn icon icon-tip"></i>系统公告</div>
                     <div class="layui-card-body layui-text">
                         <div class="layuimini-notice">
@@ -275,7 +275,7 @@
                             </tr>
                             <tr>
                                 <td>当前版本</td>
-                                <td>v1.0.4</td>
+                                <td class="version">v1.0.4</td>
                             </tr>
                             <tr>
                                 <td>当前状态</td>
@@ -360,11 +360,13 @@
                 url: "/api/v1/admin/system/info",
                 success:function(d){
                     if(d.ok){
-                        var data = d.data;
+                        var data = d.data['module'];
                         $(".sys-status i").removeClass("fa-check").removeClass("fa-close").removeClass("green").removeClass("red");
                         for(var i=0; i<data.length; i++){
                             $("."+data[i]).addClass("fa-check").addClass("green");
                         }
+
+                        $(".version").html(d.data["version"] +"/" +d.data["build_at"]);
                     }
                 }
             })
