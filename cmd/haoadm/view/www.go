@@ -7,6 +7,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -63,6 +64,15 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
 	// radmin.Use(auth.MiddlewareFunc())
+	radmin.Use(func(ctx *gin.Context) {
+		if config.App.Main.Mode == config.ModeDemo {
+			if ctx.Request.Method == "POST" {
+				ctx.Abort()
+				utils.ResponseFailJson(ctx, "Demo禁止修改数据")
+				return
+			}
+		}
+	})
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)

@@ -119,6 +119,7 @@ example_stop:
 	ssh demo 'pgrep haobase | xargs kill'
 	ssh demo 'pgrep haomatch | xargs kill'
 	ssh demo 'pgrep haoquote | xargs kill'
+	ssh demo 'pgrep haoadm | xargs kill'
 	ssh demo 'pgrep example | xargs kill'
 	
 

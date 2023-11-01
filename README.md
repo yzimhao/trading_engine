@@ -20,6 +20,8 @@
   <a href="http://144.91.108.90:20001/" target="_blank">在线体验</a> 
   > 感谢[9cat](https://github.com/9cat)大佬提供免费测试服务器 
 
+  <a href="http://144.91.108.90:20010/admin/index" target="_blank">运营后台</a> 
+
 
 
 ## HaoTrader系统包含模块
