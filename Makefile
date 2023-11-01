@@ -40,6 +40,13 @@ define build_haobase
 	upx -9 $(exedir)/haobase$3
 endef
 
+define build_haoadm
+	@echo "Building for haoadm $1 $2"
+	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haoadm$3 cmd/haoadm/main.go
+	upx -9 $(exedir)/haoadm$3
+endef
+
+
 
 copy_doc:
 	cp README.md $(exedir)/
@@ -57,6 +64,7 @@ build_linux_amd64:
 	$(call build_haobase,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
 	$(call build_haomatch,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
 	$(call build_haoquote,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
+	$(call build_haoadm,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
 	
 	$(call zipfile,linux,amd64)
 	
@@ -66,6 +74,7 @@ build_darwin_amd64:
 	$(call build_haobase,darwin,amd64,'','')
 	$(call build_haomatch,darwin,amd64,'','')
 	$(call build_haoquote,darwin,amd64,'','')
+	$(call build_haoadm,darwin,amd64,'','')
 	
 	$(call zipfile,darwin,amd64)
 
@@ -101,6 +110,7 @@ example_start:
 	ssh demo 'cd haotrader/ && ./haobase -d'
 	ssh demo 'cd haotrader/ && ./haomatch -d'
 	ssh demo 'cd haotrader/ && ./haoquote -d'
+	ssh demo 'cd haotrader/ && ./haoadm -d'
 	ssh demo 'cd trading_engine_example/ && ./example -d'
 
 
