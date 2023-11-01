@@ -54,6 +54,12 @@ func UserOrderHistory(ctx *gin.Context) {
 		}
 
 		total, _ := q.Table(tablename).And(cond).Count()
+
+		cfg, _ := base.NewTSymbols().Get(search.Symbol)
+		for i, _ := range data {
+			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
+		}
+
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
@@ -109,10 +115,11 @@ func UserOrderUnfinished(ctx *gin.Context) {
 
 		for i, v := range data {
 			cfg, _ := base.NewTSymbols().Get(v.Symbol)
-			data[i].Price = utils.FormatDecimal(v.Price, cfg.PricePrecision)
-			data[i].Quantity = utils.FormatDecimal(v.Quantity, cfg.QtyPrecision)
-			data[i].FinishedQty = utils.FormatDecimal(v.FinishedQty, cfg.QtyPrecision)
-			data[i].FinishedAmount = utils.FormatDecimal(v.FinishedAmount, cfg.PricePrecision)
+			// data[i].Price = utils.FormatDecimal(v.Price, cfg.PricePrecision)
+			// data[i].Quantity = utils.FormatDecimal(v.Quantity, cfg.QtyPrecision)
+			// data[i].FinishedQty = utils.FormatDecimal(v.FinishedQty, cfg.QtyPrecision)
+			// data[i].FinishedAmount = utils.FormatDecimal(v.FinishedAmount, cfg.PricePrecision)
+			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 		}
 
 		if ctx.Query("api") == "1" {
