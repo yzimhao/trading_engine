@@ -55,7 +55,7 @@ func main() {
 				}(context)
 
 			}
-
+			app.Keepalive(ctx.App.Name, 5)
 			quote.Run()
 			return nil
 		},

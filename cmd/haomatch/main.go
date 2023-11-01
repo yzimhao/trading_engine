@@ -75,7 +75,7 @@ func main() {
 					app.Logger.Printf("释放成功!!!")
 				}(context)
 			}
-
+			app.Keepalive(ctx.App.Name, 5)
 			matching.Run()
 			return nil
 		},

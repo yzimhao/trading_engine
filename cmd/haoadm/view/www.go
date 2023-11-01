@@ -79,5 +79,6 @@ func setupPages(router *gin.Engine) {
 	api := router.Group("/api/v1/admin")
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
+		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
 	}
 }

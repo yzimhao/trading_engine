@@ -56,6 +56,7 @@ func main() {
 				}(context)
 
 			}
+			app.Keepalive(ctx.App.Name, 5)
 			view.Run()
 			return nil
 		},

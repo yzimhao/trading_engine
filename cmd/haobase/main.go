@@ -72,6 +72,7 @@ func main() {
 
 			}
 
+			app.Keepalive(ctx.App.Name, 5)
 			initDemoBaseData()
 			clearing.Run()
 			orders.Run()

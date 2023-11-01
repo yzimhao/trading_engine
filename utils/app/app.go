@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -180,4 +181,53 @@ func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {
 
 	child, err := cntxt.Reborn()
 	return cntxt, child, err
+}
+
+func Keepalive(app string, sec int) {
+	go func() {
+		for {
+			data := make(map[string]any)
+			data["version"] = Version
+
+			_data, _ := json.Marshal(data)
+
+			rdc := redisPool.Get()
+			topic := fmt.Sprintf("keepalive.%s", app)
+			rdc.Do("set", topic, _data)
+			rdc.Do("expire", topic, sec+5)
+			time.Sleep(time.Second * time.Duration(sec))
+			rdc.Close()
+		}
+	}()
+}
+
+func KeepaliveInfo() []string {
+	rdc := redisPool.Get()
+	defer rdc.Close()
+
+	keys, _ := scanKeys(rdc, 0, "keepalive.*")
+	return keys
+}
+
+func scanKeys(conn redis.Conn, cursor int, pattern string) ([]string, error) {
+	const count = 100 // 一次扫描的数量
+
+	var keys []string
+	for {
+		values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", pattern, "COUNT", count))
+		if err != nil {
+			return nil, err
+		}
+
+		values, err = redis.Scan(values, &cursor, &keys)
+		if err != nil {
+			return nil, err
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return keys, nil
 }
