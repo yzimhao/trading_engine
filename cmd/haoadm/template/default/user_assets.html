@@ -77,16 +77,16 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'user_id', title: '用户ID', sort: true},
-                {field: 'symbol', width: 80, title: '代号'},
+                {field: 'user_id', title: '用户ID'},
+                {field: 'symbol', title: '代号'},
                 {field: 'total', title: '余额'},
-                {field: 'avail', title: '可用', minWidth: 150},
+                {field: 'avail', title: '可用'},
                 {field: 'freeze', title: '冻结', sort: true},
                 
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 180, title: '创建时间', sort: true, templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},
-                {field: 'update_time', width: 280, title: '更新时间', templet: function(d){
+                {field: 'update_time', width: 180, title: '更新时间', templet: function(d){
                     return utils.format_timestamp(d.update_time*1000);
                 }},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
