@@ -67,7 +67,7 @@ func (b *bot) get_now_price() {
 func (b *bot) auto_depth() {
 	depth := get_depth(b.symbol)
 	an := len(depth["asks"])
-	if an < 10 || utils.D(depth["asks"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
+	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) >= 0 {
 		if an < 10 {
 			for i := 0; i < an; i++ {
 				float := rand.Float64()
@@ -82,7 +82,7 @@ func (b *bot) auto_depth() {
 	}
 
 	bn := len(depth["bids"])
-	if bn < 10 || utils.D(depth["bids"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
+	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) >= 0 {
 		if bn < 10 {
 			for i := 0; i < len(depth["bids"]); i++ {
 				float := rand.Float64()
