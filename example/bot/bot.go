@@ -66,17 +66,30 @@ func (b *bot) get_now_price() {
 
 func (b *bot) auto_depth() {
 	depth := get_depth(b.symbol)
-	if len(depth["asks"]) < 10 || utils.D(depth["asks"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
-
-		for i := 0; i < len(depth["asks"]); i++ {
+	an := len(depth["asks"])
+	if an < 10 || utils.D(depth["asks"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
+		if an < 10 {
+			for i := 0; i < an; i++ {
+				float := rand.Float64()
+				price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
+				b.auto_sell(BOTSELL, price.String(), "0.01")
+			}
+		} else {
 			float := rand.Float64()
 			price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
 			b.auto_sell(BOTSELL, price.String(), "0.01")
 		}
 	}
 
-	if len(depth["bids"]) < 10 || utils.D(depth["bids"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
-		for i := 0; i < len(depth["bids"]); i++ {
+	bn := len(depth["bids"])
+	if bn < 10 || utils.D(depth["bids"][0][0]).Cmp(utils.D(b.remote_price)) > 1 {
+		if bn < 10 {
+			for i := 0; i < len(depth["bids"]); i++ {
+				float := rand.Float64()
+				price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
+				b.auto_buy(BOTBUY, price.String(), "0.01")
+			}
+		} else {
 			float := rand.Float64()
 			price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
 			b.auto_buy(BOTBUY, price.String(), "0.01")
