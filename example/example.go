@@ -111,6 +111,7 @@ func startWeb(host string) {
 		c.HTML(200, "demo.html", gin.H{
 			"haobase_host":  viper.GetString("api.haobase_host"),
 			"haoquote_host": viper.GetString("api.haoquote_host"),
+			"haoadm_host":   viper.GetString("api.haoadm_host"),
 			"ws_host":       viper.GetString("api.haoquote_ws_host"),
 			"symbol":        symbol,
 		})
