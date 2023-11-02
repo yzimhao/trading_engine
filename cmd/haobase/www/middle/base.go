@@ -4,10 +4,15 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+)
+
+var (
+	sysUsers = []string{"root", "fee", "demobot1", "demobot2"}
 )
 
 func CheckLogin() gin.HandlerFunc {
@@ -26,6 +31,12 @@ func CheckLogin() gin.HandlerFunc {
 				pp := regexp.MustCompile(`^[a-z0-9]{4,10}$`)
 				if !pp.MatchString(user_id) {
 					utils.ResponseFailJson(c, "用户名不符合规则: ^[a-z0-9]{4,10}$")
+					c.Abort()
+					return
+				}
+
+				if arrutil.Contains(sysUsers, user_id) {
+					utils.ResponseFailJson(c, "禁止登陆")
 					c.Abort()
 					return
 				}
