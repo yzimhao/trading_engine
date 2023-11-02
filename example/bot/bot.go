@@ -45,7 +45,7 @@ func (b *bot) run() {
 			b.auto_sell(BOTSELL, b.remote_price, "100")
 			b.auto_depth()
 		}
-		sec := 1 + rand.Int63n(20)
+		sec := 5 + rand.Int63n(20)
 		app.Logger.Infof("sleep: %d sec", sec)
 		time.Sleep(time.Second * time.Duration(sec))
 	}
