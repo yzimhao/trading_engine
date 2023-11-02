@@ -30,6 +30,7 @@ symbols=[]
 
 
 [haoadm]
+readonly=false
 site_name="HaoTrader 运营管理系统"
 listen="0.0.0.0:8079"
 server_name=""

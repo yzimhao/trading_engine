@@ -75,4 +75,5 @@ type HaoadmConfiguration struct {
 	SiteName         string `mapstructure:"site_name"`
 	ServerName       string `mapstructure:"server_name"`
 	StaticServerName string `mapstructure:"static_server_name"`
+	Readonly         bool   `mapstructure:"readonly"`
 }

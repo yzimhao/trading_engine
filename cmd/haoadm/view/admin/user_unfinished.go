@@ -39,7 +39,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		}
 
 		cond := q.Conds()
-		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
+		err := q.OrderBy("price desc,create_time asc").Limit(limit, offset).Find(&data)
 		if err != nil {
 			render(ctx, 1, err.Error(), 0, "")
 			return

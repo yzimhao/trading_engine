@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	BOTSELL = "sysdemobot1"
-	BOTBUY  = "sysdemobot2"
+	BOTSELL = "demobot1"
+	BOTBUY  = "demobot2"
 )
 
 type bot struct {
@@ -29,7 +29,7 @@ type bot struct {
 
 func StartBot() {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
-	auto_deposit("bot-test-004", BOTBUY, "jpy", "1000000000000")
+	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
 
 	b1 := bot{symbol: "usdjpy"}
 	go b1.run()
@@ -43,11 +43,9 @@ func (b *bot) run() {
 		if update {
 			b.auto_buy(BOTBUY, b.remote_price, "100")
 			b.auto_sell(BOTSELL, b.remote_price, "100")
-
 			b.auto_depth()
 		}
-
-		sec := 10 + rand.Int63n(20)
+		sec := 1 + rand.Int63n(20)
 		app.Logger.Infof("sleep: %d sec", sec)
 		time.Sleep(time.Second * time.Duration(sec))
 	}

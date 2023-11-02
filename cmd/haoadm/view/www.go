@@ -65,7 +65,7 @@ func setupPages(router *gin.Engine) {
 
 	// radmin.Use(auth.MiddlewareFunc())
 	radmin.Use(func(ctx *gin.Context) {
-		if config.App.Main.Mode == config.ModeDemo {
+		if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
 			if ctx.Request.Method == "POST" {
 				ctx.Abort()
 				utils.ResponseFailJson(ctx, "Demo禁止修改数据")
