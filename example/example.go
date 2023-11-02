@@ -10,6 +10,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
+	"github.com/yzimhao/trading_engine/example/bot"
 	"github.com/yzimhao/trading_engine/utils/app"
 
 	_ "net/http/pprof"
@@ -30,6 +31,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
+			&cli.BoolFlag{Name: "bot", Value: false, Aliases: []string{"b"}},
 		},
 
 		Before: func(ctx *cli.Context) error {
@@ -64,6 +66,10 @@ func main() {
 					}
 				}(context)
 
+			}
+
+			if ctx.Bool("bot") {
+				bot.StartBot()
 			}
 
 			startWeb(viper.GetString("example.host"))

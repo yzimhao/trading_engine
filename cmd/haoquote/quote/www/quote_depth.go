@@ -31,6 +31,23 @@ func qutoe_depth(ctx *gin.Context) {
 	})
 }
 
+func qutoe_latest_price(ctx *gin.Context) {
+	symbol := strings.ToLower(ctx.Query("symbol"))
+
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	data, err := get_depth_data(symbol)
+	if err != nil {
+		utils.ResponseFailJson(ctx, "invalid symbol")
+		return
+	}
+
+	utils.ResponseOkJson(ctx, gin.H{
+		symbol: data.Price,
+	})
+}
+
 func limitSize(arr [][2]string, n int) [][2]string {
 	a := len(arr)
 	if n >= a {

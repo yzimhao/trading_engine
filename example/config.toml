@@ -1,4 +1,5 @@
 [main]
+log_level="trace"
 mode="test"
 
 [example]

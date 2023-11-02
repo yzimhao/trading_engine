@@ -26,7 +26,7 @@ func http_start() {
 
 	g := gin.New()
 	router(g)
-	app.Logger.Infof("listen: %s", config.App.Haobase.Listen)
+	app.Logger.Infof("listen: %s", config.App.Haoquote.Listen)
 	g.Run(config.App.Haoquote.Listen)
 }
 
@@ -49,6 +49,7 @@ func router(router *gin.Engine) {
 			})
 		})
 		api.GET("/depth", qutoe_depth)
+		api.GET("/price", qutoe_latest_price)
 		api.GET("/trans/record", trans_record)
 		api.GET("/kline", kline)
 		api.GET("/system", system_info)
