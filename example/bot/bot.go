@@ -67,7 +67,9 @@ func (b *bot) get_now_price() {
 func (b *bot) auto_depth() {
 	depth := get_depth(b.symbol)
 	an := len(depth["asks"])
-	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) >= 0 {
+
+	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
+		// app.Logger.Infof("an: %d ask0: %s - remote_price: %s > 1 abs: %s", an, depth["asks"][0][0], b.remote_price, utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs())
 		if an < 10 {
 			for i := 0; i < an; i++ {
 				float := rand.Float64()
@@ -82,7 +84,7 @@ func (b *bot) auto_depth() {
 	}
 
 	bn := len(depth["bids"])
-	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) >= 0 {
+	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
 		if bn < 10 {
 			for i := 0; i < len(depth["bids"]); i++ {
 				float := rand.Float64()
@@ -202,7 +204,7 @@ func get_latest_price(symbol string) string {
 	return "0"
 }
 
-func get_depth(symbol string) map[string][2][]string {
+func get_depth(symbol string) map[string][][2]string {
 	// 创建 HTTP 请求头
 	headers := make(http.Header)
 	headers.Set("Content-Type", "application/json")
@@ -212,7 +214,7 @@ func get_depth(symbol string) map[string][2][]string {
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())
-		return map[string][2][]string{}
+		return map[string][][2]string{}
 	}
 	req.Header = headers
 
@@ -220,13 +222,13 @@ func get_depth(symbol string) map[string][2][]string {
 	resp, err := client.Do(req)
 	if err != nil {
 		app.Logger.Warnf("HTTP GET request failed: %s", err.Error())
-		return map[string][2][]string{}
+		return map[string][][2]string{}
 	}
 	defer resp.Body.Close()
 
 	type response_data struct {
 		Ok   bool                   `json:"ok"`
-		Data map[string][2][]string `json:"data"`
+		Data map[string][][2]string `json:"data"`
 	}
 
 	// 读取响应
@@ -239,7 +241,7 @@ func get_depth(symbol string) map[string][2][]string {
 	} else {
 		app.Logger.Warnf("HTTP GET request failed with status: %s", resp.Status)
 	}
-	return map[string][2][]string{}
+	return map[string][][2]string{}
 }
 
 func get_remote_price(symbol string) string {
