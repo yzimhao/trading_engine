@@ -111,7 +111,7 @@ example_start:
 	ssh demo 'cd haotrader/ && ./haomatch -d'
 	ssh demo 'cd haotrader/ && ./haoquote -d'
 	ssh demo 'cd haotrader/ && ./haoadm -d'
-	ssh demo 'cd trading_engine_example/ && ./example -d'
+	ssh demo 'cd trading_engine_example/ && ./example -d --bot'
 
 
 example_stop:

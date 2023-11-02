@@ -41,8 +41,8 @@ func (b *bot) run() {
 		update := b.get_remote_price()
 		app.Logger.Infof("%v", b)
 		if update {
-			b.auto_buy(BOTBUY, b.remote_price, "100")
-			b.auto_sell(BOTSELL, b.remote_price, "100")
+			b.auto_buy(BOTBUY, b.remote_price, "30")
+			b.auto_sell(BOTSELL, b.remote_price, "30")
 			b.auto_depth()
 		}
 		sec := 5 + rand.Int63n(20)
