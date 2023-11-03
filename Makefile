@@ -133,7 +133,7 @@ example_reload:
 
 example_clean:
 	@make example_stop
-	ssh demo 'cd haotrader/ && rm -f ./*.db'
+	ssh demo 'cd haotrader/ && rm -f .cache/*.db'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "drop database haotrader"'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "create database haotrader"'
 	
