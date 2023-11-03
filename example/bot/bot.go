@@ -22,16 +22,22 @@ const (
 )
 
 type bot struct {
+	sec_min      int64
+	sec_max      int64
 	symbol       string
 	now_price    string
 	remote_price string
 }
 
-func StartBot() {
+func StartBot(sec_min, sec_max int64) {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
 	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
 
-	b1 := bot{symbol: "usdjpy"}
+	b1 := bot{
+		symbol:  "usdjpy",
+		sec_min: sec_min,
+		sec_max: sec_max,
+	}
 	go b1.run()
 }
 
@@ -45,7 +51,7 @@ func (b *bot) run() {
 			b.auto_sell(BOTSELL, b.remote_price, "30")
 			b.auto_depth()
 		}
-		sec := 5 + rand.Int63n(20)
+		sec := b.sec_min + rand.Int63n(b.sec_max)
 		app.Logger.Infof("sleep: %d sec", sec)
 		time.Sleep(time.Second * time.Duration(sec))
 	}
@@ -69,9 +75,8 @@ func (b *bot) auto_depth() {
 	an := len(depth["asks"])
 
 	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
-		// app.Logger.Infof("an: %d ask0: %s - remote_price: %s > 1 abs: %s", an, depth["asks"][0][0], b.remote_price, utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs())
 		if an < 10 {
-			for i := 0; i < an; i++ {
+			for i := 0; i < 10-an; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
 				b.auto_sell(BOTSELL, price.String(), "0.01")
@@ -86,7 +91,7 @@ func (b *bot) auto_depth() {
 	bn := len(depth["bids"])
 	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
 		if bn < 10 {
-			for i := 0; i < len(depth["bids"]); i++ {
+			for i := 0; i < 10-bn; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
 				b.auto_buy(BOTBUY, price.String(), "0.01")

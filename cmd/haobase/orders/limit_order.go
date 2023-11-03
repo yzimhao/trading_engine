@@ -33,6 +33,7 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		FinishedQty:    "0",
 		FeeRate:        string(varieties.FeeRate),
 		FreezeAmount:   "0",
+		FreezeQty:      "0",
 		Fee:            "0",
 		FinishedAmount: "0",
 		Status:         OrderStatusNew,
@@ -65,19 +66,19 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 	//冻结相应资产
 	if neworder.OrderSide == trading_core.OrderSideSell {
 		//卖单部分fee在订单成交后结算的部分收取
-		_, err = assets.FreezeAssets(db, user_id, varieties.Target.Symbol, qty, neworder.OrderId, assets.Behavior_Trade)
+		_, err = assets.FreezeAssets(db, user_id, varieties.Target.Symbol, neworder.Quantity, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
 		}
-		neworder.FreezeQty = qty
+		neworder.FreezeQty = neworder.Quantity
 	} else if neworder.OrderSide == trading_core.OrderSideBuy {
 		//买单的冻结金额加上手续费，这里预估全部成交所需要的手续费，
-		amount := utils.D(price).Mul(utils.D(qty))
+		amount := utils.D(neworder.Price).Mul(utils.D(neworder.Quantity))
 		fee := amount.Mul(utils.D(neworder.FeeRate))
 		freeze_amount := amount.Add(fee).String()
 
 		//fee、tradeamount字段在结算程序中修改
-		neworder.FreezeQty = freeze_amount
+		neworder.FreezeAmount = freeze_amount
 		_, err = assets.FreezeAssets(db, user_id, varieties.Base.Symbol, freeze_amount, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
 			return nil, err
