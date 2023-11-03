@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	sysUsers = []string{"root", "fee", "demobot1", "demobot2"}
+	sysUsers = []string{"root", "fee"}
 )
 
 func CheckLogin() gin.HandlerFunc {

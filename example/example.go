@@ -32,6 +32,8 @@ func main() {
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 			&cli.BoolFlag{Name: "bot", Value: false, Aliases: []string{"b"}},
+			&cli.Int64Flag{Name: "interval_min", Value: 5},
+			&cli.Int64Flag{Name: "interval_max", Value: 20},
 		},
 
 		Before: func(ctx *cli.Context) error {
@@ -69,7 +71,7 @@ func main() {
 			}
 
 			if ctx.Bool("bot") {
-				bot.StartBot()
+				bot.StartBot(ctx.Int64("interval_min"), ctx.Int64("interval_max"))
 			}
 
 			startWeb(viper.GetString("example.host"))

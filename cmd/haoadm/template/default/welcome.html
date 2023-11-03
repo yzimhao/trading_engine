@@ -39,11 +39,11 @@
                                                 <div class="panel-body">
                                                     <div class="panel-title">
                                                         <span class="label pull-right layui-bg-blue">实时</span>
-                                                        <h5>用户统计</h5>
+                                                        <h5>资产对账</h5>
                                                     </div>
                                                     <div class="panel-content">
-                                                        <h1 class="no-margins">1234</h1>
-                                                        <small>当前分类总记录数</small>
+                                                        <h1 class="no-margins assets_global" style="font-size: 12px;">0</h1>
+                                                        <small class="assets_health"> - </small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -53,43 +53,16 @@
                                                 <div class="panel-body">
                                                     <div class="panel-title">
                                                         <span class="label pull-right layui-bg-cyan">实时</span>
-                                                        <h5>商品统计</h5>
+                                                        <h5>今日成交</h5>
                                                     </div>
                                                     <div class="panel-content">
-                                                        <h1 class="no-margins">1234</h1>
-                                                        <small>当前分类总记录数</small>
+                                                        <h1 class="no-margins" style="font-size: 12px;">成交量: <span class="today_trade_qty"></span> - 成交金额: <span class="today_trade_amount"></h1>
+                                                        <small> - </small>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="layui-col-xs6">
-                                            <div class="panel layui-bg-number">
-                                                <div class="panel-body">
-                                                    <div class="panel-title">
-                                                        <span class="label pull-right layui-bg-orange">实时</span>
-                                                        <h5>浏览统计</h5>
-                                                    </div>
-                                                    <div class="panel-content">
-                                                        <h1 class="no-margins">1234</h1>
-                                                        <small>当前分类总记录数</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="layui-col-xs6">
-                                            <div class="panel layui-bg-number">
-                                                <div class="panel-body">
-                                                    <div class="panel-title">
-                                                        <span class="label pull-right layui-bg-green">实时</span>
-                                                        <h5>订单统计</h5>
-                                                    </div>
-                                                    <div class="panel-content">
-                                                        <h1 class="no-margins">1234</h1>
-                                                        <small>当前分类总记录数</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -155,7 +128,7 @@
                         </div>
 
                     </div>
-                    <div class="layui-col-md12">
+                    <div class="layui-col-md12" style="display: none;">
                         <div class="layui-card">
                             <div class="layui-card-header"><i class="fa fa-line-chart icon"></i>报表统计</div>
                             <div class="layui-card-body">
@@ -367,6 +340,18 @@
                         }
 
                         $(".version").html(d.data["version"] +"/" +d.data["build_at"]);
+                        
+                        
+                        $(".assets_global").html(d.data["assets_stats"]["user_total"]);
+                        if (d.data["assets_stats"]["health"]){
+                            $(".assets_health").html("正常").addClass("green");
+                        }else{
+                            $(".assets_health").html("异常").addClass("red");
+                        }
+                        
+
+                        $(".today_trade_qty").html(d.data["trade_stats"]["today_trade_qty"]);
+                        $(".today_trade_amount").html(d.data["trade_stats"]["today_trade_amount"]);
                     }
                 }
             })

@@ -117,10 +117,17 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 
 	//下单数量的检查
 	min_qty := utils.D(varieties.AllowMinQty.String())
-	qty := utils.D(info.Quantity)
+	qty := utils.D(info.Quantity).Truncate(int32(varieties.QtyPrecision))
 	if min_qty.Cmp(zero) > 0 && qty.Cmp(zero) > 0 && qty.Cmp(min_qty) < 0 {
 		return false, errors.New("数量低于交易对最小限制")
 	}
+
+	//价格的检查
+	price := utils.D(info.Price).Truncate(int32(varieties.PricePrecision))
+
+	//重置价格和数量
+	info.Quantity = qty.String()
+	info.Price = price.String()
 
 	//下单金额的检查
 	min_amount := utils.D(string(varieties.AllowMinAmount))

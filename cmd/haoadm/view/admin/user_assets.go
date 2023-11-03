@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -54,18 +53,18 @@ func AssetsList(ctx *gin.Context) {
 		total, _ := db.Table(new(assets.Assets)).And(cond).Count()
 		if ctx.Query("api") == "1" {
 
-			for i, v := range data {
-				cfg, err := base.NewSymbols().Get(v.Symbol)
-				if err != nil {
-					app.Logger.Errorf("获取资产%s失败 %s", v.Symbol, err.Error())
-					continue
-				}
+			// for i, v := range data {
+			// 	cfg, err := base.NewSymbols().Get(v.Symbol)
+			// 	if err != nil {
+			// 		app.Logger.Errorf("获取资产%s失败 %s", v.Symbol, err.Error())
+			// 		continue
+			// 	}
 
-				data[i].Total = utils.FormatDecimal(v.Total, cfg.MinPrecision)
-				data[i].Freeze = utils.FormatDecimal(v.Freeze, cfg.MinPrecision)
-				data[i].Available = utils.FormatDecimal(v.Available, cfg.MinPrecision)
+			// 	// data[i].Total = utils.FormatDecimal(v.Total, cfg.MinPrecision)
+			// 	// data[i].Freeze = utils.FormatDecimal(v.Freeze, cfg.MinPrecision)
+			// 	// data[i].Available = utils.FormatDecimal(v.Available, cfg.MinPrecision)
 
-			}
+			// }
 
 			render(ctx, 0, "", int(total), data)
 		} else {

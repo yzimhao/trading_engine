@@ -24,7 +24,10 @@ func (t DeciStr) Decimal() decimal.Decimal {
 }
 
 func FormatDecimal(d string, digit int) string {
-	f, _ := D(d).Float64()
-	format := "%." + fmt.Sprintf("%d", digit) + "f"
-	return fmt.Sprintf(format, f)
+	// f, _ := D(d).Float64()
+	// format := "%." + fmt.Sprintf("%d", digit) + "f"
+	// return fmt.Sprintf(format, f)
+
+	// return D(d).Truncate(int32(digit)).String()
+	return D(d).StringFixedBank(int32(digit))
 }

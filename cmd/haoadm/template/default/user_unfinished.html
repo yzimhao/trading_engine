@@ -82,6 +82,9 @@
                 {field: 'order_side', title: '方向'},
                 {field: 'price', title: '价格', minWidth: 150},
                 {field: 'quantity', title: '数量', sort: true},
+                {field: 'freeze', title: '冻结', templet:function(d){
+                    return d.freeze_qty + "/" + d.freeze_amount;
+                }},
                 {field: 'finished_qty', title: '已成交', sort: true},
                 {field: 'finished_amount', title: '成交金额', sort: true},
                 
