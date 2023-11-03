@@ -106,7 +106,7 @@ upload_all:
 
 	ssh demo "tar xzvf haotrader.$(version).linux-amd64.tar.gz"
 	ssh demo 'rm -f haotrader.$(version).linux-amd64.tar.gz'
-	@make example_reload
+	
 
 example_start:
 
