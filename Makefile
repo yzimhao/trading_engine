@@ -101,6 +101,9 @@ upload_all:
 	@make build_linux_amd64
 	@make upload_example
 	scp $(distdir)/haotrader.$(version).linux-amd64.tar.gz demo:~/
+	
+	scp -r cmd/haoadm/template demo:~/haotrader/
+
 	ssh demo "tar xzvf haotrader.$(version).linux-amd64.tar.gz"
 	ssh demo 'rm -f haotrader.$(version).linux-amd64.tar.gz'
 	@make example_reload
@@ -111,7 +114,7 @@ example_start:
 	ssh demo 'cd haotrader/ && ./haomatch -d'
 	ssh demo 'cd haotrader/ && ./haoquote -d'
 	ssh demo 'cd haotrader/ && ./haoadm -d'
-	ssh demo 'cd trading_engine_example/ && ./example -d --bot'
+	ssh demo 'cd trading_engine_example/ && ./example -d --bot --interval_min=3 --interval_max=15'
 
 
 example_stop:
@@ -129,9 +132,11 @@ example_reload:
 	@make example_start
 
 example_clean:
-
-	ssh demo 'cd haotrader/ && rm -f ./*.db'
 	@make example_stop
+	ssh demo 'cd haotrader/ && rm -f ./*.db'
+	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "drop database haotrader"'
+	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "create database haotrader"'
+	
 
 
 
