@@ -102,10 +102,13 @@ upload_all:
 	@make upload_example
 	scp $(distdir)/haotrader.$(version).linux-amd64.tar.gz demo:~/
 	
-	scp -r cmd/haoadm/template demo:~/haotrader/
-
+	
 	ssh demo "tar xzvf haotrader.$(version).linux-amd64.tar.gz"
 	ssh demo 'rm -f haotrader.$(version).linux-amd64.tar.gz'
+
+# 一些辅助
+	scp -r cmd/haoadm/template demo:~/haotrader/
+	scp stop.sh demo:~/
 	
 
 example_start:
@@ -119,12 +122,12 @@ example_start:
 
 example_stop:
    	
-	ssh demo 'pgrep haobase | xargs kill'
-	ssh demo 'pgrep haomatch | xargs kill'
-	ssh demo 'pgrep haoquote | xargs kill'
-	ssh demo 'pgrep haoadm | xargs kill'
-	ssh demo 'pgrep example | xargs kill'
-	
+	# ssh demo 'pgrep haobase | xargs kill'
+	# ssh demo 'pgrep haomatch | xargs kill'
+	# ssh demo 'pgrep haoquote | xargs kill'
+	# ssh demo 'pgrep haoadm | xargs kill'
+	# ssh demo 'pgrep example | xargs kill'
+	ssh demo 'sh -x stop.sh'
 
 
 example_reload:
@@ -132,7 +135,7 @@ example_reload:
 	@make example_start
 
 example_clean:
-	@make example_stop
+	
 	ssh demo 'cd haotrader/ && rm -f .cache/*.db'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "drop database haotrader"'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "create database haotrader"'
