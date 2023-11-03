@@ -1,0 +1,3 @@
+
+cmd/haoadm/template/* linguist-vendored
+example/statics/* linguist-vendored
