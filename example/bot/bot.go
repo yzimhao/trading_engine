@@ -27,16 +27,18 @@ type bot struct {
 	symbol       string
 	now_price    string
 	remote_price string
+	default_lots string
 }
 
-func StartBot(sec_min, sec_max int64) {
+func StartBot(sec_min, sec_max int64, default_lots string) {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
 	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
 
 	b1 := bot{
-		symbol:  "usdjpy",
-		sec_min: sec_min,
-		sec_max: sec_max,
+		symbol:       "usdjpy",
+		sec_min:      sec_min,
+		sec_max:      sec_max,
+		default_lots: default_lots,
 	}
 	go b1.run()
 }
@@ -47,8 +49,8 @@ func (b *bot) run() {
 		update := b.get_remote_price()
 		app.Logger.Infof("%v", b)
 		if update {
-			b.auto_buy(BOTBUY, b.remote_price, "30")
-			b.auto_sell(BOTSELL, b.remote_price, "30")
+			b.auto_buy(BOTBUY, b.remote_price, b.default_lots)
+			b.auto_sell(BOTSELL, b.remote_price, b.default_lots)
 			b.auto_depth()
 		}
 		sec := b.sec_min + rand.Int63n(b.sec_max)
@@ -79,12 +81,12 @@ func (b *bot) auto_depth() {
 			for i := 0; i < 10-an; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
-				b.auto_sell(BOTSELL, price.String(), "0.01")
+				b.auto_sell(BOTSELL, price.String(), b.default_lots)
 			}
 		} else {
 			float := rand.Float64()
 			price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
-			b.auto_sell(BOTSELL, price.String(), "0.01")
+			b.auto_sell(BOTSELL, price.String(), b.default_lots)
 		}
 	}
 
@@ -94,12 +96,12 @@ func (b *bot) auto_depth() {
 			for i := 0; i < 10-bn; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
-				b.auto_buy(BOTBUY, price.String(), "0.01")
+				b.auto_buy(BOTBUY, price.String(), b.default_lots)
 			}
 		} else {
 			float := rand.Float64()
 			price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
-			b.auto_buy(BOTBUY, price.String(), "0.01")
+			b.auto_buy(BOTBUY, price.String(), b.default_lots)
 		}
 	}
 }

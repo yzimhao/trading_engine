@@ -34,6 +34,7 @@ func main() {
 			&cli.BoolFlag{Name: "bot", Value: false, Aliases: []string{"b"}},
 			&cli.Int64Flag{Name: "interval_min", Value: 5},
 			&cli.Int64Flag{Name: "interval_max", Value: 20},
+			&cli.StringFlag{Name: "lots", Value: "20"},
 		},
 
 		Before: func(ctx *cli.Context) error {
@@ -71,7 +72,7 @@ func main() {
 			}
 
 			if ctx.Bool("bot") {
-				bot.StartBot(ctx.Int64("interval_min"), ctx.Int64("interval_max"))
+				bot.StartBot(ctx.Int64("interval_min"), ctx.Int64("interval_max"), ctx.String("lots"))
 			}
 
 			startWeb(viper.GetString("example.host"))
