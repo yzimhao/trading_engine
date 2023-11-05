@@ -12,6 +12,7 @@ layui.define(["baseinfo"], function(exports){
             kchart.createIndicator('VOL')
             // 创建一个副图技术指标MACD
             kchart.setPriceVolumePrecision(baseinfo.cfg_info.price_precision, baseinfo.cfg_info.qty_precision);
+            kchart.setBarSpace(10);
 
             kchart.setStyles({
                 grid: {
