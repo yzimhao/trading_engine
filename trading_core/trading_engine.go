@@ -247,7 +247,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 			if item.GetOrderType() == OrderTypeMarketQuantity {
 				maxQty := func(remainAmount, marketPrice, needQty decimal.Decimal) decimal.Decimal {
 					qty := remainAmount.Div(marketPrice)
-					return decimal.Min(qty, needQty)
+					return decimal.Min(qty, needQty).Truncate(int32(t.quantityDigit))
 				}
 				maxTradeQty := maxQty(item.GetAmount(), ask.GetPrice(), item.GetQuantity())
 				curTradeQty := decimal.Zero
@@ -291,7 +291,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 				}
 
 				maxQty := func(amount, price decimal.Decimal) decimal.Decimal {
-					return amount.Div(price)
+					return amount.Div(price).Truncate(int32(t.quantityDigit))
 				}
 
 				maxTradeQty := maxQty(item.GetAmount(), ask.GetPrice()) //item.GetAmount().Div(ask.GetPrice())
@@ -383,7 +383,7 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 
 				maxQty := func(amount, price, needQty decimal.Decimal) decimal.Decimal {
 					a := amount.Div(price).Truncate(int32(t.quantityDigit))
-					return decimal.Min(a, needQty)
+					return decimal.Min(a, needQty).Truncate(int32(t.quantityDigit))
 				}
 				maxTradeQty := maxQty(item.GetAmount(), bid.GetPrice(), item.GetQuantity())
 
