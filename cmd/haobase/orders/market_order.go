@@ -5,6 +5,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -167,13 +168,15 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 	}
 
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
+		fee := utils.D(neworder.FreezeAmount).Mul(utils.D(neworder.FeeRate))
+		maxAmount := utils.D(neworder.FreezeAmount).Sub(fee)
 		data := matching.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType,
 			Side:      neworder.OrderSide,
 			Amount:    neworder.Amount,
 			MaxQty:    neworder.FreezeQty,
-			MaxAmount: neworder.FreezeAmount,
+			MaxAmount: maxAmount.String(),
 			At:        neworder.CreateTime,
 		}
 		return data.Json()
