@@ -140,6 +140,7 @@ example_clean:
 	ssh demo 'cd haotrader/ && rm -f logs/*.log'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "drop database haotrader"'
 	ssh demo 'mysql -h127.0.0.1 -P 23306 -uroot -proot -e "create database haotrader"'
+	ssh demo 'redis-cli -p 26379 flushall'
 	
 
 
