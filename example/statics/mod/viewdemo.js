@@ -26,7 +26,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 form.render('select');
             });
             form.on('radio(market-type)', function (data) {
-                if (data.value == "q") {
+                if (data.value == "market_qty") {
                     $(".item-quantity").show();
                     $(".item-amount").hide();
                     $(".qty-tips").show();
