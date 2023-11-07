@@ -143,6 +143,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		}
 	}()
 
+	Amount := utils.D("0")
 	if neworder.OrderSide == trading_core.OrderSideSell {
 		_, err = assets.FreezeTotalAssets(db, user_id, varieties.Target.Symbol, neworder.OrderId, assets.Behavior_Trade)
 		if err != nil {
@@ -154,6 +155,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 			return nil, err
 		}
 		neworder.FreezeQty = freeze.FreezeAmount
+		Amount = utils.D(neworder.Amount)
 
 	} else if neworder.OrderSide == trading_core.OrderSideBuy {
 		_, err = assets.FreezeAssets(db, user_id, varieties.Base.Symbol, neworder.Amount, neworder.OrderId, assets.Behavior_Trade)
@@ -161,6 +163,8 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 			return nil, err
 		}
 		neworder.FreezeAmount = neworder.Amount
+		fee := utils.D(neworder.FreezeAmount).Mul(utils.D(neworder.FeeRate))
+		Amount = utils.D(neworder.FreezeAmount).Sub(fee)
 	}
 
 	if err = neworder.Save(db); err != nil {
@@ -168,15 +172,13 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 	}
 
 	push_new_order_to_redis(neworder.Symbol, func() []byte {
-		fee := utils.D(neworder.FreezeAmount).Mul(utils.D(neworder.FeeRate))
-		maxAmount := utils.D(neworder.FreezeAmount).Sub(fee)
+
 		data := matching.Order{
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType,
 			Side:      neworder.OrderSide,
-			Amount:    maxAmount.String(),
+			Amount:    Amount.String(),
 			MaxQty:    neworder.FreezeQty,
-			MaxAmount: maxAmount.String(),
 			At:        neworder.CreateTime,
 		}
 		return data.Json()

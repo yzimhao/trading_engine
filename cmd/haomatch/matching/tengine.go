@@ -205,7 +205,7 @@ func (t *tengine) pull_new_order() {
 						} else if utils.D(data.Amount).Cmp(utils.D("0")) > 0 {
 							//按成交金额
 							if data.Side == trading_core.OrderSideSell {
-								t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, utils.D(data.Qty), utils.D(data.MaxQty), data.At))
+								t.tp.PushNewOrder(trading_core.NewAskMarketAmountItem(data.OrderId, utils.D(data.Amount), utils.D(data.MaxQty), data.At))
 							} else if data.Side == trading_core.OrderSideBuy {
 								t.tp.PushNewOrder(trading_core.NewBidMarketAmountItem(data.OrderId, utils.D(data.Amount), data.At))
 							} else {
