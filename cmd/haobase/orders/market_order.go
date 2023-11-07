@@ -174,7 +174,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 			OrderId:   neworder.OrderId,
 			OrderType: neworder.OrderType,
 			Side:      neworder.OrderSide,
-			Amount:    neworder.Amount,
+			Amount:    maxAmount.String(),
 			MaxQty:    neworder.FreezeQty,
 			MaxAmount: maxAmount.String(),
 			At:        neworder.CreateTime,
