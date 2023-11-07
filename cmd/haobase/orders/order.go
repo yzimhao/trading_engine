@@ -124,6 +124,10 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 
 	//价格的检查
 	price := utils.D(info.Price).Truncate(int32(varieties.PricePrecision))
+	//?????
+	if info.OrderType == trading_core.OrderTypeLimit && price.Cmp(zero) <= 0 {
+		return false, errors.New("价格必须大于0")
+	}
 
 	//重置价格和数量
 	info.Quantity = qty.String()
