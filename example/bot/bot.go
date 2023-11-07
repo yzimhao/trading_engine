@@ -75,7 +75,10 @@ func (b *bot) get_now_price() {
 func (b *bot) auto_depth() {
 	depth := get_depth(b.symbol)
 	an := len(depth["asks"])
+	bn := len(depth["bids"])
 
+	// fmt.Printf("\r\nan: %d asks: %#v\r\n", an, depth["asks"])
+	// fmt.Printf("\r\nbn: %d bids: %#v\r\n", bn, depth["bids"])
 	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
 		if an < 10 {
 			for i := 0; i < 10-an; i++ {
@@ -90,7 +93,6 @@ func (b *bot) auto_depth() {
 		}
 	}
 
-	bn := len(depth["bids"])
 	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
 		if bn < 10 {
 			for i := 0; i < 10-bn; i++ {
