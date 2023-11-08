@@ -92,7 +92,7 @@ func initLogs(logname string, isdaemon bool) {
 			Logger.Fatal(err)
 		}
 
-		file := fmt.Sprintf("%s/%s_%d.log", config.App.Main.LogPath, logname, time.Now().Unix())
+		file := fmt.Sprintf("%s/%s_%s.log", config.App.Main.LogPath, logname, time.Now().Format("20060102150405"))
 		f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			Logger.Fatal(err)
