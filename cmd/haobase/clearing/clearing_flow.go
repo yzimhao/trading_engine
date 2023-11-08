@@ -52,7 +52,7 @@ func newClean(raw trading_core.TradeResult) error {
 
 	//记录失败的订单
 	if err != nil {
-		app.Logger.Errorf("结算失败: %s %s", raw.Json(), err.Error())
+		app.Logger.Errorf("结算失败: %s %s ask:%+v bid:%+v", raw.Json(), err.Error(), item.ask, item.bid)
 	}
 	return err
 }
