@@ -5,8 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gomodule/redigo/redis"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type req_settoken_args struct {
@@ -48,4 +50,18 @@ func GetUserIdFromToken(original_token string) string {
 
 func tokenRedisTopic(token string) string {
 	return fmt.Sprintf("user.token.%s", utils.Hash256(token))
+}
+
+func Authentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+
+		if len(config.App.Haobase.InternalApiAllowIp) > 0 && !arrutil.Contains(config.App.Haobase.InternalApiAllowIp, ip) {
+			utils.ResponseFailJson(c, "非法IP")
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
 }
