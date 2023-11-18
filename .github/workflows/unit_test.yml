@@ -6,10 +6,7 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  workflow_dispatch:
-    branches: ["dev"]
-  
-  
+
 
 jobs:
 
@@ -41,6 +38,14 @@ jobs:
           --health-retries 5
 
     steps:
+    - name: Wait for MySQL to start
+      run: sleep 15s
+
+    - name: Create databases
+      run: |
+        mysql --host=127.0.0.1 --port=3306 --user=root --password=root -e "CREATE DATABASE IF NOT EXISTS test;"
+        mysql --host=127.0.0.1 --port=3306 --user=root --password=root -e "CREATE DATABASE IF NOT EXISTS test1;"
+
     - name: check out repository code
       uses: actions/checkout@v3
 
