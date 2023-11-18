@@ -4,7 +4,7 @@ log_level="trace" #全局的日志输出等级:panic,fatal,error,warn,info,debug
 # log_path="./logs/" #日志文件保存位置 默认不保存到文件
 time_zone="Asia/Shanghai"
 secret_key = "[secret_key]"
-
+static_server_name=""
 
 [redis]
 host="127.0.0.1:6379"
@@ -34,8 +34,7 @@ symbols=[]
 readonly=false
 site_name="HaoTrader 运营管理系统"
 listen="0.0.0.0:8079"
-server_name=""
-static_server_name=""
+
 
 
 [haomatch]
