@@ -9,7 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var btcusdt = NewTradePair("btcusdt", 2, 0)
+var btcusdt = NewTradePair("btcusdt", 2, 2)
 
 func d(f float64) decimal.Decimal {
 	return decimal.NewFromFloat(f)
@@ -25,7 +25,7 @@ func TestTradePairDepth(t *testing.T) {
 		time.Sleep(time.Millisecond * time.Duration(100))
 		ask := btcusdt.GetAskDepth(0)
 		str_ask, _ := json.Marshal(ask)
-		So(string(str_ask), ShouldEqual, `[["1.01","4"],["1.10","2"]]`)
+		So(string(str_ask), ShouldEqual, `[["1.01","4.00"],["1.10","2.00"]]`)
 	})
 
 	Convey("买盘深度行情", t, func() {
@@ -38,7 +38,7 @@ func TestTradePairDepth(t *testing.T) {
 		time.Sleep(time.Millisecond * time.Duration(100))
 		bid := btcusdt.GetBidDepth(0)
 		str_bid, _ := json.Marshal(bid)
-		So(string(str_bid), ShouldEqual, `[["1.30","2"],["1.02","4"],["0.02","1"]]`)
+		So(string(str_bid), ShouldEqual, `[["1.30","2.00"],["1.02","4.00"],["0.02","1.00"]]`)
 	})
 }
 
