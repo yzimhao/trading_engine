@@ -25,10 +25,11 @@ type Configuration struct {
 }
 
 type MainConfiguration struct {
-	Mode     ModeType `mapstructure:"mode"`
-	LogLevel string   `mapstructure:"log_level"`
-	LogPath  string   `mapstructure:"log_path"`
-	TimeZone string   `mapstructure:"time_zone"`
+	Mode      ModeType `mapstructure:"mode"`
+	LogLevel  string   `mapstructure:"log_level"`
+	LogPath   string   `mapstructure:"log_path"`
+	TimeZone  string   `mapstructure:"time_zone"`
+	SecretKey string   `mapstructure:"secret_key"`
 }
 
 type RedisConfiguration struct {
@@ -67,6 +68,7 @@ type HaobaseConfiguration struct {
 	Listen string `mapstructure:"listen"`
 	Debug  bool   `mapstructure:"debug"`
 	// LogFile string `mapstructure:"log_file"`
+	InternalApiAllowIp []string `mapstructure:"internal_api_allow_ip"`
 }
 
 type HaoadmConfiguration struct {

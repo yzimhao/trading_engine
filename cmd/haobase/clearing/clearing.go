@@ -79,17 +79,21 @@ func clearing_trade_order(symbol string, raw []byte) {
 		}()
 	}
 
-	//通知kline系统
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-	quote_key := types.FormatQuoteTradeResult.Format(symbol)
-	if _, err := rdc.Do("RPUSH", quote_key, raw); err != nil {
-		app.Logger.Errorf("RPUSH %s err: %s", quote_key, err.Error())
-	}
 }
 
 func generate_trading_id(ask, bid string) string {
 	times := time.Now().Format("060102")
 	hash := utils.Hash256(fmt.Sprintf("%s%s", ask, bid))
 	return fmt.Sprintf("T%s%s", times, hash[0:17])
+}
+
+func notify_quote(raw trading_core.TradeResult) {
+	//通知kline系统
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	quote_key := types.FormatQuoteTradeResult.Format(raw.Symbol)
+	if _, err := rdc.Do("RPUSH", quote_key, raw.Json()); err != nil {
+		app.Logger.Errorf("RPUSH %s err: %s", quote_key, err.Error())
+	}
 }

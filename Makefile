@@ -143,7 +143,9 @@ example_clean:
 	ssh demo 'redis-cli -p 26379 flushall'
 	
 
+example_logs:
 
+	scp -r demo:~/haotrader/logs ~/Downloads/
 
 
 require:

@@ -34,23 +34,30 @@
     - [x] 充值提现
 
   - [x] [haomatch]
-    - [x] 撮合模块  <a href="/document/match.md">文档</a>
+    - [x] 撮合模块
 
   - [x] [haoquote]
     - [x] 深度行情
     - [x] Kline数据
     - [x] websocket推送
 
+## 撮合
+```
+    go get github.com/yzimhao/trading_engine/trading_core
+```
+- <a href="/document/match.md">文档</a>
+
+
 ## 开发文档
-  <a href="https://yzimhao.github.io/trading_engine/">交易系统文档</a>
+- <a href="https://yzimhao.github.io/trading_engine/">交易系统文档</a>
 
 
 
 ## 参考
-  <a href="https://www.liaoxuefeng.com/article/1185272483766752" target="_blank">证券交易系统设计与开发</a>
+- <a href="https://www.liaoxuefeng.com/article/1185272483766752" target="_blank">证券交易系统设计与开发</a>
 
 ## 需求讨论
    <img src="https://github.com/yzimhao/trading_engine/blob/master/document/images/wechat.jpg?raw=true" width = "150"/>
 
 ## 声明
-  - 本项目仅供参考和学习之用，不建议将其用于生产环境或重要交易场景。
+- 本项目仅供参考和学习之用，不建议将其用于生产环境或重要交易场景。

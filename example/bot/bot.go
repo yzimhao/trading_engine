@@ -51,8 +51,8 @@ func (b *bot) run() {
 		if update {
 			b.auto_buy(BOTBUY, b.remote_price, b.default_lots)
 			b.auto_sell(BOTSELL, b.remote_price, b.default_lots)
-			b.auto_depth()
 		}
+		b.auto_depth()
 		sec := b.sec_min + rand.Int63n(b.sec_max)
 		app.Logger.Infof("sleep: %d sec", sec)
 		time.Sleep(time.Second * time.Duration(sec))
