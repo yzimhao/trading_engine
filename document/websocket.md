@@ -13,7 +13,7 @@
         "latest_price.usdjpy",
         "kline.m1.usdjpy",
         "market.24h.usdjpy",
-        "user." + token, //和用户相关的一些消息订阅，
+        "token." + token, //和用户相关的一些消息订阅，
     ]
 }
 ```
