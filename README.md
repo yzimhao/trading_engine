@@ -13,8 +13,8 @@
   配置灵活，允许用户根据自身需求自定义配置各模块独立运行。
   
 
-<!-- ## 流程
-  ![image](https://github.com/yzimhao/trading_engine/blob/master/docs/images/haotrader.png?raw=true) -->
+##
+  ![image](https://github.com/yzimhao/trading_engine/blob/master/document/images/haotrader.png?raw=true)
 
 ## 演示DEMO
   <a href="http://144.91.108.90:20001/" target="_blank">在线体验</a> 
