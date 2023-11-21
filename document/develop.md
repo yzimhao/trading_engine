@@ -14,3 +14,5 @@
     go run haomatch/main.go -c config.toml
     go run haoquote/main.go -c config.toml
 ```
+
+ ![image](https://github.com/yzimhao/trading_engine/blob/master/document/images/haotrader.png?raw=true)
