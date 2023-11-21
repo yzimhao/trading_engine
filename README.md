@@ -8,10 +8,10 @@
 	<img src="https://img.shields.io/github/license/yzimhao/trading_engine">
 </p>
 
-  HaoTrader适用于各种金融证券交易场景。拥有高性能的订单撮合、实时结算、行情计算、实时推送等功能。支持数据持久化，故障重启快速恢复数据。
-  
+  HaoTrader适用于各种金融证券交易场景。拥有高性能的订单撮合、实时结算、行情计算、实时推送等功能。
   配置灵活，允许用户根据自身需求自定义配置各模块独立运行。
-  
+
+  该程序只包含服务端API，无UI。
 
 ##
   ![image](https://github.com/yzimhao/trading_engine/blob/master/document/images/haotrader.png?raw=true)
