@@ -87,7 +87,7 @@ release: clean dist
 
 upload_example:
 	mkdir -p $(distdir)/trading_engine_example
-	cd example && GOOS=linux GOARCH=amd64 go build -o ../$(distdir)/trading_engine_example/example example.go
+	cd example && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=x86_64-unknown-linux-gnu-gcc go build -o ../$(distdir)/trading_engine_example/example example.go
 	upx -9 $(distdir)/trading_engine_example/example
 	cp -rf example/statics $(distdir)/trading_engine_example/
 	cp -rf example/demo.html $(distdir)/trading_engine_example/
