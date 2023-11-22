@@ -54,7 +54,9 @@ func push_depth_message(symbol string) {
 
 				data, err := get_depth_data(symbol)
 				//委托盘推送
-				to_msg_depth := types.MsgDepth.Format(symbol)
+				to_msg_depth := types.MsgDepth.Format(map[string]string{
+					"symbol": symbol,
+				})
 				message.Publish(ws.MsgBody{
 					To: to_msg_depth,
 					Response: ws.Response{
@@ -67,7 +69,9 @@ func push_depth_message(symbol string) {
 				})
 
 				//最新价格
-				to_latest_price := types.MsgLatestPrice.Format(symbol)
+				to_latest_price := types.MsgLatestPrice.Format(map[string]string{
+					"symbol": symbol,
+				})
 				message.Publish(ws.MsgBody{
 					To: to_latest_price,
 					Response: ws.Response{

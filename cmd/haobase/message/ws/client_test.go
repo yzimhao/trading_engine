@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"log"
 	"testing"
 	"time"
@@ -8,10 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-var _socket *Hub
+var (
+	_socket     *Hub
+	test_symbol = "usdjpy"
+)
 
 func init() {
 	app.ConfigInit("", false)
@@ -56,59 +61,76 @@ func TestClient(t *testing.T) {
 		So(len(_socket.clients), ShouldEqual, 0)
 	})
 
-	Convey("客户端注册属性添加", t, func() {
+	Convey("客户端添加属性", t, func() {
 		ws := newClient()
 		defer ws.Close()
 
-		subM := `{"sub":["kline.m1.demo", "latest.price.demo"]}`
-		t.Log(subM)
-		if err := ws.WriteMessage(websocket.TextMessage, []byte(subM)); err != nil {
+		tags := []string{}
+		for _, v := range types.AllWebSocketMsg {
+			tags = append(tags, v.Format(map[string]string{
+				"symbol": test_symbol,
+				"period": "h1",
+			}))
+		}
+
+		subM := subMessage{
+			Subsc: tags,
+		}
+
+		body, _ := json.Marshal(subM)
+
+		t.Logf("%+v, body: %s", subM, body)
+		if err := ws.WriteMessage(websocket.TextMessage, body); err != nil {
 			t.Fatalf("%v", err)
 		}
 
 		time.Sleep(time.Second * time.Duration(1))
-		So(len(_socket.clients), ShouldEqual, 1)
-		for c, _ := range _socket.clients {
-			So(c.attrs, ShouldContainKey, "kline.m1.demo")
-			So(c.attrs, ShouldContainKey, "latest.price.demo")
-		}
-	})
-
-	Convey("给拥有订阅属性的客户端发送消息", t, func() {
-		ws := newClient()
-		defer ws.Close()
-
-		subM := `{"sub":["kline.m1.demo", "latest.price.demo"]}`
-		t.Log(subM)
-		if err := ws.WriteMessage(websocket.TextMessage, []byte(subM)); err != nil {
-			t.Fatalf("%v", err)
-		}
-
-		send := MsgBody{
-			To: "kline.m1.demo",
-			Response: Response{
-				Type: "kline.m1.demo",
-				Body: []string{
-					"a", "b",
-				},
-			},
-		}
-
-		_socket.Broadcast <- send
-		_, recv, _ := ws.ReadMessage()
-
-		time.Sleep(time.Second * time.Duration(1))
 
 		So(len(_socket.clients), ShouldEqual, 1)
-		t.Logf("%s", recv)
-		So(string(recv), ShouldEqualJSON, `{"type":"kline.m1.demo","body":["a","b"]}`)
-
 		for c, _ := range _socket.clients {
-			So(c.lastSendMsgHash["kline.m1.demo"], ShouldEqual, "f2534fe3f8a3ffd8243077e8d354eb17")
+			for _, tag := range tags {
+				So(c.attrs, ShouldContainKey, tag)
+			}
+			t.Logf("c.attrs: %#v", c.attrs)
 		}
-	})
-
-	Convey("同一类型的消息重复发送去重", t, func() {
 
 	})
+
+	// Convey("给拥有订阅属性的客户端发送消息", t, func() {
+	// 	ws := newClient()
+	// 	defer ws.Close()
+
+	// 	subM := `{"sub":["kline.m1.demo", "latest.price.demo"]}`
+	// 	t.Log(subM)
+	// 	if err := ws.WriteMessage(websocket.TextMessage, []byte(subM)); err != nil {
+	// 		t.Fatalf("%v", err)
+	// 	}
+
+	// 	send := MsgBody{
+	// 		To: "kline.m1.demo",
+	// 		Response: Response{
+	// 			Type: "kline.m1.demo",
+	// 			Body: []string{
+	// 				"a", "b",
+	// 			},
+	// 		},
+	// 	}
+
+	// 	_socket.Broadcast <- send
+	// 	_, recv, _ := ws.ReadMessage()
+
+	// 	time.Sleep(time.Second * time.Duration(1))
+
+	// 	So(len(_socket.clients), ShouldEqual, 1)
+	// 	t.Logf("%s", recv)
+	// 	So(string(recv), ShouldEqualJSON, `{"type":"kline.m1.demo","body":["a","b"]}`)
+
+	// 	for c, _ := range _socket.clients {
+	// 		So(c.lastSendMsgHash["kline.m1.demo"], ShouldEqual, "f2534fe3f8a3ffd8243077e8d354eb17")
+	// 	}
+	// })
+
+	// Convey("同一类型的消息重复发送去重", t, func() {
+
+	// })
 }

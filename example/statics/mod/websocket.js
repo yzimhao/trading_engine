@@ -19,12 +19,12 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                 var msg = {
                     "sub": [
                         "depth."+CURRENT_SYMBOL,
-                        "tradelog." + CURRENT_SYMBOL,
-                        "latest_price."+CURRENT_SYMBOL,
+                        "trade." + CURRENT_SYMBOL,
+                        "price."+CURRENT_SYMBOL,
                         "kline.m1."+CURRENT_SYMBOL,
                         "market.24h."+CURRENT_SYMBOL,
                         //订阅登陆用户相关消息，会对应多种消息格式
-                        "user."+ Cookies.get("user_id"),
+                        "token."+ Cookies.get("user_id"),
                     ],
                 };
                 console.log(JSON.stringify(msg));
@@ -39,7 +39,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                     console.log(msg);
                     if (msg.type == "depth."+CURRENT_SYMBOL) {
                         utils.renderdepth(msg.body);
-                    } else if (msg.type == "tradelog." +CURRENT_SYMBOL) {
+                    } else if (msg.type == "trade." +CURRENT_SYMBOL) {
                         utils.rendertradelog(msg.body);
                     } else if (msg.type == "new_order."+ CURRENT_SYMBOL) {
                         var myorderView = $(".myorder"),
@@ -54,7 +54,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                             }
                             myorderView.after(html);
                         });
-                    } else if (msg.type == "latest_price."+CURRENT_SYMBOL) {
+                    } else if (msg.type == "price."+CURRENT_SYMBOL) {
                         $(".latest-price").html(msg.body.latest_price);
                     } else if (msg.type =="kline.m1."+CURRENT_SYMBOL) {
                         var data = msg.body;
@@ -68,7 +68,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                         });
                     }else if(msg.type=="market.24h."+CURRENT_SYMBOL) {
                         $(".price_p").html(msg.body.price_change_percent);
-                    }else if(msg.type =="user.order.cancel." +CURRENT_SYMBOL) {
+                    }else if(msg.type =="order.cancel." +CURRENT_SYMBOL) {
                         var order_id = msg.body.order_id;
                         layer.msg("订单 "+ order_id +" 取消成功");
                         $(".myorder-item").each(function(){

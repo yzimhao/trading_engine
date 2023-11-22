@@ -124,7 +124,10 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 					}
 
 					//websocket通知更新
-					to := types.MsgMarketKLine.Format(string(cp), symbol)
+					to := types.MsgMarketKLine.Format(map[string]string{
+						"symbol": symbol,
+						"period": string(cp),
+					})
 
 					message.Publish(ws.MsgBody{
 						To: to,
@@ -156,7 +159,9 @@ func tradelog_msg(symbol string, data TradeLog, pd, qd int64) {
 	data.TradeAmount = utils.NumberFix(data.TradeAmount, int(pd))
 	data.TradeQuantity = utils.NumberFix(data.TradeQuantity, int(qd))
 
-	to := types.MsgTrade.Format(symbol)
+	to := types.MsgTrade.Format(map[string]string{
+		"symbol": symbol,
+	})
 	message.Publish(ws.MsgBody{
 		To: to,
 		Response: ws.Response{

@@ -112,7 +112,7 @@ func cancel_order(symbol, order_id string, retry int) {
 				message.Publish(ws.MsgBody{
 					To: to,
 					Response: ws.Response{
-						Type: types.MsgUserOrderCancel.Format(symbol),
+						Type: types.MsgOrderCancel.Format(map[string]string{"symbol": symbol}),
 						Body: map[string]string{
 							"order_id": order_id,
 						},

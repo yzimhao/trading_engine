@@ -16,7 +16,9 @@ func market_24h(symbol string, last_price string) {
 		price, _ = period.GetTodayOpen(symbol)
 	}
 
-	to := types.MsgMarket24H.Format(symbol)
+	to := types.MsgMarket24H.Format(map[string]string{
+		"symbol": symbol,
+	})
 
 	message.Publish(ws.MsgBody{
 		To: to,
