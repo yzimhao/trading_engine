@@ -1,13 +1,10 @@
 package internal_api
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
-	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/yzimhao/trading_engine/types/token"
 	"github.com/yzimhao/trading_engine/utils"
-	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -23,33 +20,9 @@ func SetToken(ctx *gin.Context) {
 		utils.ResponseFailJson(ctx, err.Error())
 		return
 	}
-	UpdateRedisToken(req)
+
+	token.Set(req.Token, req.UserId, req.Ttl)
 	utils.ResponseOkJson(ctx, "")
-}
-
-func UpdateRedisToken(req req_settoken_args) {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-
-	topic := tokenRedisTopic(req.Token)
-	rdc.Do("set", topic, req.UserId)
-	rdc.Do("expire", topic, req.Ttl)
-}
-
-func GetUserIdFromToken(original_token string) string {
-	rdc := app.RedisPool().Get()
-	defer rdc.Close()
-
-	topic := tokenRedisTopic(original_token)
-	user_id, err := redis.String(rdc.Do("get", topic))
-	if err != nil {
-		app.Logger.Errorf("从redis获取token信息出错 %s", err.Error())
-	}
-	return user_id
-}
-
-func tokenRedisTopic(token string) string {
-	return fmt.Sprintf("user.token.%s", utils.Hash256(token))
 }
 
 func Authentication() gin.HandlerFunc {

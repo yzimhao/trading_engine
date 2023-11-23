@@ -8,10 +8,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/token"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -144,7 +147,22 @@ func (c *Client) handleRecvData(body []byte) {
 	}
 
 	for _, attr := range msg.Subsc {
-		c.setAttr(attr)
+		if strings.HasPrefix(attr, "_") {
+			//带有_标记的tag只能是内部程序设置的，不能通过前端发送过来指定
+			continue
+		}
+		if strings.HasPrefix(attr, "token.") {
+			a := strings.Split(attr, ".")
+			_token := a[1]
+			user_id := token.Get(_token)
+			if user_id != "" {
+				c.setAttr(types.MsgUser.Format(map[string]string{
+					"user_id": user_id,
+				}))
+			}
+		} else {
+			c.setAttr(attr)
+		}
 	}
 
 	app.Logger.Debugf("[wss] recv: %v", msg)

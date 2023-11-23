@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
+	"github.com/yzimhao/trading_engine/types/token"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -18,9 +18,9 @@ var (
 func CheckLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user_id := ""
-		token := c.GetHeader("Token")
+		_token := c.GetHeader("Token")
 		if config.App.Main.Mode == config.ModeDemo {
-			user_id = token
+			user_id = _token
 			if user_id == "" {
 				user_id = c.Query("user_id")
 			}
@@ -43,7 +43,7 @@ func CheckLogin() gin.HandlerFunc {
 			}
 		} else {
 			//从redis的token中获取登陆用户ID
-			user_id = internal_api.GetUserIdFromToken(token)
+			user_id = token.Get(_token)
 		}
 
 		if user_id == "" {
