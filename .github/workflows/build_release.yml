@@ -22,8 +22,6 @@ jobs:
       - name: Installation depends
         run: |
           make require
-          make doc
-            
 
       - name: go test
         run: go test -v ./...
