@@ -45,12 +45,13 @@ define build_haoadm
 	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haoadm$3 cmd/haoadm/main.go
 	upx -9 $(exedir)/haoadm$3
 
-	cp -r cmd/haoadm/template $(exedir)
+	cp -r cmd/haoadm/template $(exedir)/
 endef
 
 
 
-copy_doc:
+copy_file:
+
 	cp README.md $(exedir)/
 	cp -rf cmd/config.toml $(exedir)/config.toml_sample
 
@@ -61,8 +62,7 @@ define zipfile
 	cd $(distdir) && zip -r -m $(mainname).$(version).$1-$2.zip `basename $(exedir)` -x "*/\.*"
 endef
 
-build_linux_amd64:
-	@make copy_doc
+build_linux_amd64: dist copy_file
 	$(call build_haobase,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
 	$(call build_haomatch,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
 	$(call build_haoquote,linux,amd64,'',x86_64-unknown-linux-gnu-gcc)
@@ -71,8 +71,7 @@ build_linux_amd64:
 	$(call zipfile,linux,amd64)
 	
 
-build_darwin_amd64:
-	@make copy_doc
+build_darwin_amd64: dist copy_file
 	$(call build_haobase,darwin,amd64,'','')
 	$(call build_haomatch,darwin,amd64,'','')
 	$(call build_haoquote,darwin,amd64,'','')
@@ -81,7 +80,7 @@ build_darwin_amd64:
 	$(call zipfile,darwin,amd64)
 
 
-release: clean dist
+release: clean
 	@make build_linux_amd64
 	@make build_darwin_amd64
 	
