@@ -44,6 +44,8 @@ define build_haoadm
 	@echo "Building for haoadm $1 $2"
 	CGO_ENABLED=1 GOOS=$1 GOARCH=$2 CC=$4 go build -ldflags="-s -w -X $(utils).Version=${version} -X $(utils).Commit=$(COMMIT) -X $(utils).Build=$(BUILDTIME) -X $(utils).Goversion=$(GOVER)" -o $(exedir)/haoadm$3 cmd/haoadm/main.go
 	upx -9 $(exedir)/haoadm$3
+
+	cp -r cmd/haoadm/template $(exedir)
 endef
 
 
@@ -107,7 +109,6 @@ upload_all:
 	ssh demo 'rm -f haotrader.$(version).linux-amd64.tar.gz'
 
 # 一些辅助
-	scp -r cmd/haoadm/template demo:~/haotrader/
 	scp stop.sh demo:~/
 	
 
@@ -122,11 +123,6 @@ example_start:
 
 example_stop:
    	
-	# ssh demo 'pgrep haobase | xargs kill'
-	# ssh demo 'pgrep haomatch | xargs kill'
-	# ssh demo 'pgrep haoquote | xargs kill'
-	# ssh demo 'pgrep haoadm | xargs kill'
-	# ssh demo 'pgrep example | xargs kill'
 	ssh demo 'sh -x stop.sh'
 
 
