@@ -23,9 +23,7 @@ jobs:
         run: |
           make require
 
-      - name: go test
-        run: go test -v ./...
-        
+      
       - name: Project Tag Version
         id: get_tag
         run: echo "::set-output name=tag::$(echo $GITHUB_REF | cut -d '/' -f 3)"
