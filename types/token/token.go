@@ -2,19 +2,30 @@ package token
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func Set(token string, user_id string, ttl int) {
+func Set(token string, user_id string, ttl int) error {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
+	if strings.Contains(token, ".") {
+		return fmt.Errorf("token contains `.`")
+	}
+
 	topic := tokenRedisTopic(token)
-	rdc.Do("set", topic, user_id)
-	rdc.Do("expire", topic, ttl)
+	if _, err := rdc.Do("set", topic, user_id); err != nil {
+		return err
+	}
+	if _, err := rdc.Do("expire", topic, ttl); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func Get(original_token string) string {

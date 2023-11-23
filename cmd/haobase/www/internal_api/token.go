@@ -21,7 +21,11 @@ func SetToken(ctx *gin.Context) {
 		return
 	}
 
-	token.Set(req.Token, req.UserId, req.Ttl)
+	err := token.Set(req.Token, req.UserId, req.Ttl)
+	if err != nil {
+		utils.ResponseFailJson(ctx, err.Error())
+		return
+	}
 	utils.ResponseOkJson(ctx, "")
 }
 
