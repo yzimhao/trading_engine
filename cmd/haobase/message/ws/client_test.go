@@ -95,42 +95,4 @@ func TestClient(t *testing.T) {
 		}
 
 	})
-
-	// Convey("给拥有订阅属性的客户端发送消息", t, func() {
-	// 	ws := newClient()
-	// 	defer ws.Close()
-
-	// 	subM := `{"sub":["kline.m1.demo", "latest.price.demo"]}`
-	// 	t.Log(subM)
-	// 	if err := ws.WriteMessage(websocket.TextMessage, []byte(subM)); err != nil {
-	// 		t.Fatalf("%v", err)
-	// 	}
-
-	// 	send := MsgBody{
-	// 		To: "kline.m1.demo",
-	// 		Response: Response{
-	// 			Type: "kline.m1.demo",
-	// 			Body: []string{
-	// 				"a", "b",
-	// 			},
-	// 		},
-	// 	}
-
-	// 	_socket.Broadcast <- send
-	// 	_, recv, _ := ws.ReadMessage()
-
-	// 	time.Sleep(time.Second * time.Duration(1))
-
-	// 	So(len(_socket.clients), ShouldEqual, 1)
-	// 	t.Logf("%s", recv)
-	// 	So(string(recv), ShouldEqualJSON, `{"type":"kline.m1.demo","body":["a","b"]}`)
-
-	// 	for c, _ := range _socket.clients {
-	// 		So(c.lastSendMsgHash["kline.m1.demo"], ShouldEqual, "f2534fe3f8a3ffd8243077e8d354eb17")
-	// 	}
-	// })
-
-	// Convey("同一类型的消息重复发送去重", t, func() {
-
-	// })
 }
