@@ -61,8 +61,8 @@ func clearing_trade_order(symbol string, raw []byte) {
 		return
 	}
 
-	orders.Lock(orders.ClearingLock, data.AskOrderId)
-	orders.Lock(orders.ClearingLock, data.BidOrderId)
+	orders.Lock(orders.SettleLock, data.AskOrderId)
+	orders.Lock(orders.SettleLock, data.BidOrderId)
 
 	if data.Last == "" {
 		go newClean(data)
@@ -71,7 +71,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 			for {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				app.Logger.Infof("等待订单%s 其他成交结算完成...", data.Last)
-				if orders.GetLock(orders.ClearingLock, data.Last) == 1 {
+				if orders.GetLock(orders.SettleLock, data.Last) == 1 {
 					newClean(data)
 					break
 				}

@@ -73,7 +73,7 @@ func watch_cancel_order_list(symbol string) {
 }
 
 func cancel_order(symbol, order_id string, retry int) {
-	lock := GetLock(ClearingLock, order_id)
+	lock := GetLock(SettleLock, order_id)
 	wait := 10
 
 	app.Logger.Infof("取消订单%s lock: %d retry: %d", order_id, lock, retry)

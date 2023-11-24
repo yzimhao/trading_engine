@@ -119,8 +119,8 @@ func TestLimitOrder(t *testing.T) {
 		clearing_trade_order(testSymbol, result.Json())
 
 		for {
-			if orders.GetLock(orders.ClearingLock, sell.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -188,9 +188,9 @@ func TestMarketCase1(t *testing.T) {
 		clearing_trade_order(testSymbol, result1.Json())
 
 		for {
-			if orders.GetLock(orders.ClearingLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -251,11 +251,11 @@ func TestMarketCase2(t *testing.T) {
 		clearing_trade_order(testSymbol, result3.Json())
 
 		for {
-			if orders.GetLock(orders.ClearingLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, s3.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, s4.OrderId) == 0 &&
-				orders.GetLock(orders.ClearingLock, buy.OrderId) == 0 {
+			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, s3.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, s4.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)

@@ -47,8 +47,8 @@ func newClean(raw trading_core.TradeResult) error {
 	err = item.flow()
 
 	//解锁
-	orders.UnLock(orders.ClearingLock, item.ask.OrderId)
-	orders.UnLock(orders.ClearingLock, item.bid.OrderId)
+	orders.UnLock(orders.SettleLock, item.ask.OrderId)
+	orders.UnLock(orders.SettleLock, item.bid.OrderId)
 
 	//记录失败的订单
 	if err != nil {
