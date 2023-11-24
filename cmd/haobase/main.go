@@ -22,6 +22,7 @@ func main() {
 		Usage:     "交易所基础模块",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
+			&cli.StringFlag{Name: "pid", Value: "/var/run/haobase.pid"},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 		},
 
@@ -53,7 +54,7 @@ func main() {
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("deamon") {
 
-				context, d, err := app.Deamon("haobase.pid", "")
+				context, d, err := app.Deamon(ctx.String("pid"), "")
 				if err != nil {
 					app.Logger.Fatal("创建守护进程失败, err:", err.Error())
 				}
