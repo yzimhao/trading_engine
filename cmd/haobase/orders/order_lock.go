@@ -30,8 +30,10 @@ func UnLock(lt LockType, order_id string) {
 		app.Logger.Warnf("unlock %s err: %s", order_id, err.Error())
 	}
 
-	if _, err := rdc.Do("del", key); err != nil {
-		app.Logger.Warnf("unlock %s fail err: %s", order_id, err.Error())
+	if n, _ := redis.Int64(rdc.Do("GET", key)); n == 0 {
+		if _, err := rdc.Do("del", key); err != nil {
+			app.Logger.Warnf("unlock %s fail err: %s", order_id, err.Error())
+		}
 	}
 }
 
