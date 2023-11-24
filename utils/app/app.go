@@ -169,6 +169,11 @@ func RedisPool() *redis.Pool {
 }
 
 func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {
+
+	if err := fsutil.MkParentDir(pid); err != nil {
+		return nil, nil, err
+	}
+
 	cntxt := &daemon.Context{
 		PidFileName: pid,
 		PidFilePerm: 0644,

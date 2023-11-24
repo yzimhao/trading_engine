@@ -17,7 +17,7 @@ func main() {
 		Usage:     "交易行情系统",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
-			&cli.StringFlag{Name: "pid", Value: "/var/run/haoquote.pid"},
+			&cli.StringFlag{Name: "pid", Value: "./run/haoquote.pid"},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 		},
 

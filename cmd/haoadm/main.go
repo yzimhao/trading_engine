@@ -18,7 +18,7 @@ func main() {
 		Usage:     "交易系统运营管理模块",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
-			&cli.StringFlag{Name: "pid", Value: "/var/run/haoadm.pid"},
+			&cli.StringFlag{Name: "pid", Value: "./run/haoadm.pid"},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 		},
 
