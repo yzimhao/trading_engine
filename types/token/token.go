@@ -35,7 +35,7 @@ func Get(original_token string) string {
 	topic := tokenRedisTopic(original_token)
 	user_id, err := redis.String(rdc.Do("get", topic))
 	if err != nil {
-		app.Logger.Errorf("从redis获取token信息出错 %s", err.Error())
+		app.Logger.Infof("从redis获取token信息出错 %s", err.Error())
 	}
 	return user_id
 }

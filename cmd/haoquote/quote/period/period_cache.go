@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yzimhao/trading_engine/utils/app/config"
-	"github.com/yzimhao/trading_engine/utils/filecache"
+	"github.com/gomodule/redigo/redis"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 type periodCachekey string
@@ -16,37 +16,58 @@ const (
 	periodKey    periodCachekey = "period_%s_%s_%d_%d" //"period_usdjpy_mn_1695571200_1696175999"
 )
 
-func (c periodCachekey) Format(pt PeriodType, symbol string, st, et int64) string {
-	return fmt.Sprintf(string(c), symbol, pt, st, et)
+func (p periodCachekey) Format(pt PeriodType, symbol string, st, et int64) periodCachekey {
+	v := fmt.Sprintf(string(p), symbol, pt, st, et)
+	return periodCachekey(v)
 }
 
-func newCache() *filecache.Storage {
-	return filecache.NewStorage(config.App.Haoquote.Cache, 1)
+func (p periodCachekey) set(value []byte, ttl int64) {
+	rc := app.RedisPool().Get()
+	defer rc.Close()
+
+	rc.Do("set", p, value)
+	rc.Do("expire", p, ttl)
+}
+
+func (p periodCachekey) get() ([]byte, error) {
+	rc := app.RedisPool().Get()
+	defer rc.Close()
+
+	return redis.Bytes(rc.Do("get", p))
 }
 
 func GetYesterdayClose(symbol string) (string, bool) {
 	now := time.Now()
-	cache := newCache()
 
 	//获取昨天的收盘价，如果没有则获取今天的开盘价
 	st, et := get_start_end_time(now.AddDate(0, 0, -1), PERIOD_D1)
 	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
-	cache_data, has := cache.Get(periodBucket, key)
+	cache_data, err := key.get()
+	if err != nil {
+		return "", false
+	}
 
 	var data Period
-	json.Unmarshal(cache_data, &data)
-	return data.Close, has
+	if err := json.Unmarshal(cache_data, &data); err != nil {
+		return "", false
+	}
+
+	return data.Close, true
 }
 
 func GetTodayOpen(symbol string) (string, bool) {
 	now := time.Now()
-	cache := newCache()
 
 	st, et := get_start_end_time(now, PERIOD_D1)
 	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
-	cache_data, has := cache.Get(periodBucket, key)
+	cache_data, err := key.get()
+	if err != nil {
+		return "", false
+	}
 
 	var data Period
-	json.Unmarshal(cache_data, &data)
-	return data.Open, has
+	if err := json.Unmarshal(cache_data, &data); err != nil {
+		return "", false
+	}
+	return data.Open, true
 }

@@ -34,18 +34,19 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 	tradetime := time.Unix(int64(tr.TradeTime/1e9), 0)
 	open_at, close_at := get_start_end_time(tradetime, p)
 
-	cache := newCache()
-
 	data := Period{}
 	ckey := periodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
-	cache_data, _ := cache.Get(periodBucket, ckey)
+	cache_data, _ := ckey.get()
 	json.Unmarshal(cache_data, &data)
 
 	app.Logger.Infof("get %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
 	defer func() {
 		raw, _ := json.Marshal(data)
 		app.Logger.Infof("set %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
-		cache.Set("period", ckey, raw)
+
+		ttl := close_at.Unix() - time.Now().Unix() + 5
+		// app.Logger.Warnf("ttl: %d, %d,  %d", close_at.Unix(), time.Now().Unix(), ttl)
+		ckey.set(raw, ttl)
 	}()
 
 	data.raw = tr
