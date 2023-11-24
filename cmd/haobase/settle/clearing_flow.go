@@ -1,4 +1,4 @@
-package clearing
+package settle
 
 import (
 	"fmt"

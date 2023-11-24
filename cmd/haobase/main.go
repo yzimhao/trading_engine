@@ -8,8 +8,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
-	"github.com/yzimhao/trading_engine/cmd/haobase/clearing"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haobase/settle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -44,10 +44,8 @@ func main() {
 				},
 			},
 			{
-				Name: "demo-data",
+				Name: "settle",
 				Action: func(ctx *cli.Context) error {
-					varieties.DemoData()
-					assets.DemoData()
 					return nil
 				},
 			},
@@ -74,7 +72,7 @@ func main() {
 
 			app.Keepalive(ctx.App.Name, 5)
 			initDemoBaseData()
-			clearing.Run()
+			settle.Run()
 			orders.Run()
 			www.Run()
 			return nil
