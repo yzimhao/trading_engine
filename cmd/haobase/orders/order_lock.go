@@ -29,8 +29,9 @@ func UnLock(lt LockType, order_id string) {
 	if _, err := rdc.Do("DECR", key); err != nil {
 		app.Logger.Warnf("clearing unlock %s err: %s", order_id, err.Error())
 	}
-	if _, err := rdc.Do("Expire", key, 300); err != nil {
-		app.Logger.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
+
+	if _, err := rdc.Do("del", key); err != nil {
+		app.Logger.Warnf("unlock %s fail err: %s", order_id, err.Error())
 	}
 }
 
