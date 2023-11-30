@@ -9,9 +9,11 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
+	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -122,7 +124,7 @@ func cancel_order(symbol, order_id string, retry int) {
 		}
 	}()
 
-	tablename := GetOrderTableName(symbol)
+	tablename := &Order{Symbol: symbol}
 	_, err = db.Table(tablename).Where("order_id=?", order_id).Get(&item)
 	if err != nil {
 		return
@@ -139,9 +141,17 @@ func cancel_order(symbol, order_id string, retry int) {
 		return
 	}
 
-	//解除订单冻结金额
-	_, err = assets.UnfreezeAllAssets(db, item.UserId, item.OrderId)
-	if err != nil {
-		return
+	varieties := varieties.NewTradingVarieties(symbol)
+	//解除订单冻结的资产
+	if item.OrderSide == trading_core.OrderSideSell {
+		_, err = assets.UnfreezeAllAssets(db, varieties.Target.Symbol, item.UserId, item.OrderId)
+		if err != nil {
+			return
+		}
+	} else {
+		_, err = assets.UnfreezeAllAssets(db, varieties.Base.Symbol, item.UserId, item.OrderId)
+		if err != nil {
+			return
+		}
 	}
 }

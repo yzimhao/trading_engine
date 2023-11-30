@@ -83,9 +83,9 @@ func cleanOrders() {
 	db := app.Database()
 
 	tables := []any{
-		orders.GetOrderTableName(testSymbol),
+		&orders.Order{Symbol: testSymbol},
 		new(orders.UnfinishedOrder).TableName(),
-		orders.GetTradelogTableName(testSymbol),
+		&orders.TradeLog{Symbol: testSymbol},
 	}
 
 	for _, table := range tables {

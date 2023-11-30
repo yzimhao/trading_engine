@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/yzimhao/trading_engine/utils/app"
@@ -21,10 +22,15 @@ type AssetsLog struct {
 	UpdateTime time.Time  `xorm:"timestamp updated"`
 }
 
-func QueryAssetsLogBusIdIsExist(user_id string, business_id string) bool {
+func (a *AssetsLog) TableName() string {
+	return fmt.Sprintf("assets_log_%s", a.Symbol)
+}
+
+func QueryAssetsLogBusIdIsExist(symbol string, user_id string, business_id string) bool {
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	ok, _ := db.Table(new(AssetsLog)).Where("user_id=? and business_id=?", user_id, business_id).Exist()
+	table := AssetsLog{Symbol: symbol}
+	ok, _ := db.Table(&table).Where("user_id=? and business_id=?", user_id, business_id).Exist()
 	return ok
 }

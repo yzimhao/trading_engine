@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -17,6 +18,10 @@ func Transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 func SysDeposit(to string, symbol string, amount string, business_id string) (success bool, err error) {
 	db := app.Database().NewSession()
 	defer db.Close()
+
+	//创建表
+	dbtables.AutoCreateTable(db, &AssetsFreeze{Symbol: symbol})
+	dbtables.AutoCreateTable(db, &AssetsLog{Symbol: symbol})
 
 	db.Begin()
 	success, err = transfer(db, UserRoot, to, symbol, amount, business_id, Behavior_Recharge)
@@ -104,7 +109,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Behavior:   behavior,
 		Info:       fmt.Sprintf("to: %s", to),
 	}
-	_, err = db.Table(new(AssetsLog)).Insert(&from_log)
+	_, err = db.Table(&from_log).Insert(&from_log)
 	if err != nil {
 		return false, err
 	}
@@ -119,7 +124,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Behavior:   behavior,
 		Info:       fmt.Sprintf("from: %s", from),
 	}
-	_, err = db.Table(new(AssetsLog)).Insert(&to_log)
+	_, err = db.Table(&to_log).Insert(&to_log)
 	if err != nil {
 		return false, err
 	}

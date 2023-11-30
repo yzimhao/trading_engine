@@ -58,35 +58,3 @@ func (tr *TradeLog) FormatDecimal(price_digit, qty_digit int) TradeLog {
 func (tr *TradeLog) TableName() string {
 	return fmt.Sprintf("trade_log_%s", tr.Symbol)
 }
-
-func GetTradelogTableName(symbol string) string {
-	t := TradeLog{Symbol: symbol}
-	return t.TableName()
-}
-
-func CreateTradeLogTable(db *xorm.Session, symbol string) error {
-	tr := new(TradeLog)
-	tr.Symbol = symbol
-
-	exist, err := db.IsTableExist(tr)
-	if err != nil {
-		return err
-	}
-	if !exist {
-		err := db.CreateTable(tr)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateIndexes(tr)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateUniques(tr)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}

@@ -53,6 +53,9 @@ func push_depth_message(symbol string) {
 				}()
 
 				data, err := get_depth_data(symbol)
+				if err != nil {
+					return
+				}
 				//委托盘推送
 				to_msg_depth := types.MsgDepth.Format(map[string]string{
 					"symbol": symbol,

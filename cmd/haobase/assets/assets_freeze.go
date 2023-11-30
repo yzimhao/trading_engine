@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -15,4 +16,8 @@ type AssetsFreeze struct {
 	Info         string       `xorm:"varchar(64)"`
 	CreateTime   time.Time    `xorm:"timestamp created"`
 	UpdateTime   time.Time    `xorm:"timestamp updated"`
+}
+
+func (a *AssetsFreeze) TableName() string {
+	return fmt.Sprintf("assets_freeze_%s", a.Symbol)
 }
