@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
@@ -153,6 +154,9 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		} else {
 			conn.SetLogLevel(log.LOG_ERR)
 		}
+
+		logctx := xormlog.NewLogCtx(Logger)
+		conn.SetLogger(logctx)
 
 		conn.DatabaseTZ = time.Local
 		conn.TZLocation = time.Local
