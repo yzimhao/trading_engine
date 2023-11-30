@@ -49,11 +49,11 @@ func ConfigInit(config_file string, is_daemon bool) {
 		viper.SetConfigFile(config_file)
 		err := viper.ReadInConfig()
 		if err != nil {
-			logrus.Panic(err)
+			logrus.Fatal(err)
 		}
 
 		if err := viper.Unmarshal(&config.App); err != nil {
-			logrus.Panicf("Error unmarshaling config: %s %s\n", config_file, err)
+			logrus.Fatal("Error unmarshaling config: %s %s\n", config_file, err)
 		}
 	} else {
 		config.App = &config.Configuration{}
