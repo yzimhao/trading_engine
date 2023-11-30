@@ -28,7 +28,7 @@ var (
 	Version   = "v0.0.0"
 	Goversion = ""
 	Commit    = ""
-	Build     = "2023-10-31"
+	Build     = "0000-00-00"
 
 	Logger *logrus.Logger
 
