@@ -86,10 +86,11 @@ func cleanOrders() {
 		&TradeLog{Symbol: testSymbol},
 	}
 
+	s := db.NewSession()
+	defer s.Close()
+
 	for _, table := range tables {
-		db.DropIndexes(table)
-		db.DropTables(table)
-		dbtables.Del(table.(string))
+		dbtables.CleanTable(s, table)
 	}
 
 }

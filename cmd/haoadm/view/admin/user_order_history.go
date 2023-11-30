@@ -40,15 +40,15 @@ func UserOrderHistory(ctx *gin.Context) {
 
 		if search.Symbol == "" {
 			for _, item := range base.NewTSymbols().All() {
-				tb := orders.GetOrderTableName(item.Symbol)
-				if dbtables.Exist(db, tb) {
+				bean := orders.Order{Symbol: item.Symbol}
+				if dbtables.Exist(db, &bean) {
 					search.Symbol = item.Symbol
 					break
 				}
 			}
 		}
 
-		tablename := orders.GetOrderTableName(search.Symbol)
+		tablename := &orders.Order{Symbol: search.Symbol}
 		q := db.Table(tablename)
 		q = q.Where("symbol = ? and status>0", search.Symbol)
 

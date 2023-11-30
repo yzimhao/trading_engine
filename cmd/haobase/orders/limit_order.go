@@ -7,7 +7,6 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -40,12 +39,14 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		Status:         OrderStatusNew,
 	}
 	unfinished := UnfinishedOrder{}
-	// 事务开启前创建需要的表
+
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	dbtables.AutoCreateTable(db, &neworder)
-	dbtables.AutoCreateTable(db, &unfinished)
+	// 事务开启前创建可能需要的表
+	if err := auto_create_table(symbol, varieties.Target.Symbol, varieties.Base.Symbol); err != nil {
+		return nil, err
+	}
 
 	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
 		return nil, err

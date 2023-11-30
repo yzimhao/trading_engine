@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -153,4 +155,31 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 	}
 
 	return true, nil
+}
+
+// 自动创建订单和资产相关的表
+func auto_create_table(symbol string, target, base string) error {
+	db := app.Database().NewSession()
+	defer db.Close()
+	// 事务开启前创建可能需要的表
+	if err := dbtables.AutoCreateTable(db, &UnfinishedOrder{}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &Order{Symbol: symbol}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsFreeze{Symbol: target}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsFreeze{Symbol: base}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsLog{Symbol: target}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsLog{Symbol: base}); err != nil {
+		return err
+	}
+
+	return nil
 }

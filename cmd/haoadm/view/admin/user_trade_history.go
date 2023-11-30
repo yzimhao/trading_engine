@@ -39,7 +39,7 @@ func TradeHistory(ctx *gin.Context) {
 
 		if search.Symbol == "" {
 			for _, item := range base.NewTSymbols().All() {
-				tb := orders.GetTradelogTableName(item.Symbol)
+				tb := &orders.Order{Symbol: item.Symbol}
 				if dbtables.Exist(db, tb) {
 					search.Symbol = item.Symbol
 					break
@@ -47,7 +47,7 @@ func TradeHistory(ctx *gin.Context) {
 			}
 		}
 
-		tablename := orders.GetTradelogTableName(search.Symbol)
+		tablename := &orders.Order{Symbol: search.Symbol}
 		q := db.Table(tablename)
 		cond := q.Conds()
 		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
