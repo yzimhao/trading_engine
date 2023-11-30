@@ -49,7 +49,7 @@ func ConfigInit(config_file string, is_daemon bool) {
 		viper.SetConfigFile(config_file)
 		err := viper.ReadInConfig()
 		if err != nil {
-			panic(err)
+			logrus.Panic(err)
 		}
 
 		if err := viper.Unmarshal(&config.App); err != nil {
@@ -141,7 +141,7 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 	if database == nil {
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
-			Logger.Panic(err)
+			Logger.Error(err)
 		}
 
 		if prefix != "" {
@@ -156,6 +156,10 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 
 		conn.DatabaseTZ = time.Local
 		conn.TZLocation = time.Local
+
+		if err := conn.Ping(); err != nil {
+			Logger.Fatal(err)
+		}
 		database = conn
 	}
 }
