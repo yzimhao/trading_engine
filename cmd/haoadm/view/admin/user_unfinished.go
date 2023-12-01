@@ -35,7 +35,13 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		q := db.Table(new(orders.UnfinishedOrder))
 
 		if search.Symbol != "" {
-			q = q.Where("symbol like ?", "%"+search.Symbol+"%")
+			q = q.Where("symbol = ?", search.Symbol)
+		}
+		if search.UserId != "" {
+			q = q.Where("user_id = ?", search.UserId)
+		}
+		if search.OrderId != "" {
+			q = q.Where("order_id = ?", search.OrderId)
 		}
 
 		cond := q.Conds()
@@ -57,6 +63,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		} else {
 			ctx.HTML(200, "user_unfinished", gin.H{
 				"searchParams": searchParams,
+				"all_symbols":  base.NewTSymbols().All(),
 			})
 		}
 		return

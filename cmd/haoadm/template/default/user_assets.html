@@ -1,39 +1,33 @@
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
-        <fieldset class="table-search-fieldset" style="display: none;">
+        <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">代号</label>
+                            <label class="layui-form-label">资产</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="symbol" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">名称</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="name" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-
-                        <div class="layui-inline layui-form-item">
-                            <label class="layui-form-label">状态</label>
-                            <div class="layui-input-inline">
-                                <select name="status">
-                                    <option value="">全部</option>
-                                    <option value="1">启用</option>
-                                    <option value="0">禁用</option>
+                                <select name="symbol">
+                                    <option value="">请选择</option>
+                                    {% range $k,$v := .all_symbols %}
+                                    <option value="{%$v.Symbol%}">{%$v.Name%}/{%$v.Symbol%}</option>
+                                    {%end%}
                                 </select>
                             </div>
                         </div>
-
+                        <div class="layui-inline">
+                            <label class="layui-form-label">用户</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="user_id" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
                         
                         
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">清空</button>
                         </div>
                     </div>
                 </form>
@@ -78,7 +72,7 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'user_id', title: '用户ID'},
-                {field: 'symbol', title: '代号'},
+                {field: 'symbol', title: '资产'},
                 {field: 'total', title: '余额', templet: function(d){
                     return utils.format_num(d.total);
                 }},

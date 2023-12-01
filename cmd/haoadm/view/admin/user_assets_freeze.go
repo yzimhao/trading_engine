@@ -9,12 +9,6 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-type assetsSearch struct {
-	Symbol string `json:"symbol"`
-	UserId string `json:"user_id"`
-	Status string `json:"status"`
-}
-
 func AssetsFreezeList(ctx *gin.Context) {
 	db := app.Database().NewSession()
 	defer db.Close()
@@ -46,6 +40,9 @@ func AssetsFreezeList(ctx *gin.Context) {
 		if search.UserId != "" {
 			q = q.Where("user_id = ?", search.UserId)
 		}
+		if search.BusinessId != "" {
+			q = q.Where("business_id=?", search.BusinessId)
+		}
 
 		cond := q.Conds()
 		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
@@ -59,7 +56,7 @@ func AssetsFreezeList(ctx *gin.Context) {
 			render(ctx, 0, "", int(total), data)
 		} else {
 			ctx.HTML(200, "user_assets_freeze", gin.H{
-				"searchParams": searchParams,
+				"search": search,
 			})
 		}
 		return

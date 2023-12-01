@@ -17,6 +17,33 @@
                                 </select>
                             </div>
                         </div>
+
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">订单类型</label>
+                            <div class="layui-input-inline">
+                                <select name="order_type">
+                                    <option value="">请选择</option>
+                                    <option value="limit">Limit</option>
+                                    <option value="market">Market</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">用户</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="user_id" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                         
+                        
+                        <div class="layui-inline">
+                            <label class="layui-form-label">订单号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="order_id" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
                         
                         <div class="layui-inline layui-form-item">
                             <label class="layui-form-label">状态</label>
@@ -33,6 +60,7 @@
                         
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">清空</button>
                         </div>
                     </div>
                 </form>
@@ -76,8 +104,9 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'user_id', title: '用户ID', sort: true},
-                {field: 'symbol', width: 80, title: '交易对'},
+                {field: 'user_id', title: '用户ID'},
+                {field: 'symbol', title: '交易对'},
+                {field: 'order_id', width:200, title: '订单号'},
                 {field: 'order_type', title: '类型', templet:function(d){
                     return utils.format_order_type(d.order_type) + "-" +utils.format_order_side(d.order_side);
                 }},
