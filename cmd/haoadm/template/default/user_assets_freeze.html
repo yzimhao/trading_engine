@@ -85,10 +85,10 @@
                 {type: "checkbox", width: 50},
                 {field: 'user_id', title: '用户ID'},
                 {field: 'symbol', title: '资产'},
-                {field: 'amount', title: '初始金额', templet: function(d){
+                {field: 'amount', title: '初始冻结', templet: function(d){
                     return utils.format_num(d.amount);
                 }},
-                {field: 'freeze_amount', title: '冻结金额', templet: function(d){
+                {field: 'freeze_amount', title: '剩余冻结', templet: function(d){
                     return utils.format_num(d.freeze_amount);
                 }},
                 {field: 'business_id', title: '业务订单号', width: 200},

@@ -17,3 +17,5 @@ func TradeResultStats() TradeStats {
 		TodayTradeAmount: "10000.00",
 	}
 }
+
+func (t *TradeStats) qty() {}
