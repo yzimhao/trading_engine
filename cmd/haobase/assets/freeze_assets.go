@@ -68,7 +68,7 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 		FreezeAmount: freeze_amount,
 		BusinessId:   business_id,
 		Status:       FreezeStatusNew,
-		Info:         string(behavior),
+		OpType:       behavior,
 	}
 
 	_, err = db.Table(&lg).Insert(&lg)

@@ -107,13 +107,13 @@
 
         
         form.val("addform", {
-            "id": {{ .data.Id }},
-            "symbol": {{ .data.Symbol }},
-            "name": {{ .data.Name }},
-            "min_precision": {{ .data.MinPrecision }},
-            "show_precision": {{ .data.ShowPrecision }},
-            "sort": {{ .data.Sort }},
-            "status": {{ .data.Status }}
+            "id": {% .data.Id %},
+            "symbol": {% .data.Symbol %},
+            "name": {% .data.Name %},
+            "min_precision": {% .data.MinPrecision %},
+            "show_precision": {% .data.ShowPrecision %},
+            "sort": {% .data.Sort %},
+            "status": {% .data.Status %}
         });
 
     });

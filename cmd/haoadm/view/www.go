@@ -39,7 +39,7 @@ func setMethods(r Router, methods []string, relativePath string, handlers ...gin
 func setupRouter(router *gin.Engine) {
 	templateDir := "./template/default"
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
-		// Delims:    gintemplate.Delims{Left: "{{", Right: "}}"},
+		Delims:    gintemplate.Delims{Left: "{%", Right: "%}"},
 		Root:      templateDir, //template root path
 		Extension: ".html",     //file extension
 		// Master:    "",          //master layout file
@@ -81,7 +81,11 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET", "POST"}, "/varieties/add", admin.VarietiesAdd)
 		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)
 		setMethods(radmin, []string{"GET", "POST"}, "/tradingvarieties/add", admin.TradingVarietiesAdd)
+
 		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
+		setMethods(radmin, []string{"GET"}, "/user/assets/freeze", admin.AssetsFreezeList)
+		setMethods(radmin, []string{"GET"}, "/user/assets/logs", admin.AssetsLogsList)
+
 		setMethods(radmin, []string{"GET"}, "/user/order/history", admin.UserOrderHistory)
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)

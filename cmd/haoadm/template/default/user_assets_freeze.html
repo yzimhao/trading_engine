@@ -47,11 +47,12 @@
             </div>
         </script>
 
-        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <table class="layui-hide" id="assetsFreezeTable" lay-filter="assetsFreezeTableFilter"></table>
 
-        <script type="text/html" id="currentTableBar">
-            <a class="layui-btn layui-btn-normal layui-btn-xs freeze" lay-event="freeze">冻结记录</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger assets_log" lay-event="assets_log">变动记录</a>
+        <script type="text/html" id="assetsFreezeTableBar">
+            {{#  if(d.status == 0){ }}
+                <a class="layui-btn layui-btn-normal layui-btn-xs unfreeze" lay-event="unfreeze">解冻</a>
+            {{#  } }}
         </script>
 
     </div>
@@ -67,35 +68,53 @@
             layuimini = layui.layuimini;
 
             table.render({
-            elem: '#currentTableId',
-            url: '/admin/user/assets?api=1',
+            elem: '#assetsFreezeTable',
+            url: '/admin/user/assets/freeze?api=1',
             //toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
             }],
+            where: {"searchParams": "{% .searchParams %}"},
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'user_id', title: '用户ID'},
                 {field: 'symbol', title: '代号'},
-                {field: 'total', title: '余额', templet: function(d){
-                    return utils.format_num(d.total);
+                {field: 'amount', title: '初始金额', templet: function(d){
+                    return utils.format_num(d.amount);
                 }},
-                {field: 'avail', title: '可用', templet: function(d){
-                    return utils.format_num(d.avail);
+                {field: 'freeze_amount', title: '冻结金额', templet: function(d){
+                    return utils.format_num(d.freeze_amount);
                 }},
-                {field: 'freeze', title: '冻结', sort: true, templet: function(d){
-                    return utils.format_num(d.freeze);
+                {field: 'business_id', title: '业务订单号', width: 200},
+                {field: 'op_type', title: '类型', templet: function(d){
+                    if(d.op_type == "trade") {
+                        return "交易";
+                    }
+                    if(d.op_type == "deposit") {
+                        return "充值";
+                    }
+                    if(d.op_type == "withdraw") {
+                        return "提现";
+                    }
+                    if(d.op_type == "transfer") {
+                        return "转账";
+                    }
                 }},
-                
+                {field: 'status', title: '状态', templet: function(d){
+                    if(d.status == 1) {
+                        return "已解冻";
+                    }
+                    return "冻结";
+                }},
                 {field: 'create_time', width: 180, title: '创建时间', sort: true, templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},
                 {field: 'update_time', width: 180, title: '更新时间', templet: function(d){
                     return utils.format_timestamp(d.update_time*1000);
                 }},
-                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+                {title: '操作', minWidth: 150, toolbar: '#assetsFreezeTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
@@ -107,7 +126,7 @@
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
             //执行搜索重载
-            table.reload('currentTableId', {
+            table.reload('assetsFreezeTable', {
                 page: {
                     curr: 1
                 }
@@ -121,21 +140,37 @@
 
 
         //监听表格复选框选择
-        table.on('checkbox(currentTableFilter)', function (obj) {
+        table.on('checkbox(assetsFreezeTableFilter)', function (obj) {
             console.log(obj)
         });
 
-        table.on('tool(currentTableFilter)', function (obj) {
+        table.on('tool(assetsFreezeTableFilter)', function (obj) {
             var data = obj.data;
-            console.log(data);
             if (obj.event === 'edit') {
-                
+
+                var content = layuimini.getHrefContent('page/table/add.html');
+                var openWH = layuimini.getOpenWidthHeight();
+
+                var index = layer.open({
+                    title: '编辑用户',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: [openWH[0] + 'px', openWH[1] + 'px'],
+                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
+                    content: content,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
             } else if (obj.event === 'freeze') {
                 
-                var content = layuimini.getHrefContent('/admin/user/assets/freeze?searchParams={"symbol":"'+ data.symbol +'","user_id": "'+data.user_id+'"}');
+                var content = layuimini.getHrefContent('page/table/add.html');
                 var openWH = layuimini.getOpenWidthHeight();
                 var index = layer.open({
-                    title: data.user_id+'的'+ data.symbol +'冻结日志',
+                    title: '冻结日志',
                     type: 1,
                     shade: 0.2,
                     maxmin:true,
@@ -149,20 +184,8 @@
                 });
 
             } else if (obj.event === 'assets_log') {
-                var content = layuimini.getHrefContent('/admin/user/assets/logs?searchParams={"symbol":"'+ data.symbol +'","user_id": "'+data.user_id+'"}');
-                var openWH = layuimini.getOpenWidthHeight();
-                var index = layer.open({
-                    title: data.user_id+'的'+ data.symbol +'变动日志',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
+                layer.confirm('功能开发中...', function (index) {
+                    layer.close(index);
                 });
             }
         });

@@ -106,7 +106,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Amount:     "-" + amount,
 		After:      from_user.Total,
 		BusinessId: business_id,
-		Behavior:   behavior,
+		OpType:     behavior,
 		Info:       fmt.Sprintf("to: %s", to),
 	}
 	_, err = db.Table(&from_log).Insert(&from_log)
@@ -121,7 +121,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		Amount:     amount,
 		After:      to_user.Total,
 		BusinessId: business_id,
-		Behavior:   behavior,
+		OpType:     behavior,
 		Info:       fmt.Sprintf("from: %s", from),
 	}
 	_, err = db.Table(&to_log).Insert(&to_log)
