@@ -12,7 +12,8 @@ var (
 )
 
 type subMessage struct {
-	Subsc []string `json:"sub"`
+	Subsc   []string `json:"sub"`
+	UnSubsc []string `json:"unsub"`
 }
 
 type MsgBody struct {

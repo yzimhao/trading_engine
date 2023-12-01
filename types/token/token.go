@@ -7,6 +7,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Set(token string, user_id string, ttl int) error {
@@ -31,6 +32,10 @@ func Set(token string, user_id string, ttl int) error {
 func Get(original_token string) string {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
+
+	if config.App.Main.Mode == config.ModeDemo {
+		return original_token
+	}
 
 	topic := tokenRedisTopic(original_token)
 	user_id, err := redis.String(rdc.Do("get", topic))

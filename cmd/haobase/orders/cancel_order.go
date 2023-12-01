@@ -34,6 +34,9 @@ func SubmitOrderCancel(order_id string) error {
 			OrderId: order.OrderId,
 		}
 		rdc.Do("rpush", types.FormatCancelOrder.Format(order.Symbol), cancel.Json())
+	} else {
+		//已经完成或者已经被取消
+		return fmt.Errorf("已经被取消或已完成")
 	}
 
 	return nil
@@ -110,7 +113,7 @@ func cancel_order(symbol, order_id string, retry int) {
 				app.Logger.Errorf("取消订单 %s 失败 %s", order_id, err.Error())
 			} else {
 				//取消成功websocket发送消息给前端
-				to := fmt.Sprintf("user.%s", item.UserId)
+				to := types.MsgUser.Format(map[string]string{"user_id": item.UserId})
 				message.Publish(ws.MsgBody{
 					To: to,
 					Response: ws.Response{
