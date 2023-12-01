@@ -56,14 +56,14 @@ func initAssets() {
 }
 
 func cleanAssets() {
-	db := app.Database()
-	db.DropIndexes(new(assets.Assets))
-	db.DropIndexes("assets_freeze")
-	db.DropIndexes("assets_log")
-	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
-	if err != nil {
-		fmt.Errorf("mysql droptables: %s", err)
-	}
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	dbtables.CleanTable(db, &assets.Assets{})
+	dbtables.CleanTable(db, &assets.AssetsFreeze{Symbol: testBaseSymbol})
+	dbtables.CleanTable(db, &assets.AssetsLog{Symbol: testBaseSymbol})
+	dbtables.CleanTable(db, &assets.AssetsFreeze{Symbol: testTargetSymbol})
+	dbtables.CleanTable(db, &assets.AssetsLog{Symbol: testTargetSymbol})
 
 }
 
