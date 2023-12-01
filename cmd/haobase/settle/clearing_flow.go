@@ -135,12 +135,12 @@ func (c *clean) trade_log() error {
 }
 
 func (c *clean) update_order(side trading_core.OrderSide) error {
-	var order orders.Order
+	var order *orders.Order
 	if side == trading_core.OrderSideSell {
-		order = c.ask
+		order = &c.ask
 		order.Fee = utils.D(order.Fee).Add(utils.D(c.tradelog.AskFee)).String()
 	} else {
-		order = c.bid
+		order = &c.bid
 		order.Fee = utils.D(order.Fee).Add(utils.D(c.tradelog.BidFee)).String()
 	}
 
@@ -227,22 +227,37 @@ func (c *clean) transfer() error {
 		return err
 	}
 
-	//市价单解除全部冻结
-	if c.tlog.Last != "" {
-		app.Logger.Infof("市价订单%s完成 解除剩余全部资产", c.tlog.Last)
-		if c.ask.OrderType == trading_core.OrderTypeMarket {
-			_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
-			if err != nil {
-				app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.ask.OrderId, err.Error())
-				return err
-			}
+	// //市价单解除全部冻结
+	// if c.tlog.Last != "" {
+	// 	app.Logger.Infof("市价订单%s完成 解除剩余全部资产", c.tlog.Last)
+	// 	if c.ask.OrderType == trading_core.OrderTypeMarket {
+	// 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
+	// 		if err != nil {
+	// 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.ask.OrderId, err.Error())
+	// 			return err
+	// 		}
+	// 	}
+	// 	if c.bid.OrderType == trading_core.OrderTypeMarket {
+	// 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Base.Symbol, c.bid.UserId, c.bid.OrderId)
+	// 		if err != nil {
+	// 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.bid.OrderId, err.Error())
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	if c.ask.Status == orders.OrderStatusDone {
+		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
+		if err != nil {
+			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.ask.OrderId, err.Error())
+			return err
 		}
-		if c.bid.OrderType == trading_core.OrderTypeMarket {
-			_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Base.Symbol, c.bid.UserId, c.bid.OrderId)
-			if err != nil {
-				app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.bid.OrderId, err.Error())
-				return err
-			}
+	}
+	if c.bid.Status == orders.OrderStatusDone {
+		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Base.Symbol, c.bid.UserId, c.bid.OrderId)
+		if err != nil {
+			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.bid.OrderId, err.Error())
+			return err
 		}
 	}
 

@@ -97,10 +97,10 @@ func cleanOrders() {
 }
 
 func TestLimitOrder(t *testing.T) {
-	cleandb()
-	initAssets()
 
 	Convey("限价单完全成交结算测试", t, func() {
+		cleandb()
+		initAssets()
 
 		sell, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
 		So(err, ShouldBeNil)
@@ -151,6 +151,51 @@ func TestLimitOrder(t *testing.T) {
 	})
 }
 
+func TestLimitOrderCase1(t *testing.T) {
+
+	Convey("现价单非挂单价格成交", t, func() {
+		cleandb()
+		initAssets()
+
+		sell, err := orders.NewLimitOrder(sellUser, testSymbol, trading_core.OrderSideSell, "1.00", "1")
+		So(err, ShouldBeNil)
+
+		buy, err := orders.NewLimitOrder(buyUser, testSymbol, trading_core.OrderSideBuy, "2.00", "1")
+		So(err, ShouldBeNil)
+
+		result := trading_core.TradeResult{
+			Symbol:        testSymbol,
+			AskOrderId:    sell.OrderId,
+			BidOrderId:    buy.OrderId,
+			TradePrice:    utils.D("1.00"),
+			TradeQuantity: utils.D("1"),
+			TradeTime:     time.Now().UnixNano(),
+		}
+		clearing_trade_order(testSymbol, result.Json())
+		for {
+			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
+				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+
+		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
+		sell_assets_standard := assets.FindSymbol(sellUser, testBaseSymbol)
+
+		buy_assets_target := assets.FindSymbol(buyUser, testTargetSymbol)
+		buy_assets_standard := assets.FindSymbol(buyUser, testBaseSymbol)
+		So(utils.D(sell_assets_target.Total), ShouldEqual, utils.D("9999"))
+		So(utils.D(sell_assets_standard.Total), ShouldEqual, utils.D("0.995"))
+
+		So(utils.D(buy_assets_target.Total), ShouldEqual, utils.D("1"))
+		So(utils.D(buy_assets_standard.Total), ShouldEqual, utils.D("9998.995"))
+
+		//特别测试冻结字段,防止订单完成了，但是没有全部解冻资产的情况
+		So(utils.D(buy_assets_standard.Freeze), ShouldEqual, utils.D("0"))
+	})
+
+}
 func TestMarketCase1(t *testing.T) {
 
 	cleandb()
