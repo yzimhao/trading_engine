@@ -108,7 +108,7 @@
                 {field: 'symbol', title: '交易对'},
                 {field: 'order_id', width:200, title: '订单号'},
                 {field: 'order_type', title: '类型', templet:function(d){
-                    return utils.format_order_type(d.order_type) + "-" +utils.format_order_side(d.order_side);
+                    return d.order_type + "/" + d.order_side;
                 }},
                 {field: 'price', title: '挂单价格/成交均价', minWidth: 150, templet:function(d){
                     return d.price + "/" + d.avg_price;
