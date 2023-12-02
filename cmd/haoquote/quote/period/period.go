@@ -7,6 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -66,34 +67,15 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 }
 
 func (p *Period) TableName() string {
-	return fmt.Sprintf("period_%s_%s", p.Symbol, p.Interval)
+	return fmt.Sprintf("quote_period_%s_%s", p.Symbol, p.Interval)
 }
 
-func (p *Period) CreateTable(db *xorm.Engine) error {
+func (p *Period) CreateTable(db *xorm.Session) error {
 	if p.Symbol == "" || p.Interval == "" {
 		return fmt.Errorf("symbol or period is null")
 	}
 
-	exist, err := db.IsTableExist(p.TableName())
-	if err != nil {
-		return err
-	}
-
-	if !exist {
-		err := db.CreateTables(p)
-		if err != nil {
-			return err
-		}
-		err = db.CreateIndexes(p)
-		if err != nil {
-			return err
-		}
-		err = db.CreateUniques(p)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return dbtables.AutoCreateTable(db, p)
 }
 
 func (p *Period) get_open() {
