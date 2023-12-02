@@ -19,6 +19,7 @@ import (
 
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
+	"xorm.io/xorm/names"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -34,6 +35,7 @@ var (
 	Logger *logrus.Logger
 
 	//
+	dbPrefix  = ""
 	redisPool *redis.Pool
 	database  *xorm.Engine
 )
@@ -146,8 +148,9 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		}
 
 		if prefix != "" {
-			// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, prefix)
-			// conn.SetTableMapper(tbMapper)
+			tbMapper := names.NewPrefixMapper(names.SnakeMapper{}, prefix)
+			conn.SetTableMapper(tbMapper)
+			dbPrefix = prefix
 		}
 		if show_sql {
 			conn.ShowSQL(true)
@@ -170,6 +173,10 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 
 func Database() *xorm.Engine {
 	return database
+}
+
+func TablePrefix() string {
+	return dbPrefix
 }
 
 func RedisPool() *redis.Pool {

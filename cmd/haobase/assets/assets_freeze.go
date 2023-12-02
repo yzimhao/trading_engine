@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 type AssetsFreeze struct {
@@ -21,5 +22,5 @@ type AssetsFreeze struct {
 }
 
 func (a *AssetsFreeze) TableName() string {
-	return fmt.Sprintf("assets_freeze_%s", a.Symbol)
+	return fmt.Sprintf("%sassets_freeze_%s", app.TablePrefix(), a.Symbol)
 }

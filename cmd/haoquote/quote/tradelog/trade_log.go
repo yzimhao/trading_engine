@@ -35,7 +35,7 @@ type TradeLog struct {
 
 func (t *TradeLog) TableName() string {
 	//和haobase中订单结算后的成交日志有一点点冲突，这里只保存最近的记录就好了
-	return fmt.Sprintf("quote_tradelog_%s", t.Symbol)
+	return fmt.Sprintf("%squote_tradelog_%s", app.TablePrefix(), t.Symbol)
 }
 
 func (t *TradeLog) Save() error {

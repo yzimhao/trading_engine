@@ -16,6 +16,7 @@ prefix=""
 driver="mysql"
 dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
 show_sql = true
+prefix="tt_"
 
 
 [local] 

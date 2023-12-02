@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
@@ -56,5 +57,5 @@ func (tr *TradeLog) FormatDecimal(price_digit, qty_digit int) TradeLog {
 }
 
 func (tr *TradeLog) TableName() string {
-	return fmt.Sprintf("trade_log_%s", tr.Symbol)
+	return fmt.Sprintf("%strade_log_%s", app.TablePrefix(), tr.Symbol)
 }

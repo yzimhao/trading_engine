@@ -67,7 +67,7 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 }
 
 func (p *Period) TableName() string {
-	return fmt.Sprintf("quote_period_%s_%s", p.Symbol, p.Interval)
+	return fmt.Sprintf("%squote_period_%s_%s", app.TablePrefix(), p.Symbol, p.Interval)
 }
 
 func (p *Period) CreateTable(db *xorm.Session) error {

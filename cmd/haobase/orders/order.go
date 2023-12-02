@@ -54,7 +54,7 @@ func (o *Order) Save(db *xorm.Session) error {
 }
 
 func (o *Order) TableName() string {
-	return fmt.Sprintf("order_%s", o.Symbol)
+	return fmt.Sprintf("%sorder_%s", app.TablePrefix(), o.Symbol)
 }
 
 func (o *Order) FormatDecimal(price_digit, qty_digit int) Order {

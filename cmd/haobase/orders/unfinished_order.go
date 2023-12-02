@@ -1,6 +1,8 @@
 package orders
 
 import (
+	"fmt"
+
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -12,7 +14,7 @@ type UnfinishedOrder struct {
 }
 
 func (u *UnfinishedOrder) TableName() string {
-	return "order_unfinished"
+	return fmt.Sprintf("%sorder_unfinished", app.TablePrefix())
 }
 
 func (u *UnfinishedOrder) Save(db *xorm.Session) error {

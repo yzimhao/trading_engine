@@ -23,7 +23,7 @@ type AssetsLog struct {
 }
 
 func (a *AssetsLog) TableName() string {
-	return fmt.Sprintf("assets_log_%s", a.Symbol)
+	return fmt.Sprintf("%sassets_log_%s", app.TablePrefix(), a.Symbol)
 }
 
 func QueryAssetsLogBusIdIsExist(symbol string, user_id string, business_id string) bool {
