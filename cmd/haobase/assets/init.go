@@ -11,20 +11,6 @@ const (
 	UserSystemFee string = "fee"
 )
 
-func Init() {
-	db_engine := app.Database()
-
-	//同步表结构
-	err := db_engine.Sync2(
-		new(Assets),
-		// new(AssetsLog),
-		// new(AssetsFreeze),
-	)
-	if err != nil {
-		app.Logger.Errorf("sync2: %s", err)
-	}
-}
-
 func UserAssets(user_id string, symbol []string) []Assets {
 	db_engine := app.Database().NewSession()
 	defer db_engine.Close()

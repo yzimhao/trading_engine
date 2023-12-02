@@ -50,7 +50,6 @@ func cleandb() {
 }
 
 func initAssets() {
-	assets.Init()
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }

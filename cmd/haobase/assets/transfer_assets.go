@@ -20,6 +20,7 @@ func SysDeposit(to string, symbol string, amount string, business_id string) (su
 	defer db.Close()
 
 	//创建表
+	dbtables.AutoCreateTable(db, &Assets{})
 	dbtables.AutoCreateTable(db, &AssetsFreeze{Symbol: symbol})
 	dbtables.AutoCreateTable(db, &AssetsLog{Symbol: symbol})
 

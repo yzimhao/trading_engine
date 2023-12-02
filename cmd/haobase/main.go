@@ -6,7 +6,6 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/cmd/haobase/settle"
@@ -32,7 +31,6 @@ func main() {
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
 			varieties.Init()
-			assets.Init()
 			return nil
 		},
 
