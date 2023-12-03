@@ -194,7 +194,9 @@
             cols: [[
                 {field: 'symbol', title: '交易对'},
                 {field: 'today_trade_qty', title: '今日成交量'},
-                {field: 'today_trade_amount', title: '今日成交金额'}
+                {field: 'today_trade_amount', title: '今日成交金额', templet: function(d){
+                    return d.today_trade_amount +" "+ d.base.toUpperCase();
+                }}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,

@@ -10,6 +10,7 @@ type TradeStats struct {
 	Symbol           string `json:"symbol"`
 	TodayTradeQty    string `json:"today_trade_qty"`
 	TodayTradeAmount string `json:"today_trade_amount"`
+	Base             string `json:"base"`
 }
 
 func NewTradeStats() []TradeStats {
@@ -22,6 +23,7 @@ func NewTradeStats() []TradeStats {
 			Symbol:           v.Symbol,
 			TodayTradeQty:    utils.D(stats.Volume).String(),
 			TodayTradeAmount: utils.D(stats.Amount).String(),
+			Base:             v.Base.Symbol,
 		}
 		data = append(data, t)
 	}
