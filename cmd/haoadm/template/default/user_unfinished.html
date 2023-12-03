@@ -79,19 +79,19 @@
             // }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'user_id', title: '用户ID', sort: true},
+                {field: 'user_id', title: '用户ID'},
                 {field: 'symbol', title: '交易对'},
                 {field: 'order_id', width:200, title: '订单号'},
                 {field: 'order_side', title: '方向'},
                 {field: 'price', title: '价格'},
-                {field: 'quantity', title: '数量', sort: true},
+                {field: 'quantity', title: '数量'},
                 {field: 'freeze', title: '冻结', templet:function(d){
                     return d.freeze_qty + "/" + d.freeze_amount;
                 }},
-                {field: 'finished_qty', title: '已成交', sort: true},
-                {field: 'finished_amount', title: '成交金额', sort: true},
+                {field: 'finished_qty', title: '已成交'},
+                {field: 'finished_amount', title: '成交金额'},
                 
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 280, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time/1e6);
                 }},
                 

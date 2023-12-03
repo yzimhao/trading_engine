@@ -93,7 +93,7 @@
                     }
                 }},
                 {field: 'info', title: '备注'},
-                {field: 'create_time', width: 180, title: '创建时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 180, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},
                 {field: 'update_time', width: 180, title: '更新时间', templet: function(d){

@@ -113,14 +113,14 @@
                 {field: 'price', title: '挂单价格/成交均价', minWidth: 150, templet:function(d){
                     return d.price + "/" + d.avg_price;
                 }},
-                {field: 'quantity', title: '数量', sort: true},
-                {field: 'finished_qty', title: '已成交', sort: true},
-                {field: 'finished_amount', title: '成交金额', sort: true},
-                {field: 'status', title: '状态', sort: true, templet:function(d){
+                {field: 'quantity', title: '数量'},
+                {field: 'finished_qty', title: '已成交'},
+                {field: 'finished_amount', title: '成交金额'},
+                {field: 'status', title: '状态', templet:function(d){
                     return utils.format_order_status(d.status);
                 }},
                 
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 280, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time/1e6);
                 }},
                 

@@ -90,19 +90,19 @@
                 icon: 'layui-icon-tips'
             }],
             cols: [[
-                {type: "checkbox", width: 50},
-                {field: 'trade_id', title: 'ID', sort: true},
-                {field: 'ask', title: '卖方订单'},
-                {field: 'bid', title: '买方订单'},
+                {type: "checkbox", width: 30},
+                {field: 'trade_id', title: '成交ID', width:230},
+                {field: 'ask', title: '卖方订单', width:200},
+                {field: 'bid', title: '买方订单', width:200},
                 {field: 'price', title: '成交价格'},
-                {field: 'quantity', title: '数量', sort: true},
-                {field: 'amount', title: '成交金额', sort: true},
-                {field: 'ask_fee_rate', title: '卖方费率', sort: true},
-                {field: 'ask_fee', title: '卖方手续费', sort: true},
-                {field: 'bid_fee_rate', title: '买方费率', sort: true},
-                {field: 'bid_fee', title: '买方手续费', sort: true},
+                {field: 'quantity', title: '数量'},
+                {field: 'amount', title: '成交金额'},
+                {field: 'ask_fee_rate', title: '卖方费率'},
+                {field: 'ask_fee', title: '卖方手续费'},
+                {field: 'bid_fee_rate', title: '买方费率'},
+                {field: 'bid_fee', title: '买方手续费'},
                 
-                {field: 'create_time', width: 280, title: '成交时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 280, title: '成交时间', templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }}
             ]],
