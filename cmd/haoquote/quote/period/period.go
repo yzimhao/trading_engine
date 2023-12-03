@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
@@ -97,13 +96,13 @@ func (p *Period) get_open() {
 }
 
 func (p *Period) get_high() {
-	if p.raw.TradePrice.Cmp(d(p.High)) > 0 {
+	if p.raw.TradePrice.Cmp(utils.D(p.High)) > 0 {
 		p.High = p.raw.TradePrice.String()
 	}
 }
 
 func (p *Period) get_low() {
-	if p.raw.TradePrice.Cmp(d(p.Low)) < 0 {
+	if p.raw.TradePrice.Cmp(utils.D(p.Low)) < 0 {
 		p.Low = p.raw.TradePrice.String()
 	}
 }
@@ -116,16 +115,11 @@ func (p *Period) get_close() {
 }
 
 func (p *Period) get_volume() {
-	v := d(p.Volume).Add(p.raw.TradeQuantity)
+	v := utils.D(p.Volume).Add(p.raw.TradeQuantity)
 	p.Volume = v.String()
 }
 
 func (p *Period) get_amount() {
-	v := d(p.Amount).Add(p.raw.TradePrice.Mul(p.raw.TradeQuantity))
+	v := utils.D(p.Amount).Add(p.raw.TradePrice.Mul(p.raw.TradeQuantity))
 	p.Amount = v.String()
-}
-
-func d(a string) decimal.Decimal {
-	b, _ := decimal.NewFromString(a)
-	return b
 }

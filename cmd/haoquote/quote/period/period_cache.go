@@ -55,19 +55,21 @@ func GetYesterdayClose(symbol string) (string, bool) {
 	return data.Close, true
 }
 
-func GetTodayOpen(symbol string) (string, bool) {
+func GetTodyStats(symbol string) (Period, error) {
 	now := time.Now()
 
 	st, et := get_start_end_time(now, PERIOD_D1)
 	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
 	cache_data, err := key.get()
-	if err != nil {
-		return "", false
-	}
 
 	var data Period
-	if err := json.Unmarshal(cache_data, &data); err != nil {
-		return "", false
+
+	if err != nil {
+		return data, err
 	}
-	return data.Open, true
+
+	if err := json.Unmarshal(cache_data, &data); err != nil {
+		return data, err
+	}
+	return data, nil
 }

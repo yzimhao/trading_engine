@@ -26,6 +26,6 @@ func SystemInfo(ctx *gin.Context) {
 		"version":      app.Version,
 		"build_at":     app.Build,
 		"assets_stats": assets.AssetsCheck(),
-		"trade_stats":  orders.TradeResultStats(),
+		"trade_stats":  orders.NewTradeStats(),
 	})
 }
