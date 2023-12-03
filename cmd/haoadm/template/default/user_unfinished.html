@@ -128,6 +128,11 @@
                 orders.push(data[i].order_id);
             }
             
+            if(orders.length == 0) {
+                layuimini.msg_error("请选择需要取消的订单");
+                return
+            }
+
             layer.confirm('真的要批量撤单么?', function (index) {
                 $.ajax({
                     url: "/api/v1/admin/user/unfinished/cancel",
