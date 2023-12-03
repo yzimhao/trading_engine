@@ -2,13 +2,26 @@ package admin
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
+
+func CancelUserOrder(ctx *gin.Context) {
+	order := ctx.PostForm("order_ids")
+	ids := strings.Split(order, ",")
+	for _, order_id := range ids {
+		if err := orders.SubmitOrderCancel(order_id); err != nil {
+			logrus.Errorf("CancelUserOrder %s err: %s", order_id, err.Error())
+		}
+	}
+	utils.ResponseOkJson(ctx, "")
+}
 
 func UserOrderUnfinished(ctx *gin.Context) {
 	db := app.Database().NewSession()

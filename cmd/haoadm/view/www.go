@@ -95,5 +95,7 @@ func setupPages(router *gin.Engine) {
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
+
+		setMethods(api, []string{"POST"}, "/user/unfinished/cancel", admin.CancelUserOrder)
 	}
 }

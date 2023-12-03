@@ -4,7 +4,9 @@ import (
 	"time"
 
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 type ParamType string
@@ -44,4 +46,25 @@ func (s *Setting) Date() time.Time {
 func (s *Setting) Time() time.Time {
 	t, _ := time.Parse(time.DateTime, s.Value)
 	return t
+}
+
+func Init() {
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	dbtables.AutoCreateTable(db, &Setting{})
+
+	//默认的系统参数配置
+	sets := []Setting{
+		Setting{
+			Code:   "SITE_ENABLED",
+			Name:   "服务端全局开关",
+			Type:   ParamTypeInt,
+			Value:  "1",
+			Note:   "",
+			Status: types.StatusEnabled,
+		},
+	}
+
+	db.Insert(&sets)
 }

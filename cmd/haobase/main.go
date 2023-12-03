@@ -6,6 +6,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/cmd/haobase/settle"
@@ -30,7 +31,7 @@ func main() {
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
-			varieties.Init()
+			base.Init()
 			return nil
 		},
 
