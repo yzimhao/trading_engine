@@ -42,6 +42,12 @@ func AssetsLogsList(ctx *gin.Context) {
 			q = q.Where("business_id = ?", search.BusinessId)
 		}
 
+		if search.ChangeType == "income" {
+			q = q.Where("amount > 0")
+		} else if search.ChangeType == "payout" {
+			q = q.Where("amount < 0")
+		}
+
 		cond := q.Conds()
 		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
 		if err != nil {

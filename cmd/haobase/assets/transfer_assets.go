@@ -10,8 +10,8 @@ import (
 	"xorm.io/xorm"
 )
 
-func Transfer(db *xorm.Session, from, to string, symbol string, amount string, business_id string, behavior OpBehavior) (success bool, err error) {
-	return transfer(db, from, to, symbol, amount, business_id, behavior)
+func Transfer(db *xorm.Session, from, to string, symbol string, amount string, business_id string, behavior OpBehavior, note string) (success bool, err error) {
+	return transfer(db, from, to, symbol, amount, business_id, behavior, note)
 }
 
 // 充值
@@ -25,7 +25,7 @@ func SysDeposit(to string, symbol string, amount string, business_id string) (su
 	dbtables.AutoCreateTable(db, &AssetsLog{Symbol: symbol})
 
 	db.Begin()
-	success, err = transfer(db, UserRoot, to, symbol, amount, business_id, Behavior_Recharge)
+	success, err = transfer(db, UserRoot, to, symbol, amount, business_id, Behavior_Recharge, "")
 	if err != nil {
 		db.Rollback()
 	}
@@ -39,7 +39,7 @@ func SysWithdraw(user_id string, symbol string, amount string, business_id strin
 	defer db.Close()
 
 	db.Begin()
-	success, err = transfer(db, user_id, UserRoot, symbol, amount, business_id, Behavior_Withdraw)
+	success, err = transfer(db, user_id, UserRoot, symbol, amount, business_id, Behavior_Withdraw, "")
 	if err != nil {
 		db.Rollback()
 	}
@@ -47,7 +47,7 @@ func SysWithdraw(user_id string, symbol string, amount string, business_id strin
 	return success, err
 }
 
-func transfer(db *xorm.Session, from, to string, symbol string, amount string, business_id string, behavior OpBehavior) (success bool, err error) {
+func transfer(db *xorm.Session, from, to string, symbol string, amount string, business_id string, behavior OpBehavior, note string) (success bool, err error) {
 	symbol = strings.ToLower(symbol)
 
 	if from == to {
@@ -108,7 +108,7 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		After:      from_user.Total,
 		BusinessId: business_id,
 		OpType:     behavior,
-		Info:       fmt.Sprintf("to: %s", to),
+		Info:       format_notes(note, "to:"+to),
 	}
 	_, err = db.Table(&from_log).Insert(&from_log)
 	if err != nil {
@@ -123,11 +123,21 @@ func transfer(db *xorm.Session, from, to string, symbol string, amount string, b
 		After:      to_user.Total,
 		BusinessId: business_id,
 		OpType:     behavior,
-		Info:       fmt.Sprintf("from: %s", from),
+		Info:       format_notes(note, "from:"+from),
 	}
 	_, err = db.Table(&to_log).Insert(&to_log)
 	if err != nil {
 		return false, err
 	}
 	return true, err
+}
+
+func format_notes(notes ...string) string {
+	n := make([]string, 0)
+	for _, v := range notes {
+		if v != "" {
+			n = append(n, v)
+		}
+	}
+	return strings.Join(n, ";")
 }

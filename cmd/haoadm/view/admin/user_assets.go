@@ -15,6 +15,7 @@ type assetsSearch struct {
 	UserId     string `json:"user_id"`
 	Status     string `json:"status"`
 	BusinessId string `json:"business_id"`
+	ChangeType string `json:"change_type"`
 }
 
 func AssetsList(ctx *gin.Context) {

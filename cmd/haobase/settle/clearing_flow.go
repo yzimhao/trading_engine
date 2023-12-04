@@ -199,7 +199,7 @@ func (c *clean) transfer() error {
 		app.Logger.Errorf("解冻失败: %s %s", c.ask.OrderId, err.Error())
 		return err
 	}
-	_, err = assets.Transfer(c.db, c.ask.UserId, c.bid.UserId, c.trading_varieties.Target.Symbol, c.tlog.TradeQuantity.String(), c.tradelog.TradeId, assets.Behavior_Trade)
+	_, err = assets.Transfer(c.db, c.ask.UserId, c.bid.UserId, c.trading_varieties.Target.Symbol, c.tlog.TradeQuantity.String(), c.tradelog.TradeId, assets.Behavior_Trade, c.trading_varieties.Symbol)
 	if err != nil {
 		app.Logger.Errorf("Transfer: %s %s", c.trading_varieties.Target.Symbol, err.Error())
 		return err
@@ -215,36 +215,17 @@ func (c *clean) transfer() error {
 
 	//扣除fee
 	fee := utils.D(c.tradelog.BidFee).Add(utils.D(c.tradelog.AskFee))
-	_, err = assets.Transfer(c.db, c.bid.UserId, c.ask.UserId, c.trading_varieties.Base.Symbol, amount.Sub(fee).String(), c.tradelog.TradeId, assets.Behavior_Trade)
+	_, err = assets.Transfer(c.db, c.bid.UserId, c.ask.UserId, c.trading_varieties.Base.Symbol, amount.Sub(fee).String(), c.tradelog.TradeId, assets.Behavior_Trade, c.trading_varieties.Symbol)
 	if err != nil {
 		app.Logger.Errorf("Transfer: %s %s", c.trading_varieties.Base.Symbol, err.Error())
 		return err
 	}
 
 	//手续费收入到一个全局的账号里
-	_, err = assets.Transfer(c.db, c.bid.UserId, assets.UserSystemFee, c.trading_varieties.Base.Symbol, fee.String(), c.tradelog.TradeId, assets.Behavior_Trade)
+	_, err = assets.Transfer(c.db, c.bid.UserId, assets.UserSystemFee, c.trading_varieties.Base.Symbol, fee.String(), c.tradelog.TradeId, assets.Behavior_Trade, c.trading_varieties.Symbol)
 	if err != nil {
 		return err
 	}
-
-	// //市价单解除全部冻结
-	// if c.tlog.Last != "" {
-	// 	app.Logger.Infof("市价订单%s完成 解除剩余全部资产", c.tlog.Last)
-	// 	if c.ask.OrderType == trading_core.OrderTypeMarket {
-	// 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
-	// 		if err != nil {
-	// 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.ask.OrderId, err.Error())
-	// 			return err
-	// 		}
-	// 	}
-	// 	if c.bid.OrderType == trading_core.OrderTypeMarket {
-	// 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Base.Symbol, c.bid.UserId, c.bid.OrderId)
-	// 		if err != nil {
-	// 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.bid.OrderId, err.Error())
-	// 			return err
-	// 		}
-	// 	}
-	// }
 
 	if c.ask.Status == orders.OrderStatusDone {
 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
