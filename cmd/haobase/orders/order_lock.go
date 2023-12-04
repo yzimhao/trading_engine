@@ -10,7 +10,7 @@ import (
 type LockType string
 
 const (
-	ClearingLock LockType = "clearing.lock" //订单结算锁
+	SettleLock LockType = "lock" //订单结算锁
 )
 
 func Lock(lt LockType, order_id string) {
@@ -27,10 +27,13 @@ func UnLock(lt LockType, order_id string) {
 
 	key := fmt.Sprintf("%s.%s", lt, order_id)
 	if _, err := rdc.Do("DECR", key); err != nil {
-		app.Logger.Warnf("clearing unlock %s err: %s", order_id, err.Error())
+		app.Logger.Warnf("unlock %s err: %s", order_id, err.Error())
 	}
-	if _, err := rdc.Do("Expire", key, 300); err != nil {
-		app.Logger.Warnf("clearing unlock %s set expire err: %s", order_id, err.Error())
+
+	if n, _ := redis.Int64(rdc.Do("GET", key)); n == 0 {
+		if _, err := rdc.Do("del", key); err != nil {
+			app.Logger.Warnf("unlock %s fail err: %s", order_id, err.Error())
+		}
 	}
 }
 

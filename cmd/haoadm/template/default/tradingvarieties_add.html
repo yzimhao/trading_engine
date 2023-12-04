@@ -26,20 +26,20 @@
                     <div class="layui-input-inline">
                         <select name="target_symbol_id" lay-verify="required" lay-reqtext="不能为空">
                             <option value="">请选择</option>
-                            {{ range $k,$v := .all_variteties }}
-                            <option value="{{$v.Id}}">{{$v.Name}}/{{$v.Symbol}}</option>
-                            {{end}}
+                            {% range $k,$v := .all_variteties %}
+                            <option value="{%$v.Id%}">{%$v.Name%}/{%$v.Symbol%}</option>
+                            {%end%}
                         </select>
                     </div>
                 </div>
                 <div class="layui-inline">
-                    <label class="layui-form-label required">货币</label>
+                    <label class="layui-form-label required">基础货币</label>
                     <div class="layui-input-inline">
                         <select name="base_symbol_id" lay-verify="required" lay-reqtext="不能为空">
                             <option value="">请选择</option>
-                            {{ range $k,$v := .all_variteties }}
-                            <option value="{{$v.Id}}">{{$v.Name}}/{{$v.Symbol}}</option>
-                            {{end}}
+                            {% range $k,$v := .all_variteties %}
+                            <option value="{%$v.Id%}">{%$v.Name%}/{%$v.Symbol%}</option>
+                            {%end%}
                         </select>
                     </div>
                 </div>
@@ -164,20 +164,20 @@
 
         
         form.val("addform", {
-            "id": {{ .data.Id }},
-            "symbol": {{ .data.Symbol }},
-            "name": {{ .data.Name }},
-            "price_precision": {{ .data.PricePrecision }},
-            "qty_precision": {{ .data.QtyPrecision }},
-            "target_symbol_id": {{ .data.TargetSymbolId}},
-            "base_symbol_id": {{ .data.BaseSymbolId}},
-            "allow_min_qty": {{ .data.AllowMinQty}},
-            "allow_max_qty": {{ .data.AllowMaxQty}},
-            "allow_min_amount": {{ .data.AllowMinAmount}},
-            "allow_max_amount": {{ .data.AllowMaxAmount}},
-            "fee_rate": {{ .data.FeeRate}},
-            "sort": {{ .data.Sort}},
-            "status": {{ .data.Status }}
+            "id": {% .data.Id %},
+            "symbol": {% .data.Symbol %},
+            "name": {% .data.Name %},
+            "price_precision": {% .data.PricePrecision %},
+            "qty_precision": {% .data.QtyPrecision %},
+            "target_symbol_id": {% .data.TargetSymbolId%},
+            "base_symbol_id": {% .data.BaseSymbolId%},
+            "allow_min_qty": {% .data.AllowMinQty%},
+            "allow_max_qty": {% .data.AllowMaxQty%},
+            "allow_min_amount": {% .data.AllowMinAmount%},
+            "allow_max_amount": {% .data.AllowMaxAmount%},
+            "fee_rate": {% .data.FeeRate%},
+            "sort": {% .data.Sort%},
+            "status": {% .data.Status %}
         });
 
     });

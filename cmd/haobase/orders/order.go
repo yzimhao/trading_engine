@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
@@ -52,31 +53,8 @@ func (o *Order) Save(db *xorm.Session) error {
 	return nil
 }
 
-func (o *Order) AutoCreateTable() error {
-	db := app.Database().NewSession()
-	defer db.Close()
-
-	if !dbtables.Exist(db, o.TableName()) {
-		err := db.CreateTable(o)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateIndexes(o)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateUniques(o)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (o *Order) TableName() string {
-	return GetOrderTableName(o.Symbol)
+	return fmt.Sprintf("%sorder_%s", app.TablePrefix(), o.Symbol)
 }
 
 func (o *Order) FormatDecimal(price_digit, qty_digit int) Order {
@@ -95,16 +73,12 @@ func (o *Order) FormatDecimal(price_digit, qty_digit int) Order {
 	return *o
 }
 
-func GetOrderTableName(symbol string) string {
-	return fmt.Sprintf("order_%s", symbol)
-}
-
 func Find(symbol string, order_id string) *Order {
 	db := app.Database().NewSession()
 	defer db.Close()
 
 	var row Order
-	db.Table(GetOrderTableName(symbol)).Where("order_id=?", order_id).Get(&row)
+	db.Table(&Order{Symbol: symbol}).Where("order_id=?", order_id).Get(&row)
 	if row.Id > 0 {
 		return &row
 	}
@@ -181,4 +155,31 @@ func order_pre_inspection(varieties *varieties.TradingVarieties, info *Order) (b
 	}
 
 	return true, nil
+}
+
+// 自动创建订单和资产相关的表
+func auto_create_table(symbol string, target, base string) error {
+	db := app.Database().NewSession()
+	defer db.Close()
+	// 事务开启前创建可能需要的表
+	if err := dbtables.AutoCreateTable(db, &UnfinishedOrder{}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &Order{Symbol: symbol}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsFreeze{Symbol: target}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsFreeze{Symbol: base}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsLog{Symbol: target}); err != nil {
+		return err
+	}
+	if err := dbtables.AutoCreateTable(db, &assets.AssetsLog{Symbol: base}); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 // 24hr 价格变动情况
@@ -13,7 +14,11 @@ func market_24h(symbol string, last_price string) {
 	var price string
 	price, has := period.GetYesterdayClose(symbol)
 	if !has {
-		price, _ = period.GetTodayOpen(symbol)
+		data, err := period.GetTodyStats(symbol)
+		if err != nil {
+			app.Logger.Errorf("period.GetTodyStats: %s err: %s", symbol, err.Error())
+		}
+		price = data.Open
 	}
 
 	to := types.MsgMarket24H.Format(map[string]string{

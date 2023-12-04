@@ -10,7 +10,8 @@ var (
 	MTables sync.Map
 )
 
-func Exist(db *xorm.Session, table_name string) bool {
+func Exist(db *xorm.Session, bean any) bool {
+	table_name := db.Engine().TableName(bean)
 	if _, ok := MTables.Load(table_name); ok {
 		return true
 	}
@@ -23,6 +24,9 @@ func Exist(db *xorm.Session, table_name string) bool {
 
 }
 
-func Del(table_name string) {
+func CleanTable(db *xorm.Session, bean any) {
+	table_name := db.Engine().TableName(bean)
+	db.DropIndexes(bean)
+	db.Engine().DropTables(bean)
 	MTables.Delete(table_name)
 }

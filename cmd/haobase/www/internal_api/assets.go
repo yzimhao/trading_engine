@@ -31,7 +31,7 @@ func Deposit(ctx *gin.Context) {
 		return
 	}
 
-	if assets.QueryAssetsLogBusIdIsExist(req.UserId, req.OrderId) {
+	if assets.QueryAssetsLogBusIdIsExist(req.Symbol, req.UserId, req.OrderId) {
 		utils.ResponseFailJson(ctx, "重复充值")
 		return
 	}
@@ -62,7 +62,7 @@ func Withdraw(ctx *gin.Context) {
 		return
 	}
 
-	if assets.QueryAssetsLogBusIdIsExist(req.UserId, req.OrderId) {
+	if assets.QueryAssetsLogBusIdIsExist(req.Symbol, req.UserId, req.OrderId) {
 		utils.ResponseFailJson(ctx, "重复提现")
 		return
 	}

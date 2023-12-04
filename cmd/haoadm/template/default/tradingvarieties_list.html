@@ -7,7 +7,7 @@
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">代号</label>
+                            <label class="layui-form-label">交易对</label>
                             <div class="layui-input-inline">
                                 <input type="text" name="symbol" autocomplete="off" class="layui-input">
                             </div>
@@ -66,7 +66,7 @@
             table = layui.table,
             layuimini = layui.layuimini;
 
-            table.render({
+        table.render({
             elem: '#currentTableId',
             url: '/admin/tradingvarieties/list?api=1',
             toolbar: '#toolbarDemo',
@@ -77,20 +77,20 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'id', width: 80, title: 'ID', sort: true},
-                {field: 'symbol', width: 80, title: '代号'},
+                {field: 'id', width: 80, title: 'ID'},
+                {field: 'symbol', width: 80, title: '交易对'},
                 {field: 'name', width: 80, title: '名称'},
                 {field: 'price_precision', title: '价格精度', minWidth: 150},
-                {field: 'qty_precision', title: '数量精度', sort: true},
-                {field: 'fee_rate', title: '手续费', sort: true},
-                {field: 'sort', title: '排序', sort: true},
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
+                {field: 'qty_precision', title: '数量精度'},
+                {field: 'fee_rate', title: '手续费'},
+                {field: 'sort', title: '排序'},
+                {field: 'create_time', width: 280, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},
                 {field: 'update_time', width: 280, title: '更新时间',templet: function(d){
                     return utils.format_timestamp(d.update_time*1000);
                 }},
-                {field: 'status', width: 135, title: '状态', sort: true, templet: function(d){
+                {field: 'status', width: 135, title: '状态', templet: function(d){
                     return utils.format_status(d.status);
                 }},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
@@ -182,6 +182,7 @@
             }
         });
 
+        form.render();
     });
 </script>
 

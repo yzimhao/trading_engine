@@ -6,7 +6,6 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/tradelog"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/www"
 	"github.com/yzimhao/trading_engine/utils/app/config"
-	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
 func Run() {
@@ -15,7 +14,6 @@ func Run() {
 }
 
 func init_symbols_quote() {
-	filecache.NewStorage(config.App.Haoquote.Cache, 1)
 
 	local_config_symbols := config.App.Local.Symbols
 	db_symbols := base.NewTSymbols().All()

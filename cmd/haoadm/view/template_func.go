@@ -1,6 +1,7 @@
 package view
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"time"
@@ -34,6 +35,10 @@ func templateFuncMap() template.FuncMap {
 		},
 		"site_name": func() string {
 			return config.App.Haoadm.SiteName
+		},
+		"json": func(o any) string {
+			b, _ := json.Marshal(o)
+			return string(b)
 		},
 	}
 }

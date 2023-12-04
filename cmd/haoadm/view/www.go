@@ -39,7 +39,7 @@ func setMethods(r Router, methods []string, relativePath string, handlers ...gin
 func setupRouter(router *gin.Engine) {
 	templateDir := "./template/default"
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
-		// Delims:    gintemplate.Delims{Left: "{{", Right: "}}"},
+		Delims:    gintemplate.Delims{Left: "{%", Right: "%}"},
 		Root:      templateDir, //template root path
 		Extension: ".html",     //file extension
 		// Master:    "",          //master layout file
@@ -53,9 +53,23 @@ func setupRouter(router *gin.Engine) {
 	// router.Use(static.Serve("/uploads", static.LocalFile("./uploads", false)))
 }
 
+func runModeCheck(ctx *gin.Context) {
+	if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
+		if ctx.Request.Method == "POST" {
+			ctx.Abort()
+			utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
+			return
+		}
+	}
+}
+
 func setupPages(router *gin.Engine) {
-	//admin
+	//后台页面
 	radmin := router.Group("/admin")
+	//后台接口
+	api := router.Group("/api/v1/admin")
+	radmin.Use(runModeCheck)
+	api.Use(runModeCheck)
 
 	auth, _ := admin.AuthMiddleware()
 	setMethods(radmin, []string{"GET"}, "/login", admin.Login)
@@ -64,15 +78,7 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
 	// radmin.Use(auth.MiddlewareFunc())
-	radmin.Use(func(ctx *gin.Context) {
-		if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
-			if ctx.Request.Method == "POST" {
-				ctx.Abort()
-				utils.ResponseFailJson(ctx, "Demo禁止修改数据")
-				return
-			}
-		}
-	})
+	// api.Use(auth.MiddlewareFunc())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
@@ -81,15 +87,20 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET", "POST"}, "/varieties/add", admin.VarietiesAdd)
 		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)
 		setMethods(radmin, []string{"GET", "POST"}, "/tradingvarieties/add", admin.TradingVarietiesAdd)
+
 		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
+		setMethods(radmin, []string{"GET"}, "/user/assets/freeze", admin.AssetsFreezeList)
+		setMethods(radmin, []string{"GET"}, "/user/assets/logs", admin.AssetsLogsList)
+
 		setMethods(radmin, []string{"GET"}, "/user/order/history", admin.UserOrderHistory)
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)
 	}
 
-	api := router.Group("/api/v1/admin")
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
+		setMethods(api, []string{"GET"}, "/system/tradestats", admin.SystemTradeStats)
+		setMethods(api, []string{"POST"}, "/user/unfinished/cancel", admin.CancelUserOrder)
 	}
 }

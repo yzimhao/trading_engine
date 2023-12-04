@@ -86,7 +86,7 @@ release: clean
 	
 
 
-upload_example:
+example_upload: clean dist build_linux_amd64
 	mkdir -p $(distdir)/trading_engine_example
 	cd example && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC=x86_64-unknown-linux-gnu-gcc go build -o ../$(distdir)/trading_engine_example/example example.go
 	upx -9 $(distdir)/trading_engine_example/example
@@ -94,22 +94,15 @@ upload_example:
 	cp -rf example/demo.html $(distdir)/trading_engine_example/
 	scp -r $(distdir)/trading_engine_example/ demo:~/
 	
-
-
-upload_all:
-	@make clean
-	@make dist
-	@make build_linux_amd64
-	@make upload_example
 	scp $(distdir)/haotrader.$(version).linux-amd64.tar.gz demo:~/
-	
-	
 	ssh demo "tar xzvf haotrader.$(version).linux-amd64.tar.gz"
 	ssh demo 'rm -f haotrader.$(version).linux-amd64.tar.gz'
 
 # 一些辅助
 	scp stop.sh demo:~/
 	
+
+
 
 example_start:
 
@@ -124,11 +117,6 @@ example_stop:
    	
 	ssh demo 'sh -x stop.sh'
 
-
-example_reload:
-	@make example_stop
-	@make example_start
-
 example_clean:
 	
 	ssh demo 'cd haotrader/ && rm -f cache/*.db'
@@ -141,6 +129,10 @@ example_clean:
 example_logs:
 
 	scp -r demo:~/haotrader/logs ~/Downloads/
+
+
+example_reload: example_upload example_stop example_start
+example_restart: example_upload example_stop example_clean example_start	
 
 
 require:

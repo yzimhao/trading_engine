@@ -39,16 +39,18 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		Status:         OrderStatusNew,
 	}
 	unfinished := UnfinishedOrder{}
-	// 事务开启前创建需要的表
-	neworder.AutoCreateTable()
-	unfinished.AutoCreateTable()
+
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	// 事务开启前创建可能需要的表
+	if err := auto_create_table(symbol, varieties.Target.Symbol, varieties.Base.Symbol); err != nil {
+		return nil, err
+	}
 
 	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
 		return nil, err
 	}
-
-	db := app.Database().NewSession()
-	defer db.Close()
 
 	err = db.Begin()
 	if err != nil {

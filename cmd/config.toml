@@ -12,18 +12,11 @@ password=""
 db=0
 prefix=""
 
-[database] # 支持mysql, sqlite3, postgres
+[database]
 driver="mysql"
 dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
-
-# driver="sqlite3"
-# dsn = "./test.sqlite.db"
-
-# driver = "postgres" 
-# dsn = "host=localhost port=15432 user=postgres password=postgres dbname=haotrader sslmode=disable"
-
-
 show_sql = true
+prefix="tt_"
 
 
 [local] 
@@ -45,7 +38,6 @@ listen="0.0.0.0:8083"
 
 [haoquote]
 listen="0.0.0.0:8081"
-cache="haoquote.db"
 # 支持的周期 "m1", "m3", "m5", "m15", "m30", "h1", "h2", "h4", "h6", "h8", "h12", "d1", "d3", "w1", "mn"
 period=["m1", "d1"]
 

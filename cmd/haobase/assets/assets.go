@@ -32,6 +32,15 @@ type Assets struct {
 	UpdateTime utils.Time `xorm:"timestamp updated" json:"update_time"`
 }
 
+// // 现货
+// type SpotAssets struct {
+// 	Assets Assets `xorm:"extends"`
+// }
+
+// type FuturesAssets struct {
+// 	Assets Assets `xorm:"extends"`
+// }
+
 func FindSymbol(user_id string, symbol string) *Assets {
 	db := app.Database().NewSession()
 	defer db.Close()

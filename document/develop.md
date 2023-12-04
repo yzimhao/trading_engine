@@ -13,6 +13,11 @@
     go run haobase/main.go -c config.toml
     go run haomatch/main.go -c config.toml
     go run haoquote/main.go -c config.toml
+
+    
+    #启动前端调试界面
+    cd example/
+    go run example.go -b
 ```
 
  ![image](https://github.com/yzimhao/trading_engine/blob/master/document/images/haotrader.png?raw=true)

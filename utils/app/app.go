@@ -15,9 +15,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
+	"xorm.io/xorm/names"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -28,11 +30,12 @@ var (
 	Version   = "v0.0.0"
 	Goversion = ""
 	Commit    = ""
-	Build     = "2023-10-31"
+	Build     = "0000-00-00"
 
 	Logger *logrus.Logger
 
 	//
+	dbPrefix  = ""
 	redisPool *redis.Pool
 	database  *xorm.Engine
 )
@@ -49,11 +52,11 @@ func ConfigInit(config_file string, is_daemon bool) {
 		viper.SetConfigFile(config_file)
 		err := viper.ReadInConfig()
 		if err != nil {
-			panic(err)
+			logrus.Fatal(err)
 		}
 
 		if err := viper.Unmarshal(&config.App); err != nil {
-			logrus.Panicf("Error unmarshaling config: %s %s\n", config_file, err)
+			logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
 		}
 	} else {
 		config.App = &config.Configuration{}
@@ -141,12 +144,13 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 	if database == nil {
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
-			Logger.Panic(err)
+			Logger.Error(err)
 		}
 
 		if prefix != "" {
-			// tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, prefix)
-			// conn.SetTableMapper(tbMapper)
+			tbMapper := names.NewPrefixMapper(names.SnakeMapper{}, prefix)
+			conn.SetTableMapper(tbMapper)
+			dbPrefix = prefix
 		}
 		if show_sql {
 			conn.ShowSQL(true)
@@ -154,8 +158,15 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 			conn.SetLogLevel(log.LOG_ERR)
 		}
 
+		logctx := xormlog.NewLogCtx(Logger)
+		conn.SetLogger(logctx)
+
 		conn.DatabaseTZ = time.Local
 		conn.TZLocation = time.Local
+
+		if err := conn.Ping(); err != nil {
+			Logger.Fatal(err)
+		}
 		database = conn
 	}
 }
@@ -164,11 +175,20 @@ func Database() *xorm.Engine {
 	return database
 }
 
+func TablePrefix() string {
+	return dbPrefix
+}
+
 func RedisPool() *redis.Pool {
 	return redisPool
 }
 
 func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {
+
+	if err := fsutil.MkParentDir(pid); err != nil {
+		return nil, nil, err
+	}
+
 	cntxt := &daemon.Context{
 		PidFileName: pid,
 		PidFilePerm: 0644,

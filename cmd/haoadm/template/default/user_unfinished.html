@@ -1,39 +1,40 @@
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
-        <fieldset class="table-search-fieldset" style="display: none;">
+        <fieldset class="table-search-fieldset" style="">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="">
+                <form class="layui-form layui-form-pane" action="" lay-filter="searchform">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">代号</label>
+                            <label class="layui-form-label">交易对</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="symbol" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">名称</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="name" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-
-                        <div class="layui-inline layui-form-item">
-                            <label class="layui-form-label">状态</label>
-                            <div class="layui-input-inline">
-                                <select name="status">
-                                    <option value="">全部</option>
-                                    <option value="1">启用</option>
-                                    <option value="0">禁用</option>
+                                <select name="symbol" lay-verify="required" lay-reqtext="不能为空">
+                                    <option value="">请选择</option>
+                                    {% range $k,$v := .all_symbols %}
+                                    <option value="{%$v.Symbol%}">{%$v.Name%}/{%$v.Symbol%}</option>
+                                    {%end%}
                                 </select>
                             </div>
                         </div>
 
-                        
+                        <div class="layui-inline">
+                            <label class="layui-form-label">用户</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="user_id" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">订单号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="order_id" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
                         
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">清空</button>
                         </div>
                     </div>
                 </form>
@@ -42,16 +43,16 @@
 
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
-                <!-- <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
-                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button> -->
+                <button class="layui-btn layui-btn-normal layui-btn-sm order-cancel-btn" lay-event="order_cancel_btn"> 批量撤单 </button>
+                <!-- <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button> -->
             </div>
         </script>
 
         <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
 
         <script type="text/html" id="currentTableBar">
-            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="order_cancel">撤单</a>
+            <!-- <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a> -->
         </script>
 
     </div>
@@ -66,33 +67,35 @@
             utils = layui.utils,
             layuimini = layui.layuimini;
 
-            table.render({
+        
+        table.render({
             elem: '#currentTableId',
             url: '/admin/user/unfinished?api=1',
             toolbar: '#toolbarDemo',
-            defaultToolbar: ['filter', 'exports', 'print', {
-                title: '提示',
-                layEvent: 'LAYTABLE_TIPS',
-                icon: 'layui-icon-tips'
-            }],
+            // defaultToolbar: ['filter', 'exports', 'print', {
+            //     title: '提示',
+            //     layEvent: 'LAYTABLE_TIPS',
+            //     icon: 'layui-icon-tips'
+            // }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'user_id', title: '用户ID', sort: true},
-                {field: 'symbol', width: 80, title: '交易对'},
+                {field: 'user_id', title: '用户ID'},
+                {field: 'symbol', title: '交易对'},
+                {field: 'order_id', width:200, title: '订单号'},
                 {field: 'order_side', title: '方向'},
-                {field: 'price', title: '价格', minWidth: 150},
-                {field: 'quantity', title: '数量', sort: true},
+                {field: 'price', title: '价格'},
+                {field: 'quantity', title: '数量'},
                 {field: 'freeze', title: '冻结', templet:function(d){
                     return d.freeze_qty + "/" + d.freeze_amount;
                 }},
-                {field: 'finished_qty', title: '已成交', sort: true},
-                {field: 'finished_amount', title: '成交金额', sort: true},
+                {field: 'finished_qty', title: '已成交'},
+                {field: 'finished_amount', title: '成交金额'},
                 
-                {field: 'create_time', width: 280, title: '创建时间', sort: true, templet: function(d){
+                {field: 'create_time', width: 280, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time/1e6);
                 }},
                 
-                // {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
@@ -103,10 +106,6 @@
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
-            // layer.alert(result, {
-            //     title: '最终的搜索信息'
-            // });
-
             //执行搜索重载
             table.reload('currentTableId', {
                 page: {
@@ -120,70 +119,68 @@
             return false;
         });
 
-        // 监听添加操作
-        $(".data-add-btn").on("click", function () {
-
-            var content = layuimini.getHrefContent('page/table/add.html');
-            var openWH = layuimini.getOpenWidthHeight();
-
-            var index = layer.open({
-                title: '添加用户',
-                type: 1,
-                shade: 0.2,
-                maxmin:true,
-                shadeClose: true,
-                area: [openWH[0] + 'px', openWH[1] + 'px'],
-                offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                content: content,
-            });
-            $(window).on("resize", function () {
-                layer.full(index);
-            });
-
-            return false;
-        });
-
-        // 监听删除操作
-        $(".data-delete-btn").on("click", function () {
+        $(".order-cancel-btn").on("click", function () {
             var checkStatus = table.checkStatus('currentTableId')
                 , data = checkStatus.data;
-            layer.alert(JSON.stringify(data));
-        });
 
-        //监听表格复选框选择
-        table.on('checkbox(currentTableFilter)', function (obj) {
-            console.log(obj)
+            var orders = [];
+            for(var i=0; i<data.length; i++) {
+                orders.push(data[i].order_id);
+            }
+            
+            if(orders.length == 0) {
+                layuimini.msg_error("请选择需要取消的订单");
+                return
+            }
+
+            layer.confirm('真的要批量撤单么?', function (index) {
+                $.ajax({
+                    url: "/api/v1/admin/user/unfinished/cancel",
+                    type: "post",
+                    data: {
+                        "order_ids": orders.join(","),
+                    },
+                    success: function(d){
+                        if(d.ok){
+                            layer.close(index);
+                            layuimini.msg_success("提交成功，取消需要一点点时间，2s后刷新当前页");
+                            setTimeout(function(){
+                                window.location.reload();
+                            }, 2e3);
+                        }else{
+                            layuimini.msg_error(d.reason);
+                        }
+                    }
+                })
+            });
         });
 
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
-            if (obj.event === 'edit') {
-
-                var content = layuimini.getHrefContent('page/table/add.html');
-                var openWH = layuimini.getOpenWidthHeight();
-
-                var index = layer.open({
-                    title: '编辑用户',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
-                return false;
-            } else if (obj.event === 'delete') {
-                layer.confirm('真的删除行么', function (index) {
-                    obj.del();
-                    layer.close(index);
+            if (obj.event === 'order_cancel') {
+                layer.confirm('真的要撤单么?', function (index) {
+                    $.ajax({
+                        url: "/api/v1/admin/user/unfinished/cancel",
+                        type: "post",
+                        data: {
+                            "order_ids": data.order_id,
+                        },
+                        success: function(d){
+                            console.log(layuimini, d);
+                            if(d.ok){
+                                obj.del();
+                                layer.close(index);
+                            }else{
+                                layuimini.msg_error(d.reason);
+                            }
+                        }
+                    })
                 });
             }
         });
 
+
+        form.render();
     });
 </script>
 

@@ -13,6 +13,10 @@ import (
 
 type tradlogSearch struct {
 	Symbol string `json:"symbol"`
+	Ask    string `json:"ask"`
+	Bid    string `json:"bid"`
+	AskUid string `json:"ask_uid"`
+	BidUid string `json:"bid_uid"`
 }
 
 func TradeHistory(ctx *gin.Context) {
@@ -39,7 +43,7 @@ func TradeHistory(ctx *gin.Context) {
 
 		if search.Symbol == "" {
 			for _, item := range base.NewTSymbols().All() {
-				tb := orders.GetTradelogTableName(item.Symbol)
+				tb := &orders.Order{Symbol: item.Symbol}
 				if dbtables.Exist(db, tb) {
 					search.Symbol = item.Symbol
 					break
@@ -47,8 +51,22 @@ func TradeHistory(ctx *gin.Context) {
 			}
 		}
 
-		tablename := orders.GetTradelogTableName(search.Symbol)
+		tablename := &orders.TradeLog{Symbol: search.Symbol}
 		q := db.Table(tablename)
+
+		if search.Ask != "" {
+			q = q.Where("ask=?", search.Ask)
+		}
+		if search.Bid != "" {
+			q = q.Where("bid=?", search.Bid)
+		}
+		if search.AskUid != "" {
+			q = q.Where("ask_uid=?", search.AskUid)
+		}
+		if search.BidUid != "" {
+			q = q.Where("bid_uid=?", search.BidUid)
+		}
+
 		cond := q.Conds()
 		err := q.OrderBy("id desc").Limit(limit, offset).Find(&data)
 		if err != nil {

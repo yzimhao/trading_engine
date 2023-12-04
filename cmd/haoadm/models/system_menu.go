@@ -34,7 +34,7 @@ func init() {
 		SystemMenu{Id: 22, Pid: 2, Title: "交易列表", Icon: "fa fa-retweet", Href: "/admin/tradingvarieties/list", Target: "_self"},
 
 		SystemMenu{Id: 30, Pid: 3, Title: "用户资产", Icon: "fa fa-user", Href: "/admin/user/assets", Target: "_self"},
-		SystemMenu{Id: 31, Pid: 3, Title: "用户挂单", Icon: "fa fa-newspaper-o", Href: "/admin/user/unfinished", Target: "_self"},
+		SystemMenu{Id: 31, Pid: 3, Title: "当前委托", Icon: "fa fa-newspaper-o", Href: "/admin/user/unfinished", Target: "_self"},
 		SystemMenu{Id: 32, Pid: 3, Title: "历史订单", Icon: "fa fa-reorder", Href: "/admin/user/order/history", Target: "_self"},
 		SystemMenu{Id: 32, Pid: 3, Title: "成交记录", Icon: "fa fa-reorder", Href: "/admin/user/trade/history", Target: "_self"},
 	}

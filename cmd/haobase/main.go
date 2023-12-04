@@ -6,10 +6,10 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
+	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
-	"github.com/yzimhao/trading_engine/cmd/haobase/clearing"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haobase/settle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -22,6 +22,7 @@ func main() {
 		Usage:     "交易所基础模块",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
+			&cli.StringFlag{Name: "pid", Value: "./run/haobase.pid"},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 		},
 
@@ -30,8 +31,7 @@ func main() {
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
-			varieties.Init()
-			assets.Init()
+			base.Init()
 			return nil
 		},
 
@@ -44,10 +44,8 @@ func main() {
 				},
 			},
 			{
-				Name: "demo-data",
+				Name: "settle",
 				Action: func(ctx *cli.Context) error {
-					varieties.DemoData()
-					assets.DemoData()
 					return nil
 				},
 			},
@@ -55,7 +53,7 @@ func main() {
 		Action: func(ctx *cli.Context) error {
 			if ctx.Bool("deamon") {
 
-				context, d, err := app.Deamon("haobase.pid", "")
+				context, d, err := app.Deamon(ctx.String("pid"), "")
 				if err != nil {
 					app.Logger.Fatal("创建守护进程失败, err:", err.Error())
 				}
@@ -74,7 +72,7 @@ func main() {
 
 			app.Keepalive(ctx.App.Name, 5)
 			initDemoBaseData()
-			clearing.Run()
+			settle.Run()
 			orders.Run()
 			www.Run()
 			return nil

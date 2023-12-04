@@ -50,20 +50,19 @@ func cleandb() {
 }
 
 func initAssets() {
-	assets.Init()
 	assets.SysDeposit(sellUser, testTargetSymbol, "10000.00", "C001")
 	assets.SysDeposit(buyUser, testBaseSymbol, "10000.00", "C001")
 }
 
 func cleanAssets() {
-	db := app.Database()
-	db.DropIndexes(new(assets.Assets))
-	db.DropIndexes("assets_freeze")
-	db.DropIndexes("assets_log")
-	err := db.DropTables(new(assets.Assets), "assets_freeze", "assets_log")
-	if err != nil {
-		fmt.Errorf("mysql droptables: %s", err)
-	}
+	db := app.Database().NewSession()
+	defer db.Close()
+
+	dbtables.CleanTable(db, &assets.Assets{})
+	dbtables.CleanTable(db, &assets.AssetsFreeze{Symbol: testBaseSymbol})
+	dbtables.CleanTable(db, &assets.AssetsLog{Symbol: testBaseSymbol})
+	dbtables.CleanTable(db, &assets.AssetsFreeze{Symbol: testTargetSymbol})
+	dbtables.CleanTable(db, &assets.AssetsLog{Symbol: testTargetSymbol})
 
 }
 
@@ -81,15 +80,16 @@ func cleanOrders() {
 	db := app.Database()
 
 	tables := []any{
-		GetOrderTableName(testSymbol),
+		&Order{Symbol: testSymbol},
 		new(UnfinishedOrder).TableName(),
-		GetTradelogTableName(testSymbol),
+		&TradeLog{Symbol: testSymbol},
 	}
 
+	s := db.NewSession()
+	defer s.Close()
+
 	for _, table := range tables {
-		db.DropIndexes(table)
-		db.DropTables(table)
-		dbtables.Del(table.(string))
+		dbtables.CleanTable(s, table)
 	}
 
 }

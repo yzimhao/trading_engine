@@ -7,7 +7,7 @@
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">代号</label>
+                            <label class="layui-form-label">资产</label>
                             <div class="layui-input-inline">
                                 <input type="text" name="symbol" autocomplete="off" class="layui-input">
                             </div>
@@ -78,7 +78,7 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'id', width: 80, title: 'ID', sort: true},
-                {field: 'symbol', width: 80, title: '代号'},
+                {field: 'symbol', width: 80, title: '资产'},
                 {field: 'name', width: 80, title: '名称'},
                 {field: 'show_precision', title: '展示精度', minWidth: 150},
                 {field: 'min_precision', title: '最小精度', sort: true},
@@ -186,6 +186,7 @@
             }
         });
 
+        form.render();
     });
 </script>
 

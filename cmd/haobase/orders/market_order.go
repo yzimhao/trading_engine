@@ -35,6 +35,11 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 		Status:         OrderStatusNew,
 	}
 
+	// 事务开启前创建可能需要的表
+	if err := auto_create_table(symbol, varieties.Target.Symbol, varieties.Base.Symbol); err != nil {
+		return nil, err
+	}
+
 	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
 		return nil, err
 	}
@@ -69,7 +74,7 @@ func market_order_qty(user_id string, symbol string, side trading_core.OrderSide
 			return nil, err
 		}
 
-		freeze, err := assets.QueryFreeze(db, neworder.OrderId)
+		freeze, err := assets.QueryFreeze(db, varieties.Base.Symbol, neworder.OrderId)
 		if err != nil {
 			return nil, err
 		}
@@ -123,6 +128,11 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 		Status:         OrderStatusNew,
 	}
 
+	// 事务开启前创建可能需要的表
+	if err := auto_create_table(symbol, varieties.Target.Symbol, varieties.Base.Symbol); err != nil {
+		return nil, err
+	}
+
 	if _, err := order_pre_inspection(varieties, &neworder); err != nil {
 		return nil, err
 	}
@@ -150,7 +160,7 @@ func market_order_amount(user_id string, symbol string, side trading_core.OrderS
 			return nil, err
 		}
 
-		freeze, err := assets.QueryFreeze(db, neworder.OrderId)
+		freeze, err := assets.QueryFreeze(db, varieties.Target.Symbol, neworder.OrderId)
 		if err != nil {
 			return nil, err
 		}

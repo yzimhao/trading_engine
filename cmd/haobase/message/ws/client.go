@@ -146,6 +146,7 @@ func (c *Client) handleRecvData(body []byte) {
 		return
 	}
 
+	//新增订阅属性处理
 	for _, attr := range msg.Subsc {
 		if strings.HasPrefix(attr, "_") {
 			//带有_标记的tag只能是内部程序设置的，不能通过前端发送过来指定
@@ -164,8 +165,12 @@ func (c *Client) handleRecvData(body []byte) {
 			c.setAttr(attr)
 		}
 	}
+	//取消订阅属性处理
+	for _, attr := range msg.UnSubsc {
+		c.delAttr(attr)
+	}
 
-	app.Logger.Debugf("[wss] recv: %v", msg)
+	app.Logger.Debugf("[wss] recv: %v attrs: %v", msg, c.attrs)
 }
 
 func (c *Client) setAttr(tag string) {
@@ -183,4 +188,14 @@ func (c *Client) hasAttr(tag string) bool {
 		return true
 	}
 	return false
+}
+
+func (c *Client) delAttr(tag string) bool {
+	c.Lock()
+	defer c.Unlock()
+
+	if _, ok := c.attrs[tag]; ok {
+		delete(c.attrs, tag)
+	}
+	return true
 }

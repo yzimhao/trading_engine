@@ -11,7 +11,9 @@
   HaoTrader适用于各种金融证券交易场景。拥有高性能的订单撮合、实时结算、行情计算、实时推送等功能。
   配置灵活，允许用户根据自身需求自定义配置各模块独立运行。
 
-  该程序只包含服务端API，无UI。
+  该程序目前只包含服务端API，无UI。
+
+  __征集web端UI__
 
 ##
   ![image](https://github.com/yzimhao/trading_engine/blob/master/document/images/haotrader.png?raw=true)
@@ -26,6 +28,9 @@
 
 ## HaoTrader系统包含模块
   - [ ] [haoadm]
+    - [ ] 后台登陆认证+权限控制
+    - [ ] 系统设置
+    - [ ] 交易报表
   - [x] [haobase]
     - [x] 交易品种
     - [x] 资产模块

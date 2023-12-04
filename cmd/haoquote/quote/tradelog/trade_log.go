@@ -12,6 +12,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -34,40 +35,16 @@ type TradeLog struct {
 
 func (t *TradeLog) TableName() string {
 	//和haobase中订单结算后的成交日志有一点点冲突，这里只保存最近的记录就好了
-	return fmt.Sprintf("trade_log_quote_%s", t.Symbol)
-}
-
-func createQuoteTradelogTable(symbol string) error {
-	db := app.Database()
-
-	t := new(TradeLog)
-	t.Symbol = symbol
-
-	exist, err := db.IsTableExist(t.TableName())
-	if err != nil {
-		return err
-	}
-
-	if !exist {
-		err := db.CreateTables(t)
-		if err != nil {
-			return err
-		}
-		err = db.CreateIndexes(t)
-		if err != nil {
-			return err
-		}
-		err = db.CreateUniques(t)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return fmt.Sprintf("%squote_tradelog_%s", app.TablePrefix(), t.Symbol)
 }
 
 func (t *TradeLog) Save() error {
 	db := app.Database().NewSession()
 	defer db.Close()
+
+	if err := dbtables.AutoCreateTable(db, t); err != nil {
+		return err
+	}
 
 	_, err := db.Table(t.TableName()).Insert(t)
 	return err
@@ -76,7 +53,6 @@ func (t *TradeLog) Save() error {
 func Monitor(symbol string, price_digit, qty_digit int64) {
 	key := types.FormatQuoteTradeResult.Format(symbol)
 	app.Logger.Infof("监听 %s 成交日志...", symbol)
-	createQuoteTradelogTable(symbol)
 
 	for {
 		func() {
@@ -173,18 +149,19 @@ func tradelog_msg(symbol string, data TradeLog, pd, qd int64) {
 
 func save_db(row *period.Period) error {
 
-	db := app.Database()
-	row.CreateTable(db)
+	db := app.Database().NewSession()
+	defer db.Close()
 
-	sess := db.NewSession()
-	defer sess.Close()
+	if err := row.CreateTable(db); err != nil {
+		return err
+	}
 
 	var err error
-	exist, _ := sess.Table(row.TableName()).Where("open_at=?", row.OpenAt.Format()).Exist()
+	exist, _ := db.Table(row.TableName()).Where("open_at=?", row.OpenAt.Format()).Exist()
 	if exist {
-		_, err = sess.Table(row.TableName()).Where("open_at=?", row.OpenAt.Format()).ForUpdate().Update(row)
+		_, err = db.Table(row.TableName()).Where("open_at=?", row.OpenAt.Format()).ForUpdate().Update(row)
 	} else {
-		_, err = sess.Table(row.TableName()).Insert(row)
+		_, err = db.Table(row.TableName()).Insert(row)
 	}
 	return err
 }

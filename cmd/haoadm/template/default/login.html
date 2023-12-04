@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>登陆 - {{ site_name }} - {{ app_power_by }}</title>
+    <title>登陆 - {% site_name %} - {% app_power_by %}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta http-equiv="Access-Control-Allow-Origin" content="*">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -37,7 +37,7 @@
         <div class="layui-form login-form">
             <form class="layui-form" action="">
                 <div class="layui-form-item logo-title">
-                    <h1>{{ site_name }}</h1>
+                    <h1>{% site_name %}</h1>
                 </div>
                 <div class="layui-form-item">
                     <label class="layui-icon layui-icon-username" for="username"></label>

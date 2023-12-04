@@ -23,7 +23,7 @@ func History(ctx *gin.Context) {
 	defer db.Close()
 
 	rows := make([]orders.Order, 0)
-	table := orders.GetOrderTableName(symbol)
+	table := &orders.Order{Symbol: symbol}
 	query := db.Table(table)
 
 	query.Where("user_id=? and status !=?", user_id, orders.OrderStatusNew).OrderBy("create_time desc").Limit(limit).Find(&rows)

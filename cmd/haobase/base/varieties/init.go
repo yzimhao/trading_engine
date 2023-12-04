@@ -17,7 +17,7 @@ func CreateTable() {
 	)
 
 	if err != nil {
-		app.Logger.Panic(err)
+		app.Logger.Error(err)
 	}
 }
 

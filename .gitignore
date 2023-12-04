@@ -20,7 +20,7 @@ example/build_local.sh
 example/trading_engine_example
 dist/
 .vscode/
-*logs*
+*.logs
 *.db
 *.dat
 *.pid

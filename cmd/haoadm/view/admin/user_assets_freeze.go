@@ -5,20 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
-	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-type assetsSearch struct {
-	Symbol     string `json:"symbol"`
-	UserId     string `json:"user_id"`
-	Status     string `json:"status"`
-	BusinessId string `json:"business_id"`
-	ChangeType string `json:"change_type"`
-}
-
-func AssetsList(ctx *gin.Context) {
+func AssetsFreezeList(ctx *gin.Context) {
 	db := app.Database().NewSession()
 	defer db.Close()
 
@@ -29,6 +20,7 @@ func AssetsList(ctx *gin.Context) {
 
 		var search assetsSearch
 		json.Unmarshal([]byte(searchParams), &search)
+		app.Logger.Debugf("search: %#v args: %s", search, searchParams)
 
 		if page <= 0 {
 			page = 1
@@ -38,16 +30,18 @@ func AssetsList(ctx *gin.Context) {
 		}
 		offset := (page - 1) * limit
 
-		data := []assets.Assets{}
+		data := []assets.AssetsFreeze{}
+		tb := assets.AssetsFreeze{Symbol: search.Symbol}
+		q := db.Table(tb.TableName())
 
-		q := db.Table(new(assets.Assets))
-
-		if search.Symbol != "" {
-			q = q.Where("symbol = ?", search.Symbol)
+		if search.Status != "" {
+			q = q.Where("status = ?", search.Status)
 		}
-
 		if search.UserId != "" {
 			q = q.Where("user_id = ?", search.UserId)
+		}
+		if search.BusinessId != "" {
+			q = q.Where("business_id=?", search.BusinessId)
 		}
 
 		cond := q.Conds()
@@ -57,13 +51,12 @@ func AssetsList(ctx *gin.Context) {
 			return
 		}
 
-		total, _ := db.Table(new(assets.Assets)).And(cond).Count()
+		total, _ := db.Table(tb.TableName()).And(cond).Count()
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
-			ctx.HTML(200, "user_assets", gin.H{
-				"searchParams": searchParams,
-				"all_symbols":  base.NewSymbols().All(),
+			ctx.HTML(200, "user_assets_freeze", gin.H{
+				"search": search,
 			})
 		}
 		return

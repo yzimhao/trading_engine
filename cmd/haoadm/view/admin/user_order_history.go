@@ -12,8 +12,11 @@ import (
 )
 
 type orderSearch struct {
-	Symbol string `json:"symbol"`
-	Status string `json:"status"`
+	Symbol    string `json:"symbol"`
+	Status    string `json:"status"`
+	UserId    string `json:"user_id"`
+	OrderType string `json:"order_type"`
+	OrderId   string `json:"order_id"`
 }
 
 func UserOrderHistory(ctx *gin.Context) {
@@ -40,20 +43,28 @@ func UserOrderHistory(ctx *gin.Context) {
 
 		if search.Symbol == "" {
 			for _, item := range base.NewTSymbols().All() {
-				tb := orders.GetOrderTableName(item.Symbol)
-				if dbtables.Exist(db, tb) {
+				bean := orders.Order{Symbol: item.Symbol}
+				if dbtables.Exist(db, &bean) {
 					search.Symbol = item.Symbol
 					break
 				}
 			}
 		}
 
-		tablename := orders.GetOrderTableName(search.Symbol)
+		tablename := &orders.Order{Symbol: search.Symbol}
 		q := db.Table(tablename)
 		q = q.Where("symbol = ? and status>0", search.Symbol)
 
-		if search.Status != "" {
-			q = q.Where("status=?", search.Status)
+		if search.UserId != "" {
+			q = q.Where("user_id = ?", search.UserId)
+		}
+
+		if search.OrderType != "" {
+			q = q.Where("order_type = ?", search.OrderType)
+		}
+
+		if search.OrderId != "" {
+			q = q.Where("order_id = ?", search.OrderId)
 		}
 
 		cond := q.Conds()

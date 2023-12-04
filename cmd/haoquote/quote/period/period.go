@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/trading_core"
+	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
@@ -34,18 +34,19 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 	tradetime := time.Unix(int64(tr.TradeTime/1e9), 0)
 	open_at, close_at := get_start_end_time(tradetime, p)
 
-	cache := newCache()
-
 	data := Period{}
 	ckey := periodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
-	cache_data, _ := cache.Get(periodBucket, ckey)
+	cache_data, _ := ckey.get()
 	json.Unmarshal(cache_data, &data)
 
 	app.Logger.Infof("get %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
 	defer func() {
 		raw, _ := json.Marshal(data)
 		app.Logger.Infof("set %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
-		cache.Set("period", ckey, raw)
+
+		ttl := close_at.Unix() - time.Now().Unix() + 5
+		// app.Logger.Warnf("ttl: %d, %d,  %d", close_at.Unix(), time.Now().Unix(), ttl)
+		ckey.set(raw, ttl)
 	}()
 
 	data.raw = tr
@@ -65,34 +66,15 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 }
 
 func (p *Period) TableName() string {
-	return fmt.Sprintf("period_%s_%s", p.Symbol, p.Interval)
+	return fmt.Sprintf("%squote_period_%s_%s", app.TablePrefix(), p.Symbol, p.Interval)
 }
 
-func (p *Period) CreateTable(db *xorm.Engine) error {
+func (p *Period) CreateTable(db *xorm.Session) error {
 	if p.Symbol == "" || p.Interval == "" {
 		return fmt.Errorf("symbol or period is null")
 	}
 
-	exist, err := db.IsTableExist(p.TableName())
-	if err != nil {
-		return err
-	}
-
-	if !exist {
-		err := db.CreateTables(p)
-		if err != nil {
-			return err
-		}
-		err = db.CreateIndexes(p)
-		if err != nil {
-			return err
-		}
-		err = db.CreateUniques(p)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return dbtables.AutoCreateTable(db, p)
 }
 
 func (p *Period) get_open() {
@@ -114,13 +96,13 @@ func (p *Period) get_open() {
 }
 
 func (p *Period) get_high() {
-	if p.raw.TradePrice.Cmp(d(p.High)) > 0 {
+	if p.raw.TradePrice.Cmp(utils.D(p.High)) > 0 {
 		p.High = p.raw.TradePrice.String()
 	}
 }
 
 func (p *Period) get_low() {
-	if p.raw.TradePrice.Cmp(d(p.Low)) < 0 {
+	if p.raw.TradePrice.Cmp(utils.D(p.Low)) < 0 {
 		p.Low = p.raw.TradePrice.String()
 	}
 }
@@ -133,16 +115,11 @@ func (p *Period) get_close() {
 }
 
 func (p *Period) get_volume() {
-	v := d(p.Volume).Add(p.raw.TradeQuantity)
+	v := utils.D(p.Volume).Add(p.raw.TradeQuantity)
 	p.Volume = v.String()
 }
 
 func (p *Period) get_amount() {
-	v := d(p.Amount).Add(p.raw.TradePrice.Mul(p.raw.TradeQuantity))
+	v := utils.D(p.Amount).Add(p.raw.TradePrice.Mul(p.raw.TradeQuantity))
 	p.Amount = v.String()
-}
-
-func d(a string) decimal.Decimal {
-	b, _ := decimal.NewFromString(a)
-	return b
 }

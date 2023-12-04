@@ -1,8 +1,9 @@
 package orders
 
 import (
+	"fmt"
+
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
@@ -13,35 +14,12 @@ type UnfinishedOrder struct {
 }
 
 func (u *UnfinishedOrder) TableName() string {
-	return "order_unfinished"
+	return fmt.Sprintf("%sorder_unfinished", app.TablePrefix())
 }
 
 func (u *UnfinishedOrder) Save(db *xorm.Session) error {
 	if _, err := db.Insert(u); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (o *UnfinishedOrder) AutoCreateTable() error {
-	db := app.Database().NewSession()
-	defer db.Close()
-
-	if !dbtables.Exist(db, o.TableName()) {
-		err := db.CreateTable(o)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateIndexes(o)
-		if err != nil {
-			return err
-		}
-
-		err = db.CreateUniques(o)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

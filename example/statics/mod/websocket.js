@@ -23,9 +23,13 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                         "price."+CURRENT_SYMBOL,
                         "kline.m1."+CURRENT_SYMBOL,
                         "market.24h."+CURRENT_SYMBOL,
+                        "market.28h."+CURRENT_SYMBOL,
                         //订阅登陆用户相关消息，会对应多种消息格式
                         "token."+ Cookies.get("user_id"),
                     ],
+                    "unsub":[
+                        "market.28h."+CURRENT_SYMBOL,
+                    ]
                 };
                 console.log(JSON.stringify(msg));
                 conn.send(JSON.stringify(msg));
