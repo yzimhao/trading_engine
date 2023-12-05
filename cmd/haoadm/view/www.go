@@ -60,7 +60,7 @@ func setupRouter(router *gin.Engine) {
 
 func runModeCheck(ctx *gin.Context) {
 	if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
-		if ctx.Request.Method == "POST" && ctx.Request.RequestURI != "/admin/login" {
+		if ctx.Request.Method == "POST" {
 			ctx.Abort()
 			utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
 			return
@@ -73,8 +73,6 @@ func setupPages(router *gin.Engine) {
 	radmin := router.Group("/admin")
 	//后台接口
 	api := router.Group("/api/v1/admin")
-	radmin.Use(runModeCheck)
-	api.Use(runModeCheck)
 
 	auth, _ := admin.AuthMiddleware()
 	setMethods(radmin, []string{"GET"}, "/login", admin.Login)
@@ -82,7 +80,7 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/logout", auth.LogoutHandler)
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
-	radmin.Use(auth.MiddlewareFunc())
+	radmin.Use(auth.MiddlewareFunc(), runModeCheck)
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
@@ -100,7 +98,7 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)
 	}
-	api.Use(auth.MiddlewareFunc())
+	api.Use(auth.MiddlewareFunc(), runModeCheck)
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
