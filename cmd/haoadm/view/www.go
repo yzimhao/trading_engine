@@ -60,7 +60,7 @@ func setupRouter(router *gin.Engine) {
 
 func runModeCheck(ctx *gin.Context) {
 	if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
-		if ctx.Request.Method == "POST" {
+		if ctx.Request.Method == "POST" && ctx.Request.RequestURI != "/admin/login" {
 			ctx.Abort()
 			utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
 			return
