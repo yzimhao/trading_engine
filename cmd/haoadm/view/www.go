@@ -50,7 +50,6 @@ func setupRouter(router *gin.Engine) {
 		}(),
 	})
 	router.Use(static.Serve("/", static.LocalFile(templateDir, false)))
-	// router.Use(static.Serve("/uploads", static.LocalFile("./uploads", false)))
 }
 
 func runModeCheck(ctx *gin.Context) {

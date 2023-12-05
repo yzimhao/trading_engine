@@ -1,3 +1,6 @@
+
+{% include "iframe_header" %}
+
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
@@ -53,12 +56,10 @@
 
 
 <script>
-    layui.use(['form', 'table','layuimini','element', 'utils'], function () {
+    layui.use(['form', 'table','element'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table,
-            utils = layui.utils,
-            layuimini = layui.layuimini;
+            table = layui.table;
 
         table.render({
             elem: '#currentTableId',
@@ -122,42 +123,15 @@
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
             console.log(data);
+            var args = '{"symbol":"'+ data.symbol +'","user_id": "'+data.user_id+'"}';
+                
             if (obj.event === 'edit') {
                 
             } else if (obj.event === 'freeze') {
-                
-                var content = layuimini.getHrefContent('/admin/user/assets/freeze?searchParams={"symbol":"'+ data.symbol +'","user_id": "'+data.user_id+'"}');
-                var openWH = layuimini.getOpenWidthHeight();
-                var index = layer.open({
-                    title: data.user_id+'的'+ data.symbol +'冻结日志',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
+                utils.open_url(data.user_id+'的'+ data.symbol +'冻结日志', '/admin/user/assets/freeze?searchParams='+ encodeURIComponent(args));
 
             } else if (obj.event === 'assets_log') {
-                var content = layuimini.getHrefContent('/admin/user/assets/logs?searchParams={"symbol":"'+ data.symbol +'","user_id": "'+data.user_id+'"}');
-                var openWH = layuimini.getOpenWidthHeight();
-                var index = layer.open({
-                    title: data.user_id+'的'+ data.symbol +'变动日志',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
+                utils.open_url(data.user_id+'的'+ data.symbol +'变动日志', '/admin/user/assets/logs?searchParams='+encodeURIComponent(args));
             }
         });
 
@@ -166,3 +140,4 @@
     });
 </script>
 
+{% include "iframe_footer" %}

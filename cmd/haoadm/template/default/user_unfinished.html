@@ -1,3 +1,5 @@
+{% include "iframe_header" %}
+
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
@@ -60,12 +62,10 @@
 
 
 <script>
-    layui.use(['form', 'table','layuimini','element', 'utils'], function () {
+    layui.use(['form', 'table','element'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table,
-            utils = layui.utils,
-            layuimini = layui.layuimini;
+            table = layui.table;
 
         
         table.render({
@@ -129,7 +129,7 @@
             }
             
             if(orders.length == 0) {
-                layuimini.msg_error("请选择需要取消的订单");
+                layer.msg("请选择需要取消的订单");
                 return
             }
 
@@ -143,12 +143,12 @@
                     success: function(d){
                         if(d.ok){
                             layer.close(index);
-                            layuimini.msg_success("提交成功，取消需要一点点时间，2s后刷新当前页");
+                            layer.msg("提交成功，取消需要一点点时间，2s后刷新当前页");
                             setTimeout(function(){
                                 window.location.reload();
                             }, 2e3);
                         }else{
-                            layuimini.msg_error(d.reason);
+                            layer.msg(d.reason);
                         }
                     }
                 })
@@ -166,12 +166,11 @@
                             "order_ids": data.order_id,
                         },
                         success: function(d){
-                            console.log(layuimini, d);
                             if(d.ok){
                                 obj.del();
                                 layer.close(index);
                             }else{
-                                layuimini.msg_error(d.reason);
+                                layer.msg(d.reason);
                             }
                         }
                     })
@@ -184,3 +183,4 @@
     });
 </script>
 
+{% include "iframe_footer" %}

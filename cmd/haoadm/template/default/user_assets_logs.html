@@ -1,3 +1,6 @@
+{% include "iframe_header" %}
+
+
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
@@ -57,12 +60,10 @@
 
 
 <script>
-    layui.use(['form', 'table','layuimini','element', 'utils'], function () {
+    layui.use(['form', 'table','element'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table,
-            utils = layui.utils,
-            layuimini = layui.layuimini;
+            table = layui.table;
 
             table.render({
             elem: '#assetsLogsTable',
@@ -144,3 +145,4 @@
     });
 </script>
 
+{% include "iframe_footer" %}

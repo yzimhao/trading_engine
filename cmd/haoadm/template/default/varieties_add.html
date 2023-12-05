@@ -1,3 +1,6 @@
+{% include "iframe_header" %}
+
+
 <div class="layuimini-main">
 
     <div class="layui-form layuimini-form">
@@ -60,42 +63,24 @@
     </div>
 </div>
 <script>
-    layui.use(['form', 'table', 'layuimini'], function () {
+    layui.use(['form', 'table'], function () {
         var form = layui.form,
             layer = layui.layer,
             table = layui.table,
-            layuimini = layui.layuimini,
             $ = layui.$;
 
         form.render();
         
 
-
-
-
-        // 当前弹出层，防止ID被覆盖
-        var parentIndex = layer.index;
-
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            // var index = layer.alert(JSON.stringify(data.field), {
-            //     title: '最终的提交信息'
-            // }, function () {
-
-            //     // 关闭弹出层
-            //     layer.close(index);
-            //     layer.close(parentIndex);
-
-            // });
-
             $.ajax({
                 url: "/admin/varieties/add?id=" +data.field.id,
                 type: "post",
                 data: data.field,
                 success: function(d){
                     if(d.ok){
-                        layer.close(parentIndex);
-                        layuimini.refresh();
+                        layer.msg("成功");
                     }else{
                         layer.alert(d.reason);
                     }
@@ -118,3 +103,5 @@
 
     });
 </script>
+
+{% include "iframe_footer" %}

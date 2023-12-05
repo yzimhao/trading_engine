@@ -1,3 +1,6 @@
+{% include "iframe_header" %}
+
+
 <div class="layuimini-container layuimini-page-anim">
     <div class="layuimini-main">
 
@@ -86,12 +89,10 @@
 
 
 <script>
-    layui.use(['form', 'table','layuimini','element', 'utils'], function () {
+    layui.use(['form', 'table','element'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table,
-            utils = layui.utils,
-            layuimini = layui.layuimini;
+            table = layui.table;
 
             table.render({
             elem: '#currentTableId',
@@ -154,24 +155,6 @@
 
         // 监听添加操作
         $(".data-add-btn").on("click", function () {
-
-            var content = layuimini.getHrefContent('page/table/add.html');
-            var openWH = layuimini.getOpenWidthHeight();
-
-            var index = layer.open({
-                title: '添加用户',
-                type: 1,
-                shade: 0.2,
-                maxmin:true,
-                shadeClose: true,
-                area: [openWH[0] + 'px', openWH[1] + 'px'],
-                offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                content: content,
-            });
-            $(window).on("resize", function () {
-                layer.full(index);
-            });
-
             return false;
         });
 
@@ -190,23 +173,6 @@
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
             if (obj.event === 'edit') {
-
-                var content = layuimini.getHrefContent('page/table/add.html');
-                var openWH = layuimini.getOpenWidthHeight();
-
-                var index = layer.open({
-                    title: '编辑用户',
-                    type: 1,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: [openWH[0] + 'px', openWH[1] + 'px'],
-                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
-                    content: content,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
                 return false;
             } else if (obj.event === 'delete') {
                 layer.confirm('真的删除行么', function (index) {
@@ -221,3 +187,5 @@
     });
 </script>
 
+
+{% include "iframe_footer" %}

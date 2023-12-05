@@ -1,3 +1,5 @@
+{% include "iframe_header" %}
+
 <style>
     .welcome .layui-card {border:1px solid #f2f2f2;border-radius:5px;}
     .welcome .icon {margin-right:10px;color:#1aa094;}
@@ -144,14 +146,10 @@
     </div>
 </div>
 <script>
-    layui.use(['layer','echarts', 'table', 'utils'], function () {
+    layui.use(['layer', 'table'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
-            table = layui.table,
-            utils = layui.utils,
-            echarts = layui.echarts;
-
-        
+            table = layui.table;
 
         var loadSystemInfo = function() {
             $.ajax({
@@ -206,3 +204,6 @@
 
     });
 </script>
+
+
+{% include "iframe_footer" %}
