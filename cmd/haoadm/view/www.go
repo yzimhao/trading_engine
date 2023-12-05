@@ -83,7 +83,6 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
 	radmin.Use(auth.MiddlewareFunc())
-	api.Use(auth.MiddlewareFunc())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
@@ -101,7 +100,7 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)
 	}
-
+	api.Use(auth.MiddlewareFunc())
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
