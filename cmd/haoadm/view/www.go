@@ -6,6 +6,7 @@ import (
 	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app/config"
@@ -19,6 +20,11 @@ func Run() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	models.Init()
+
+	// store := cookie.NewStore([]byte(config.App.Main.SecretKey))
+	// router.Use(sessions.Sessions("tk", store))
 
 	setupRouter(router)
 	setupPages(router)
@@ -76,8 +82,8 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/logout", auth.LogoutHandler)
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
-	// radmin.Use(auth.MiddlewareFunc())
-	// api.Use(auth.MiddlewareFunc())
+	radmin.Use(auth.MiddlewareFunc())
+	api.Use(auth.MiddlewareFunc())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)

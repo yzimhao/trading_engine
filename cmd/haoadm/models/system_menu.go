@@ -10,10 +10,10 @@ import (
 type SystemUserRole int
 
 const (
-	SystemUserRoleRoot  SystemUserRole = -1
-	SystemUserRoleSuper SystemUserRole = 0
-	SystemUserRoleAdmin SystemUserRole = 1
-	SystemUserRoleUser  SystemUserRole = 2
+	SystemUserRoleRoot SystemUserRole = iota
+	SystemUserRoleSuper
+	SystemUserRoleAdmin
+	SystemUserRoleUser
 )
 
 var (

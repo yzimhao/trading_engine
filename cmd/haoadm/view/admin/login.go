@@ -6,45 +6,37 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
+	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
+	Name     string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
-}
-
-// User demo
-type User struct {
-	UserId    int64
-	Username  string
-	Password  string
-	FirstName string
-	LastName  string
 }
 
 // the jwt middleware
 func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
-	var identityKey = "UserId"
+	var identityKey = "user_id"
 	return jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "764da09d99b0e6dc",
-		Key:         []byte("4ec85fbbeb9e3b90"),
+		Realm:       "HaoTrader",
+		Key:         []byte(config.App.Main.SecretKey),
 		Timeout:     time.Hour * time.Duration(24),
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*User); ok {
+			if v, ok := data.(*models.Admin); ok {
 				return jwt.MapClaims{
-					"user_id":    v.UserId,
-					"username":   v.Username,
-					"first_name": v.FirstName,
-					"last_name":  v.LastName,
+					"user_id":  v.UserId,
+					"username": v.Username,
 				}
 			}
 			return jwt.MapClaims{}
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			return &User{
+			return &models.Admin{
 				UserId: func() int64 {
 					a := claims["user_id"].(float64)
 					return int64(a)
@@ -56,19 +48,26 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 			if err := c.ShouldBind(&loginVals); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			username := loginVals.Username
+			username := loginVals.Name
 			password := loginVals.Password
 
-			users := []User{
-				User{UserId: 1, Username: "admin", Password: "admin2023", FirstName: "d", LastName: "demo"},
+			db := app.Database().NewSession()
+			defer db.Close()
+
+			var user models.Admin
+			exist, err := db.Table(models.Admin{}).Where("username=?", username).Get(&user)
+			if err != nil {
+				return nil, err
 			}
 
-			for _, item := range users {
-				if username == item.Username && password == item.Password {
-					return &item, nil
-				}
-
+			if !exist {
+				return nil, jwt.ErrMissingLoginValues
 			}
+
+			if err := user.ComparePassword(password); err == nil {
+				return &user, nil
+			}
+			//todo 记录登陆错误的数据
 
 			return nil, jwt.ErrFailedAuthentication
 		},
@@ -89,7 +88,7 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 			})
 		},
 		LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
-			c.Redirect(301, "/admin")
+			c.Redirect(301, "/admin/index")
 		},
 		LogoutResponse: func(c *gin.Context, code int) {
 			c.Redirect(301, "/admin/login")
@@ -102,14 +101,14 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 		// - "query:<name>"
 		// - "cookie:<name>"
 		// - "param:<name>"
-		TokenLookup: "header: Authorization, query: token, cookie: token",
+		TokenLookup: "header: Authorization, query: admtk, cookie: admtk",
 		// TokenLookup: "query:token",
 		// TokenLookup: "cookie:token",
 
 		// TokenHeadName is a string in the header. Default value is "Bearer"
 		TokenHeadName: "Bearer",
 		SendCookie:    true,
-		CookieName:    "token",
+		CookieName:    "admtk",
 		CookieMaxAge:  time.Hour * time.Duration(24),
 		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
 		TimeFunc: time.Now,
