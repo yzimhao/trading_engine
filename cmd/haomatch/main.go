@@ -8,6 +8,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func main() {
@@ -76,7 +77,8 @@ func main() {
 					app.Logger.Printf("释放成功!!!")
 				}(context)
 			}
-			app.Keepalive(ctx.App.Name, 5)
+
+			keepalive.NewKeepalive(app.RedisPool(), ctx.App.Name, app.Version, 5)
 			matching.Run()
 			return nil
 		},

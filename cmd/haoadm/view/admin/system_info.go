@@ -1,23 +1,37 @@
 package admin
 
 import (
-	"strings"
+	"encoding/json"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gomodule/redigo/redis"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
+	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func SystemInfo(ctx *gin.Context) {
-	info := app.KeepaliveInfo()
-	data := make([]string, 0)
 
-	for _, item := range info {
-		name := strings.Split(item, ".")[1]
-		data = append(data, name)
+	data := make(map[string][]keepalive.App)
+
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	data["haoadm"] = make([]keepalive.App, 0)
+	data["haobase"] = make([]keepalive.App, 0)
+	data["haomatch"] = make([]keepalive.App, 0)
+	data["haoquote"] = make([]keepalive.App, 0)
+
+	for _, topic := range keepalive.AppInfoTopic() {
+		var ap keepalive.App
+		info, _ := redis.Bytes(rdc.Do("get", topic))
+		json.Unmarshal([]byte(info), &ap)
+
+		data[ap.Name] = append(data[ap.Name], ap)
 	}
+
 	db := app.Database().NewSession()
 	defer db.Close()
 

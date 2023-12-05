@@ -114,13 +114,20 @@
                             </tr>
                             <tr>
                                 <td>运行状态</td>
-                                <td class="sys-status">
-                                    [haoadm <i class="haoadm fa fa-check"></i>]
-                                    [haobase <i class="haobase fa fa-check"></i>] 
-                                    
-                                    [haomatch <i class="haomatch fa fa-check"></i>] 
-                                    [haoquote <i class="haoquote fa fa-check"></i>]
-                                </td>
+                                <script id="sys-status-tpl" type="text/html">
+                                    <ul style="font-size: 12px; padding: unset;">
+                                    {{#  layui.each(d, function(module_name, nodes){ }}
+                                        <li style="list-style-type:none;"> {{ module_name }} ... {{# if(nodes.length > 0){ }}<i class="green fa fa-check"></i>{{# }else{ }}<i class="red fa fa-close"></i>{{# } }}
+                                            <ul style="margin-left: 10px;">
+                                                {{# layui.each(nodes, function(index,  node){ }}
+                                                <li>{{ node.hostname }} - {{ node.pid }} - {{ node.version }}</li>
+                                                {{#  }); }}
+                                            </ul>
+                                        </li>
+                                    {{#  }); }}
+                                    </ul>
+                                </script>
+                                <td class="sys-status"></td>
                             </tr>
                             
                             
@@ -159,6 +166,7 @@
     layui.use(['layer', 'table'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
+            laytpl = layui.laytpl,
             table = layui.table;
 
         var loadSystemInfo = function() {
@@ -166,13 +174,16 @@
                 url: "/api/v1/admin/system/info",
                 success:function(d){
                     if(d.ok){
-                        var data = d.data['module'];
-                        $(".sys-status i").removeClass("fa-check").removeClass("fa-close").removeClass("green").removeClass("red");
-                        for(var i=0; i<data.length; i++){
-                            $("."+data[i]).addClass("fa-check").addClass("green");
-                        }
-
                         $(".version").html(d.data["version"] +"/" +d.data["build_at"]);
+
+
+                        var module = d.data['module'];
+                        var sys_status_tpl = $("#sys-status-tpl").html();
+                        
+                        laytpl(sys_status_tpl).render(module, function (html) {
+                            console.log(html);
+                            $(".sys-status").html(html);
+                        });
                         
                         
                         $(".assets_global").html(d.data["assets_stats"]["user_total"]);

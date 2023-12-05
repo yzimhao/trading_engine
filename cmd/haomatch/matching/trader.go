@@ -9,6 +9,7 @@ import (
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
@@ -37,6 +38,7 @@ func init_symbols_tengine() {
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
 			teps[item.Symbol] = NewTengine(item.Symbol, item.PricePrecision, item.QtyPrecision)
+			keepalive.SetExtras("symbols", item.Symbol)
 		}
 	}
 }

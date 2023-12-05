@@ -13,6 +13,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func main() {
@@ -70,7 +71,7 @@ func main() {
 
 			}
 
-			app.Keepalive(ctx.App.Name, 5)
+			keepalive.NewKeepalive(app.RedisPool(), ctx.App.Name, app.Version, 5)
 			initDemoBaseData()
 			settle.Run()
 			orders.Run()

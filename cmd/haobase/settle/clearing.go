@@ -14,6 +14,7 @@ import (
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func Run() {
@@ -23,6 +24,7 @@ func Run() {
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
 			run_clearing(item.Symbol)
+			keepalive.SetExtras("settle_symbols", item.Symbol)
 		}
 	}
 }
