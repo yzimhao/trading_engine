@@ -113,7 +113,7 @@
                                 <td class="version">v1.0.4</td>
                             </tr>
                             <tr>
-                                <td>当前状态</td>
+                                <td>运行状态</td>
                                 <td class="sys-status">
                                     [haoadm <i class="haoadm fa fa-check"></i>]
                                     [haobase <i class="haobase fa fa-check"></i>] 
@@ -134,6 +134,16 @@
                                     </div>
                                 </td>
                             </tr>
+
+                            <tr>
+                                <td>第三方库</td>
+                                <td>
+                                    <ul>
+                                        <li><a href="https://github.com/zhongshaofa/layuimini" target="_blank">layuimini-2.0.6.1</a></li>
+                                    </ul>
+                                </td>
+                            </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -191,7 +201,7 @@
             }],
             cols: [[
                 {field: 'symbol', title: '交易对'},
-                {field: 'today_trade_qty', title: '今日成交量'},
+                {field: 'today_trade_qty', title: '今日成交量', sort:true},
                 {field: 'today_trade_amount', title: '今日成交金额', templet: function(d){
                     return d.today_trade_amount +" "+ d.base.toUpperCase();
                 }}
