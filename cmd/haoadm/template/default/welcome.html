@@ -120,7 +120,7 @@
                                         <li style="list-style-type:none;"> {{ module_name }} ... {{# if(nodes.length > 0){ }}<i class="green fa fa-check"></i>{{# }else{ }}<i class="red fa fa-close"></i>{{# } }}
                                             <ul style="margin-left: 10px;">
                                                 {{# layui.each(nodes, function(index,  node){ }}
-                                                <li>{{ node.hostname }} - {{ node.pid }} - {{ node.version }}</li>
+                                                <li><span class="tips" tips="Hostname">{{ node.hostname }}</span> - <span class="tips" tips="Pid">{{ node.pid }}</span> - <span>{{ node.version }}</span></li>
                                                 {{#  }); }}
                                             </ul>
                                         </li>
@@ -169,6 +169,12 @@
             laytpl = layui.laytpl,
             table = layui.table;
 
+        $(document).on("mouseover", ".sys-status .tips", function(){
+            layer.tips($(this).attr("tips"), this, {
+                tips: 1
+            });
+        });
+
         var loadSystemInfo = function() {
             $.ajax({
                 url: "/api/v1/admin/system/info",
@@ -181,7 +187,6 @@
                         var sys_status_tpl = $("#sys-status-tpl").html();
                         
                         laytpl(sys_status_tpl).render(module, function (html) {
-                            console.log(html);
                             $(".sys-status").html(html);
                         });
                         
