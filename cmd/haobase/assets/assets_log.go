@@ -17,7 +17,7 @@ type AssetsLog struct {
 	After      string     `xorm:"decimal(40,20) default(0)" json:"after"`                     // 变动后
 	BusinessId string     `xorm:"varchar(100) index(business_id) notnull" json:"business_id"` //业务相关的id
 	OpType     OpBehavior `xorm:"varchar(15)" json:"op_type"`
-	Info       string     `xorm:"varchar(150)" json:"info"`
+	Info       string     `xorm:"varchar(200)" json:"info"`
 	CreateTime utils.Time `xorm:"timestamp created" json:"create_time"`
 	UpdateTime utils.Time `xorm:"timestamp updated" json:"update_time"`
 }

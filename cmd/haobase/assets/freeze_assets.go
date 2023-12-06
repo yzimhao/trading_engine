@@ -23,15 +23,15 @@ func QueryFreeze(db *xorm.Session, symbol string, business_id string) (*AssetsFr
 	return &row, nil
 }
 
-func FreezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
-	return freezeAssets(db, user_id, symbol, freeze_amount, business_id, behavior)
+func FreezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior, note string) (success bool, err error) {
+	return freezeAssets(db, user_id, symbol, freeze_amount, business_id, behavior, note)
 }
 
-func FreezeTotalAssets(db *xorm.Session, user_id string, symbol string, business_id string, behavior OpBehavior) (success bool, err error) {
-	return freezeAssets(db, user_id, symbol, "0", business_id, behavior)
+func FreezeTotalAssets(db *xorm.Session, user_id string, symbol string, business_id string, behavior OpBehavior, note string) (success bool, err error) {
+	return freezeAssets(db, user_id, symbol, "0", business_id, behavior, note)
 }
 
-func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior) (success bool, err error) {
+func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount, business_id string, behavior OpBehavior, note string) (success bool, err error) {
 
 	if utils.D(freeze_amount).Cmp(utils.D("0")) < 0 {
 		return false, fmt.Errorf("冻结数量必须大于等于0")
@@ -69,6 +69,7 @@ func freezeAssets(db *xorm.Session, user_id string, symbol string, freeze_amount
 		BusinessId:   business_id,
 		Status:       FreezeStatusNew,
 		OpType:       behavior,
+		Info:         format_notes(note),
 	}
 
 	_, err = db.Table(&lg).Insert(&lg)

@@ -16,7 +16,7 @@ type AssetsFreeze struct {
 	Status       FreezeStatus `xorm:"tinyint(1)" json:"status"`                                    // 状态 冻结中, 已解冻
 	BusinessId   string       `xorm:"varchar(100) unique(business_id) notnull" json:"business_id"` //业务相关的id
 	OpType       OpBehavior   `xorm:"varchar(15)" json:"op_type"`
-	Info         string       `xorm:"varchar(64)" json:"info"`
+	Info         string       `xorm:"varchar(200)" json:"info"`
 	CreateTime   utils.Time   `xorm:"timestamp created" json:"create_time"`
 	UpdateTime   utils.Time   `xorm:"timestamp updated" json:"update_time"`
 }
