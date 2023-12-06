@@ -17,7 +17,7 @@ func init() {
 		// SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "javascript:;", Target: "_self"},
 		SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "/admin/system/settings", Target: "_self"},
 		SystemMenu{Id: 11, Pid: 1, Title: "后台用户", Icon: "fa fa-user", Href: "/admin/system/adminuser/list", Target: "_self"},
-		SystemMenu{Id: 19, Pid: 1, Title: "操作日志", Icon: "fa fa-user", Href: "/admin/system/logs/list", Target: "_self"},
+		SystemMenu{Id: 19, Pid: 1, Title: "后台日志", Icon: "fa fa-user", Href: "/admin/system/adminlogs/list", Target: "_self"},
 
 		SystemMenu{Id: 20, Pid: 2, Title: "资产种类", Icon: "fa fa-btc", Href: "/admin/varieties/list", Target: "_self"},
 		// SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "/admin/symbols/category", Target: "_self"},

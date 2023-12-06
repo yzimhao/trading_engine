@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
-	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -58,36 +57,27 @@ func setupRouter(router *gin.Engine) {
 	router.Use(static.Serve("/", static.LocalFile(templateDir, false)))
 }
 
-func runModeCheck(ctx *gin.Context) {
-	if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
-		if ctx.Request.Method == "POST" {
-			ctx.Abort()
-			utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
-			return
-		}
-	}
-}
-
 func setupPages(router *gin.Engine) {
 	//后台页面
 	radmin := router.Group("/admin")
 	//后台接口
 	api := router.Group("/api/v1/admin")
 
-	auth, _ := admin.AuthMiddleware()
+	auth := admin.AuthMiddleware()
 	setMethods(radmin, []string{"GET"}, "/login", admin.Login)
 	setMethods(radmin, []string{"POST"}, "/login", auth.LoginHandler)
 	setMethods(radmin, []string{"GET"}, "/logout", auth.LogoutHandler)
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
-	radmin.Use(auth.MiddlewareFunc(), runModeCheck)
+	radmin.Use(auth.MiddlewareFunc(), runModeCheck(), recordLog())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
 		setMethods(radmin, []string{"GET"}, "/system/settings", admin.Index)
-		//后台用户管理
+		//系统管理
 		setMethods(radmin, []string{"GET"}, "/system/adminuser/list", admin.AdminuserList)
 		setMethods(radmin, []string{"GET", "POST"}, "/system/adminuser/add", admin.AdminuserAdd)
+		setMethods(radmin, []string{"GET"}, "/system/adminlogs/list", admin.AdminlogsList)
 
 		//交易对基础信息
 		setMethods(radmin, []string{"GET"}, "/varieties/list", admin.VarietiesList)
@@ -105,7 +95,7 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)
 	}
-	api.Use(auth.MiddlewareFunc(), runModeCheck)
+	api.Use(auth.MiddlewareFunc(), runModeCheck())
 	{
 		setMethods(api, []string{"GET"}, "/system/menu", admin.SystemMenu)
 		setMethods(api, []string{"GET"}, "/system/info", admin.SystemInfo)
