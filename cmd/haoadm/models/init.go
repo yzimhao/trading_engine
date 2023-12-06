@@ -12,19 +12,21 @@ func Init() {
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	if !dbtables.Exist(db, &Admin{}) {
+	if !dbtables.Exist(db, &Adminuser{}) {
 		init_default_admin(db)
 	}
 }
 
 func init_default_admin(db *xorm.Session) {
-	dbtables.AutoCreateTable(db, &Admin{})
+	dbtables.AutoCreateTable(db, &Adminuser{})
 
-	a := Admin{
+	a := Adminuser{
 		Username: "admin",
 		Password: Passwd("admin"),
-		Role:     SystemUserRoleRoot,
-		Status:   AdminStatusOk,
+		Email:    "admin@admin.com",
+		Mobile:   "+1(502) 414-5497",
+		Role:     AdminRoleSuper,
+		Status:   AdminuserStatusNormal,
 	}
 	app.Logger.Infof("default admin: %v", a)
 	db.Insert(&a)

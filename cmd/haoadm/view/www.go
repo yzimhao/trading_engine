@@ -85,15 +85,22 @@ func setupPages(router *gin.Engine) {
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
 		setMethods(radmin, []string{"GET"}, "/system/settings", admin.Index)
+		//后台用户管理
+		setMethods(radmin, []string{"GET"}, "/system/adminuser/list", admin.AdminuserList)
+		setMethods(radmin, []string{"GET", "POST"}, "/system/adminuser/add", admin.AdminuserAdd)
+
+		//交易对基础信息
 		setMethods(radmin, []string{"GET"}, "/varieties/list", admin.VarietiesList)
 		setMethods(radmin, []string{"GET", "POST"}, "/varieties/add", admin.VarietiesAdd)
 		setMethods(radmin, []string{"GET"}, "/tradingvarieties/list", admin.TradingVarietiesList)
 		setMethods(radmin, []string{"GET", "POST"}, "/tradingvarieties/add", admin.TradingVarietiesAdd)
 
+		//用户资产
 		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
 		setMethods(radmin, []string{"GET"}, "/user/assets/freeze", admin.AssetsFreezeList)
 		setMethods(radmin, []string{"GET"}, "/user/assets/logs", admin.AssetsLogsList)
 
+		//订单、成交
 		setMethods(radmin, []string{"GET"}, "/user/order/history", admin.UserOrderHistory)
 		setMethods(radmin, []string{"GET"}, "/user/trade/history", admin.TradeHistory)
 		setMethods(radmin, []string{"GET"}, "/user/unfinished", admin.UserOrderUnfinished)

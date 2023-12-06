@@ -1,19 +1,7 @@
 package models
 
 import (
-	"crypto/md5"
-	"crypto/sha1"
-	"encoding/hex"
 	"time"
-)
-
-type SystemUserRole int
-
-const (
-	SystemUserRoleRoot SystemUserRole = iota
-	SystemUserRoleSuper
-	SystemUserRoleAdmin
-	SystemUserRoleUser
 )
 
 var (
@@ -22,12 +10,14 @@ var (
 
 func init() {
 	menuList = []SystemMenu{
-		// SystemMenu{Id: 1, Pid: 0, Title: "系统", Icon: "fa fa-wrench", Href: "javascript:;", Target: "_self"},
-		SystemMenu{Id: 2, Pid: 0, Title: "交易", Icon: "fa fa-btc", Href: "javascript:;", Target: "_self"},
-		SystemMenu{Id: 3, Pid: 0, Title: "用户", Icon: "fa fa-user", Href: "javascript:;", Target: "_self"},
-		// SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "javascript:;", Target: "_self"},
+		SystemMenu{Id: 1, Pid: 0, Title: "系统管理", Icon: "fa fa-wrench", Href: "javascript:;", Target: "_self"},
+		SystemMenu{Id: 2, Pid: 0, Title: "资产管理", Icon: "fa fa-btc", Href: "javascript:;", Target: "_self"},
+		SystemMenu{Id: 3, Pid: 0, Title: "用户管理", Icon: "fa fa-user", Href: "javascript:;", Target: "_self"},
 
+		// SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "javascript:;", Target: "_self"},
 		SystemMenu{Id: 10, Pid: 1, Title: "系统设置", Icon: "fa fa-wrench", Href: "/admin/system/settings", Target: "_self"},
+		SystemMenu{Id: 11, Pid: 1, Title: "后台用户", Icon: "fa fa-user", Href: "/admin/system/adminuser/list", Target: "_self"},
+		SystemMenu{Id: 19, Pid: 1, Title: "操作日志", Icon: "fa fa-user", Href: "/admin/system/logs/list", Target: "_self"},
 
 		SystemMenu{Id: 20, Pid: 2, Title: "资产种类", Icon: "fa fa-btc", Href: "/admin/varieties/list", Target: "_self"},
 		// SystemMenu{Id: 21, Pid: 2, Title: "板块分类", Icon: "fa fa-file-text-o", Href: "/admin/symbols/category", Target: "_self"},
@@ -38,26 +28,6 @@ func init() {
 		SystemMenu{Id: 32, Pid: 3, Title: "历史订单", Icon: "fa fa-reorder", Href: "/admin/user/order/history", Target: "_self"},
 		SystemMenu{Id: 32, Pid: 3, Title: "成交记录", Icon: "fa fa-reorder", Href: "/admin/user/trade/history", Target: "_self"},
 	}
-}
-
-type SystemUser struct {
-	Id        int64          `xorm:"'id' autoincr pk"`
-	Name      string         `xorm:"varchar(100) unique"`
-	RealName  string         `xorm:"varchar(100)"`
-	Password  string         `xorm:"varchar(65)"`
-	Role      SystemUserRole `xorm:""`
-	Status    uint8          `xorm:"default(1)"`
-	Remark    string         `xorm:"varchar(255)"`
-	CreatedAt time.Time      `xorm:"timestamp created"`
-	UpdatedAt time.Time      `xorm:"timestamp updated"`
-}
-
-func SystemUserPassword(pwd string) string {
-	sha1Hash := sha1.Sum([]byte(pwd))
-	// Calculate the MD5 hash of the SHA1 hash
-	md5Hash := md5.Sum(sha1Hash[:])
-	// Convert the hashes to hexadecimal strings
-	return hex.EncodeToString(md5Hash[:])
 }
 
 // http://layuimini.99php.cn/docs/init/sql.html

@@ -1,0 +1,110 @@
+{% include "iframe_header" %}
+
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form">
+        <form action="" class="layui-form" lay-filter="addform">
+            <div class="layui-form-item">
+                <label class="layui-form-label required">用户名</label>
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="">
+                    <input type="text" name="username" lay-verify="required" lay-reqtext="不能为空" placeholder="" value="" class="layui-input">
+                    <tip>唯一的，不区分大小写，提交后不可修改</tip>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="password" value="" class="layui-input">
+                    <tip></tip>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Email</label>
+                <div class="layui-input-block">
+                    <input type="text" name="email" value="" class="layui-input">
+                    <tip></tip>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">手机</label>
+                <div class="layui-input-block">
+                    <input type="text" name="mobile" value="" class="layui-input">
+                    <tip></tip>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label required">角色</label>
+                    <div class="layui-input-inline">
+                        <select name="role" lay-verify="required" lay-reqtext="不能为空">
+                            <option value="">请选择</option>
+                            
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required">状态</label>
+                <div class="layui-input-block">
+                    {% range $k, $v := .adminuser_status%}
+                    <input type="radio" name="status" value="{% $v %}" title="{% $v %}">
+                    {% end %}
+                </div>
+            </div>
+            
+            
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="saveBtn">确认保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            $ = layui.$;
+
+        form.render();
+        
+
+
+
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajax({
+                url: "/admin/system/adminuser/add?id=" +data.field.id,
+                type: "post",
+                data: data.field,
+                success: function(d){
+                    if(d.ok){
+                        layer.msg("成功");
+                    }else{
+                        layer.alert(d.reason);
+                    }
+                }
+            })
+
+            return false;
+        });
+
+        
+        form.val("addform", JSON.parse({% .data | json %}));
+
+    });
+</script>
+
+
+{% include "iframe_footer" %}

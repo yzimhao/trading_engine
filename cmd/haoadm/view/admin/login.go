@@ -26,9 +26,9 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*models.Admin); ok {
+			if v, ok := data.(*models.Adminuser); ok {
 				return jwt.MapClaims{
-					"user_id":  v.UserId,
+					"user_id":  v.Id,
 					"username": v.Username,
 				}
 			}
@@ -36,8 +36,8 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			return &models.Admin{
-				UserId: func() int64 {
+			return &models.Adminuser{
+				Id: func() int64 {
 					a := claims["user_id"].(float64)
 					return int64(a)
 				}(),
@@ -54,8 +54,8 @@ func AuthMiddleware() (*jwt.GinJWTMiddleware, error) {
 			db := app.Database().NewSession()
 			defer db.Close()
 
-			var user models.Admin
-			exist, err := db.Table(models.Admin{}).Where("username=?", username).Get(&user)
+			var user models.Adminuser
+			exist, err := db.Table(models.Adminuser{}).Where("username=?", username).Get(&user)
 			if err != nil {
 				return nil, err
 			}
