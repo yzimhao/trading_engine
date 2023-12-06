@@ -8,6 +8,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
 	"github.com/yzimhao/trading_engine/utils"
+	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
@@ -32,8 +33,9 @@ func recordLog() gin.HandlerFunc {
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
 		ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		// app.Logger.Warnf("body: %s", body)
-		models.NewAdminActivityLog(user_id, ctx.Request.Method, ctx.Request.RequestURI, string(body))
+		err := models.NewAdminActivityLog(user_id, ctx.Request.Method, ctx.Request.RequestURI, string(body), ctx.ClientIP())
+		app.Logger.Warnf("activity log: %s", err)
+
 		ctx.Next()
 	}
 }

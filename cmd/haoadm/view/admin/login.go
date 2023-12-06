@@ -70,6 +70,10 @@ func AuthMiddleware() *jwt.GinJWTMiddleware {
 				}
 
 				if err := user.ComparePassword(password); err == nil {
+					db.Table(models.Adminuser{}).Where("id=?", user.Id).Update(&models.Adminuser{
+						// LoginIp: c.ClientIP(),
+					})
+
 					return &user, nil
 				}
 				//todo 记录登陆错误的数据
