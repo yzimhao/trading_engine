@@ -77,6 +77,7 @@
             //     layEvent: 'LAYTABLE_TIPS',
             //     icon: 'layui-icon-tips'
             // }],
+            where: {"searchParams": {% .search | json %}},
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'user_id', title: '用户ID'},
@@ -179,6 +180,7 @@
         });
 
 
+        form.val("searchForm", JSON.parse({% .search | json %}));
         form.render();
     });
 </script>

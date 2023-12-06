@@ -7,7 +7,7 @@
         <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="" lay-filter="assetsLogsTableForm">
+                <form class="layui-form layui-form-pane" action="" lay-filter="searchForm">
                     <div class="layui-form-item">
 
                         <div class="layui-inline">
@@ -117,8 +117,7 @@
             skin: 'line'
         });
 
-        form.val("assetsLogsTableForm", JSON.parse({% .search | json %}));
-
+        
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
@@ -141,6 +140,7 @@
             console.log(obj)
         });
 
+        form.val("searchForm", JSON.parse({% .search | json %}));
         form.render();
     });
 </script>

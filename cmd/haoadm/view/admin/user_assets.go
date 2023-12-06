@@ -62,8 +62,8 @@ func AssetsList(ctx *gin.Context) {
 			render(ctx, 0, "", int(total), data)
 		} else {
 			ctx.HTML(200, "user_assets", gin.H{
-				"searchParams": searchParams,
-				"all_symbols":  base.NewSymbols().All(),
+				"search":      search,
+				"all_symbols": base.NewSymbols().All(),
 			})
 		}
 		return

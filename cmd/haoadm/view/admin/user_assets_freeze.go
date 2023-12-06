@@ -20,7 +20,6 @@ func AssetsFreezeList(ctx *gin.Context) {
 
 		var search assetsSearch
 		json.Unmarshal([]byte(searchParams), &search)
-		app.Logger.Debugf("search: %#v args: %s", search, searchParams)
 
 		if page <= 0 {
 			page = 1

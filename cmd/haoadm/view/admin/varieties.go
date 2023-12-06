@@ -107,7 +107,7 @@ func VarietiesList(ctx *gin.Context) {
 			render(ctx, 0, "", int(total), data)
 		} else {
 			ctx.HTML(200, "varieties_list", gin.H{
-				"searchParams": searchParams,
+				"search": search,
 			})
 		}
 		return
@@ -211,7 +211,7 @@ func TradingVarietiesList(ctx *gin.Context) {
 			render(ctx, 0, "", int(total), data)
 		} else {
 			ctx.HTML(200, "tradingvarieties_list", gin.H{
-				"searchParams": searchParams,
+				"search": search,
 			})
 		}
 		return

@@ -7,7 +7,7 @@
         <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="" lay-filter="assetsFreezeTableForm">
+                <form class="layui-form layui-form-pane" action="" lay-filter="searchForm">
                     <div class="layui-form-item">
 
                         <div class="layui-inline">
@@ -113,13 +113,13 @@
                     }
                     return "冻结";
                 }},
+                {field: 'info', title: '备注'},
                 {field: 'create_time', width: 180, title: '创建时间', templet: function(d){
                     return utils.format_timestamp(d.create_time*1000);
                 }},
                 {field: 'update_time', width: 180, title: '更新时间', templet: function(d){
                     return utils.format_timestamp(d.update_time*1000);
-                }},
-                {title: '操作', minWidth: 150, toolbar: '#assetsFreezeTableBar', align: "center"}
+                }}
             ]],
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
@@ -128,7 +128,7 @@
         });
 
         
-        form.val("assetsFreezeTableForm", JSON.parse({% .search | json %}));
+        
 
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
@@ -163,6 +163,7 @@
             }
         });
 
+        form.val("searchForm", JSON.parse({% .search | json %}));
         form.render();
     });
 </script>

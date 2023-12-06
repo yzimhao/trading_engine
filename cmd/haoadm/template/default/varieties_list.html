@@ -6,7 +6,7 @@
         <fieldset class="table-search-fieldset">
             <legend>搜索信息</legend>
             <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="">
+                <form class="layui-form layui-form-pane" action="" lay-filter="searchform">
                     <div class="layui-form-item">
                         <div class="layui-inline">
                             <label class="layui-form-label">资产</label>
@@ -75,6 +75,7 @@
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
             }],
+            where: {"searchParams": {% .search | json %}},
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'id', width: 80, title: 'ID', sort: true},
@@ -153,6 +154,7 @@
             }
         });
 
+        form.val("searchForm", JSON.parse({% .search | json %}));
         form.render();
     });
 </script>

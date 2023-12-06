@@ -14,7 +14,7 @@ func AdminlogsList(ctx *gin.Context) {
 	if ctx.Request.Method == "GET" {
 		page := utils.S2Int(ctx.Query("page"))
 		limit := utils.S2Int(ctx.Query("limit"))
-		searchParams := ctx.Query("searchParams")
+		// searchParams := ctx.Query("searchParams")
 
 		if page <= 0 {
 			page = 1
@@ -39,9 +39,7 @@ func AdminlogsList(ctx *gin.Context) {
 		if ctx.Query("api") == "1" {
 			render(ctx, 0, "", int(total), data)
 		} else {
-			ctx.HTML(200, "system_adminlogs_list", gin.H{
-				"searchParams": searchParams,
-			})
+			ctx.HTML(200, "system_adminlogs_list", gin.H{})
 		}
 		return
 	}

@@ -89,12 +89,13 @@
 
 
 <script>
-    layui.use(['form', 'table','element'], function () {
+    layui.use(['form', 'table','element', 'miniTab'], function () {
         var $ = layui.jquery,
             form = layui.form,
+            miniTab = layui.miniTab,
             table = layui.table;
 
-            table.render({
+        table.render({
             elem: '#currentTableId',
             url: '/admin/user/order/history?api=1',
             //toolbar: '#toolbarDemo',
@@ -103,11 +104,14 @@
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
             }],
+            where: {"searchParams": {% .search | json %}},
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'user_id', title: '用户ID'},
                 {field: 'symbol', title: '交易对'},
-                {field: 'order_id', width:200, title: '订单号'},
+                {field: 'order_id', width:200, title: '订单号', templet: function(d){
+                    return '<a href="javascript:;" class="go_tradelog" symbol="'+d.symbol+'" order_id="'+d.order_id+'">'+d.order_id+'</a>'
+                }},
                 {field: 'order_type', title: '类型', templet:function(d){
                     return d.order_type + "/" + d.order_side;
                 }},
@@ -136,10 +140,7 @@
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = JSON.stringify(data.field);
-            // layer.alert(result, {
-            //     title: '最终的搜索信息'
-            // });
-
+            
             //执行搜索重载
             table.reload('currentTableId', {
                 page: {
@@ -154,15 +155,20 @@
         });
 
         // 监听添加操作
-        $(".data-add-btn").on("click", function () {
-            return false;
-        });
+        $(document).on("click", ".go_tradelog", function(){
+            var symbol = $(this).attr("symbol");
+            var order_id = $(this).attr("order_id");
 
-        // 监听删除操作
-        $(".data-delete-btn").on("click", function () {
-            var checkStatus = table.checkStatus('currentTableId')
-                , data = checkStatus.data;
-            layer.alert(JSON.stringify(data));
+            var search = {symbol: symbol};
+            if(order_id.indexOf("A") > -1){
+                search["ask"] = order_id;
+            }else{
+                search["bid"] = order_id;
+            }
+
+            var url = "/admin/user/trade/history?searchParams="+ encodeURI(JSON.stringify(search));
+            console.log(url);
+            miniTab.openNewTabByIframe({title: order_id+"成交记录", href:url});
         });
 
         //监听表格复选框选择
@@ -182,6 +188,7 @@
             }
         });
 
+        form.val("searchForm", JSON.parse({% .search | json %}));
         form.render();
         
     });
