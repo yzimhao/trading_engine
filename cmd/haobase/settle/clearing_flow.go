@@ -115,11 +115,11 @@ func (c *clean) check_order() error {
 func (c *clean) trade_log() error {
 	amount := c.tlog.TradePrice.Mul(c.tlog.TradeQuantity)
 	c.tradelog = orders.TradeLog{
-		Symbol:  c.tlog.Symbol,
-		TradeId: generate_trading_id(c.ask.OrderId, c.bid.OrderId),
-		Ask:     c.ask.OrderId,
-		Bid:     c.bid.OrderId,
-		// TradeBy:    "",
+		Symbol:     c.tlog.Symbol,
+		TradeId:    generate_trading_id(c.ask.OrderId, c.bid.OrderId),
+		Ask:        c.ask.OrderId,
+		Bid:        c.bid.OrderId,
+		TradeBy:    c.tlog.TradeBy,
 		AskUid:     c.ask.UserId,
 		BidUid:     c.bid.UserId,
 		Price:      c.tlog.TradePrice.String(),

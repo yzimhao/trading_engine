@@ -436,9 +436,16 @@ func (t *TradePair) sendTradeResultNotify(ask, bid QueueItem, price, tradeQty de
 	tradelog.Symbol = t.Symbol
 	tradelog.AskOrderId = ask.GetUniqueId()
 	tradelog.BidOrderId = bid.GetUniqueId()
+
+	if ask.GetCreateTime() < bid.GetCreateTime() {
+		tradelog.TradeBy = ByBuyer
+	} else {
+		tradelog.TradeBy = BySeller
+	}
+
 	tradelog.TradeQuantity = tradeQty
 	tradelog.TradePrice = price
-	tradelog.TradeTime = trade_at //精确到纳秒
+	tradelog.TradeTime = trade_at //纳秒
 	tradelog.Last = last          //标记市价订单已经完成
 
 	if trade_at > t.latestPriceAt {

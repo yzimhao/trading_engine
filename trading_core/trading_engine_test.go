@@ -77,19 +77,21 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 
 	Convey("限价买卖单，价格一致，完全成交", t, func() {
 		btcusdt.cleanAll()
-		btcusdt.PushNewOrder(NewAskLimitItem("id1", d(1.1), d(1.2), 1112))
-		btcusdt.PushNewOrder(NewBidLimitItem("id2", d(1.1), d(1.2), 1113))
+		btcusdt.PushNewOrder(NewAskLimitItem("id1", d(1.1), d(1.2), time.Now().UnixNano()))
+		btcusdt.PushNewOrder(NewBidLimitItem("id2", d(1.1), d(1.2), time.Now().UnixNano()))
 		tradeLog := <-btcusdt.ChTradeResult
 		So(tradeLog.AskOrderId, ShouldEqual, "id1")
 		So(tradeLog.BidOrderId, ShouldEqual, "id2")
 		So(tradeLog.TradePrice, ShouldEqual, d(1.1))
 		So(tradeLog.TradeQuantity, ShouldEqual, d(1.2))
+		//ask提供流动性，bid主动成交 trade_by=buyer
+		So(tradeLog.TradeBy, ShouldEqual, ByBuyer)
 	})
 
 	Convey("限价买卖单，价格一致，买单部分成交", t, func() {
 		btcusdt.cleanAll()
-		btcusdt.PushNewOrder(NewAskLimitItem("id1", d(1.1), d(1.2), 1112))
-		btcusdt.PushNewOrder(NewBidLimitItem("id2", d(1.1), d(2.3), 1113))
+		btcusdt.PushNewOrder(NewBidLimitItem("id2", d(1.1), d(2.3), time.Now().UnixNano()))
+		btcusdt.PushNewOrder(NewAskLimitItem("id1", d(1.1), d(1.2), time.Now().UnixNano()))
 		tradeLog := <-btcusdt.ChTradeResult
 
 		So(tradeLog.AskOrderId, ShouldEqual, "id1")
@@ -99,6 +101,8 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 		So(btcusdt.bidQueue.Top().GetQuantity(), ShouldEqual, d(1.1))
 		So(btcusdt.bidQueue.Len(), ShouldEqual, 1)
 		So(btcusdt.askQueue.Len(), ShouldEqual, 0)
+		//bid提供流动性，ask主动成交 trade_by=seller
+		So(tradeLog.TradeBy, ShouldEqual, BySeller)
 	})
 
 	Convey("限价买卖单，价格一致，卖单部分成交", t, func() {

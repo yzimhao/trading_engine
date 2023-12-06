@@ -3,37 +3,31 @@ package orders
 import (
 	"fmt"
 
+	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"xorm.io/xorm"
 )
 
-type TradeBy int
-
-const (
-	TradeBySell TradeBy = 1
-	TradeByBuy  TradeBy = 2
-)
-
 // 成交记录表
 type TradeLog struct {
-	Id         int64      `xorm:"pk autoincr bigint" json:"id"`
-	Symbol     string     `xorm:"-" json:"-"`
-	TradeId    string     `xorm:"varchar(30) unique(trade)" json:"trade_id"`
-	Ask        string     `xorm:"varchar(30) unique(trade)" json:"ask"`
-	Bid        string     `xorm:"varchar(30) unique(trade)" json:"bid"`
-	TradeBy    TradeBy    `xorm:"tinyint(1)" json:"trade_by"`
-	AskUid     string     `xorm:"notnull" json:"ask_uid"`
-	BidUid     string     `xorm:"notnull" json:"bid_uid"`
-	Price      string     `xorm:"decimal(40,20) notnull default(0)" json:"price"`
-	Quantity   string     `xorm:"decimal(40,20) notnull default(0)" json:"quantity"`
-	Amount     string     `xorm:"decimal(40,20) notnull default(0)" json:"amount"`
-	AskFeeRate string     `xorm:"decimal(40,20) notnull default(0)" json:"ask_fee_rate"`
-	AskFee     string     `xorm:"decimal(40,20) notnull default(0)" json:"ask_fee"`
-	BidFeeRate string     `xorm:"decimal(40,20) notnull default(0)" json:"bid_fee_rate"`
-	BidFee     string     `xorm:"decimal(40,20) notnull default(0)" json:"bid_fee"`
-	CreateTime utils.Time `xorm:"timestamp created" json:"create_time"`
-	UpdateTime utils.Time `xorm:"timestamp updated" json:"update_time"`
+	Id         int64                `xorm:"pk autoincr bigint" json:"id"`
+	Symbol     string               `xorm:"-" json:"-"`
+	TradeId    string               `xorm:"varchar(30) unique(trade)" json:"trade_id"`
+	Ask        string               `xorm:"varchar(30) unique(trade)" json:"ask"`
+	Bid        string               `xorm:"varchar(30) unique(trade)" json:"bid"`
+	TradeBy    trading_core.TradeBy `xorm:"tinyint(1)" json:"trade_by"`
+	AskUid     string               `xorm:"notnull" json:"ask_uid"`
+	BidUid     string               `xorm:"notnull" json:"bid_uid"`
+	Price      string               `xorm:"decimal(40,20) notnull default(0)" json:"price"`
+	Quantity   string               `xorm:"decimal(40,20) notnull default(0)" json:"quantity"`
+	Amount     string               `xorm:"decimal(40,20) notnull default(0)" json:"amount"`
+	AskFeeRate string               `xorm:"decimal(40,20) notnull default(0)" json:"ask_fee_rate"`
+	AskFee     string               `xorm:"decimal(40,20) notnull default(0)" json:"ask_fee"`
+	BidFeeRate string               `xorm:"decimal(40,20) notnull default(0)" json:"bid_fee_rate"`
+	BidFee     string               `xorm:"decimal(40,20) notnull default(0)" json:"bid_fee"`
+	CreateTime utils.Time           `xorm:"timestamp created" json:"create_time"`
+	UpdateTime utils.Time           `xorm:"timestamp updated" json:"update_time"`
 }
 
 func (tr *TradeLog) Save(db *xorm.Session) error {
