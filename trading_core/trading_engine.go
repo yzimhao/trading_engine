@@ -139,7 +139,6 @@ func (t *TradePair) matching() {
 		select {
 		default:
 			t.handlerLimitOrder()
-
 		}
 
 	}

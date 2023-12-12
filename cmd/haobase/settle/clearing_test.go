@@ -138,9 +138,9 @@ func TestLimitOrder(t *testing.T) {
 
 		//检查订单状态
 		sell_order := orders.Find(testSymbol, sell.OrderId)
-		So(sell_order.Status, ShouldEqual, orders.OrderStatusDone)
+		So(sell_order.Status, ShouldEqual, orders.OrderStatusFilled)
 		buy_order := orders.Find(testSymbol, buy.OrderId)
-		So(buy_order.Status, ShouldEqual, orders.OrderStatusDone)
+		So(buy_order.Status, ShouldEqual, orders.OrderStatusFilled)
 
 		sell_unfinished := orders.FindUnfinished(testSymbol, sell.OrderId)
 		So(sell_unfinished, ShouldBeNil)
@@ -242,11 +242,11 @@ func TestMarketCase1(t *testing.T) {
 
 		//检查买卖双方订单状态及资产
 		s1 = orders.Find(testSymbol, s1.OrderId)
-		So(s1.Status, ShouldEqual, orders.OrderStatusDone)
+		So(s1.Status, ShouldEqual, orders.OrderStatusFilled)
 		s2 = orders.Find(testSymbol, s2.OrderId)
-		So(s2.Status, ShouldEqual, orders.OrderStatusDone)
+		So(s2.Status, ShouldEqual, orders.OrderStatusFilled)
 		buy = orders.Find(testSymbol, buy.OrderId)
-		So(buy.Status, ShouldEqual, orders.OrderStatusDone)
+		So(buy.Status, ShouldEqual, orders.OrderStatusFilled)
 
 		//资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
