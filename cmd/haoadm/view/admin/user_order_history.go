@@ -53,7 +53,7 @@ func UserOrderHistory(ctx *gin.Context) {
 
 		tablename := &orders.Order{Symbol: search.Symbol}
 		q := db.Table(tablename)
-		q = q.Where("symbol = ? and status>0", search.Symbol)
+		q = q.Where("symbol = ? and status>?", search.Symbol, orders.OrderStatusNew)
 
 		if search.UserId != "" {
 			q = q.Where("user_id = ?", search.UserId)

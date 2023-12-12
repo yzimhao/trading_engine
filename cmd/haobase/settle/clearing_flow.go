@@ -148,6 +148,8 @@ func (c *clean) update_order(side trading_core.OrderSide) error {
 	order.FinishedQty = utils.D(order.FinishedQty).Add(c.tlog.TradeQuantity).String()
 	order.FinishedAmount = utils.D(order.FinishedAmount).Add(utils.D(c.tradelog.Amount)).String()
 	order.AvgPrice = utils.D(order.FinishedAmount).Div(utils.D(order.FinishedQty)).String()
+	//初始状态为部分成交
+	order.Status = orders.OrderStatusPartialFill
 
 	if order.OrderType == trading_core.OrderTypeLimit {
 		be := utils.D(order.FinishedQty).Cmp(utils.D(order.Quantity))
@@ -155,7 +157,7 @@ func (c *clean) update_order(side trading_core.OrderSide) error {
 			return fmt.Errorf("订单结算错误")
 		}
 		if be == 0 {
-			order.Status = orders.OrderStatusDone
+			order.Status = orders.OrderStatusFilled
 		}
 
 		_, err := c.db.Table(order.TableName()).Where("order_id=?", order.OrderId).AllCols().Update(order)
@@ -177,11 +179,11 @@ func (c *clean) update_order(side trading_core.OrderSide) error {
 	} else {
 		//市价单结算
 		if utils.D(order.Quantity).Equal(utils.D(order.FinishedQty)) || utils.D(order.Amount).Equal(utils.D(order.FinishedAmount)) {
-			order.Status = orders.OrderStatusDone
+			order.Status = orders.OrderStatusFilled
 		}
 
 		if c.tlog.Last == order.OrderId {
-			order.Status = orders.OrderStatusDone
+			order.Status = orders.OrderStatusFilled
 		}
 
 		_, err := c.db.Table(order.TableName()).Where("order_id=?", order.OrderId).AllCols().Update(order)
@@ -227,14 +229,14 @@ func (c *clean) transfer() error {
 		return err
 	}
 
-	if c.ask.Status == orders.OrderStatusDone {
+	if c.ask.Status == orders.OrderStatusFilled {
 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Target.Symbol, c.ask.UserId, c.ask.OrderId)
 		if err != nil {
 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.ask.OrderId, err.Error())
 			return err
 		}
 	}
-	if c.bid.Status == orders.OrderStatusDone {
+	if c.bid.Status == orders.OrderStatusFilled {
 		_, err = assets.UnfreezeAllAssets(c.db, c.trading_varieties.Base.Symbol, c.bid.UserId, c.bid.OrderId)
 		if err != nil {
 			app.Logger.Errorf("解冻UnfreezeAllAssets: %s %s", c.bid.OrderId, err.Error())

@@ -180,9 +180,7 @@ func (t *tengine) pull_new_order() {
 				}
 
 				if data.OrderId != "" {
-					app.Logger.Debugf("收到新订单: %s", raw)
-					// side := strings.ToLower(data.Side)
-					// order_type := strings.ToLower(data.OrderType)
+					app.Logger.Debugf("%s 收到新订单: %s", key, raw)
 
 					if data.OrderType == trading_core.OrderTypeLimit {
 						if data.Side == trading_core.OrderSideSell {

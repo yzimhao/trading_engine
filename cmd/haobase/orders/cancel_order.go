@@ -138,7 +138,7 @@ func cancel_order(symbol, order_id string, retry int) {
 	}
 
 	//更新订单状态
-	item.Status = OrderStatusCancel
+	item.Status = OrderStatusCanceled
 	_, err = db.Table(tablename).Where("order_id=?", order_id).Cols("status").Update(item)
 	if err != nil {
 		return

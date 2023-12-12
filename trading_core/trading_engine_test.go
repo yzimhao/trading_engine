@@ -318,4 +318,19 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 		So(btcusdt.askQueue.Len(), ShouldEqual, 0)
 		So(btcusdt.bidQueue.Len(), ShouldEqual, 1)
 	})
+
+	Convey("市价卖出 指定金额，因为各种原因，一个都没有成交，只输出市价撤单信号", t, func() {
+		btcusdt.cleanAll()
+		btcusdt.PushNewOrder(NewBidLimitItem("id1", d(1000.00), d(50), 1112))
+		btcusdt.PushNewOrder(NewAskMarketAmountItem("id2", d(1), d(30), 1113))
+
+		So(btcusdt.bidQueue.Len(), ShouldEqual, 1)
+		bid := btcusdt.bidQueue.Top()
+		So(bid.GetQuantity(), ShouldEqual, d(50))
+		So(btcusdt.askQueue.Len(), ShouldEqual, 0)
+
+		cancel := <-btcusdt.ChCancelResult
+		So(cancel, ShouldEqual, "id2")
+
+	})
 }

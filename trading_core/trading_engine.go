@@ -331,6 +331,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 		}()
 
 		if !ok {
+			t.ChCancelResult <- item.GetUniqueId()
 			break
 		}
 
@@ -422,6 +423,8 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 		}()
 
 		if !ok {
+			//市价单都需要触发一个成交后取消剩余部分的信号
+			t.ChCancelResult <- item.GetUniqueId()
 			break
 		}
 
