@@ -10,7 +10,7 @@ import (
 type TradePair struct {
 	Symbol         string
 	ChTradeResult  chan TradeResult
-	ChCancelResult chan string
+	ChCancelResult chan CancelBody
 
 	pausePushNew bool
 	pauseMatch   bool
@@ -35,7 +35,7 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
 	t := &TradePair{
 		Symbol:         symbol,
 		ChTradeResult:  make(chan TradeResult, 10),
-		ChCancelResult: make(chan string, 10),
+		ChCancelResult: make(chan CancelBody, 10),
 
 		pausePushNew: false,
 		pauseMatch:   false,
@@ -88,14 +88,17 @@ func (t *TradePair) PushNewOrder(item QueueItem) {
 	t.handlerNewOrder(item)
 }
 
-func (t *TradePair) CancelOrder(side OrderSide, uniq string) {
+func (t *TradePair) CancelOrder(side OrderSide, order_id string, reason CancelType) {
 	if side == OrderSideSell {
-		t.askQueue.Remove(uniq)
+		t.askQueue.Remove(order_id)
 	} else {
-		t.bidQueue.Remove(uniq)
+		t.bidQueue.Remove(order_id)
 	}
 	//删除成功后需要发送通知
-	t.ChCancelResult <- uniq
+	t.ChCancelResult <- CancelBody{
+		OrderId: order_id,
+		Reason:  reason,
+	}
 }
 
 func (t *TradePair) AskLen() int {
@@ -234,7 +237,7 @@ func (t *TradePair) handlerLimitOrder() {
 }
 
 func (t *TradePair) doMarketBuy(item QueueItem) {
-
+	trade_cnt := 0
 	for {
 		ok := func() bool {
 
@@ -330,14 +333,25 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 		}()
 
 		if !ok {
-			t.ChCancelResult <- item.GetUniqueId()
+			t.ChCancelResult <- CancelBody{
+				OrderId: item.GetUniqueId(),
+				Reason: func() CancelType {
+					if trade_cnt > 0 {
+						return CancelTypeByPartial
+					}
+					//一个都没有成交则系统自动取消
+					return CancelTypeBySystem
+				}(),
+			}
 			break
+		} else {
+			trade_cnt++
 		}
 
 	}
 }
 func (t *TradePair) doMarketSell(item QueueItem) {
-
+	trade_cnt := 0
 	for {
 		ok := func() bool {
 
@@ -423,8 +437,19 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 
 		if !ok {
 			//市价单都需要触发一个成交后取消剩余部分的信号
-			t.ChCancelResult <- item.GetUniqueId()
+			t.ChCancelResult <- CancelBody{
+				OrderId: item.GetUniqueId(),
+				Reason: func() CancelType {
+					if trade_cnt > 0 {
+						return CancelTypeByPartial
+					}
+					//一个都没有成交则系统自动取消
+					return CancelTypeBySystem
+				}(),
+			}
 			break
+		} else {
+			trade_cnt++
 		}
 
 	}
