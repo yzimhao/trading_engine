@@ -247,9 +247,9 @@ func (t *tengine) pull_cancel_order() {
 				app.Logger.Debugf("收到取消订单: %s %s", key, raw)
 
 				if data.Side == trading_core.OrderSideSell {
-					t.tp.CancelOrder(trading_core.OrderSideSell, data.OrderId)
+					t.tp.CancelOrder(trading_core.OrderSideSell, data.OrderId, data.Reason)
 				} else if data.Side == trading_core.OrderSideBuy {
-					t.tp.CancelOrder(trading_core.OrderSideBuy, data.OrderId)
+					t.tp.CancelOrder(trading_core.OrderSideBuy, data.OrderId, data.Reason)
 				} else {
 					app.Logger.Errorf("取消订单参数错误: %s 类型只能是ask/bid", raw)
 				}
@@ -273,12 +273,13 @@ func (t *tengine) monitor_result() {
 				}
 				t.push_match_result(raw)
 			}()
-		case uniq := <-t.tp.ChCancelResult:
+		case dat := <-t.tp.ChCancelResult:
 			go func() {
 				key := types.FormatCancelResult.Format(t.symbol)
 
-				data := StructCancelOrderResult{
-					OrderId: uniq,
+				data := StructCancelOrder{
+					OrderId: dat.OrderId,
+					Reason:  dat.Reason,
 					Status:  "success",
 				}
 

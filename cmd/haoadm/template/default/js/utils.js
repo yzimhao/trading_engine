@@ -54,13 +54,29 @@
         },
 
         format_order_status: function(d){
-            if(d==0) {
-                return "未成交";
-            }else if(d == 1){
-                return "已成交";
-            }else if(d==2) {
-                return "已取消";
+            var txt = "未知";
+            console.log(d);
+            switch(d){
+                case 0:
+                    txt = "新订单"; break;
+                case 1:
+                    txt = "待提交"; break;
+                case 2:
+                    txt = "已提交"; break;
+                case 3:
+                    txt = "部分成交"; break;
+                case 4:
+                    txt = "已成交"; break;
+                case 5:
+                    txt = "已过期"; break;
+                case 6:
+                    txt = "已拒绝"; break;
+                case 7:
+                    txt = "部分取消"; break;
+                case 8:
+                    txt = "已取消"; break;
             }
+            return txt;
         },
 
         format_num: function(d, spec) {
