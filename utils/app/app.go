@@ -151,11 +151,6 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 			conn.SetTableMapper(tbMapper)
 			dbPrefix = prefix
 		}
-		if show_sql {
-			conn.ShowSQL(true)
-		} else {
-			conn.SetLogLevel(log.LOG_ERR)
-		}
 
 		logctx := xormlog.NewLogCtx(Logger)
 		conn.SetLogger(logctx)
@@ -165,6 +160,13 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 
 		if err := conn.Ping(); err != nil {
 			Logger.Fatal(err)
+		}
+
+		if show_sql {
+			conn.ShowSQL(true)
+			conn.SetLogLevel(log.LOG_INFO)
+		} else {
+			conn.SetLogLevel(log.LOG_ERR)
 		}
 		database = conn
 	}
