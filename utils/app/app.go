@@ -139,11 +139,11 @@ func RedisInit(addr, password string, db int) {
 
 }
 
-func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
+func DatabaseInit(driver, dsn string, show_sql bool, prefix string) error {
 	if database == nil {
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
-			Logger.Error(err)
+			return err
 		}
 
 		if prefix != "" {
@@ -159,7 +159,7 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		conn.TZLocation = time.Local
 
 		if err := conn.Ping(); err != nil {
-			Logger.Fatal(err)
+			return err
 		}
 
 		if show_sql {
@@ -170,6 +170,7 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		}
 		database = conn
 	}
+	return nil
 }
 
 func Database() *xorm.Engine {
