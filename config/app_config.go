@@ -4,6 +4,10 @@ var (
 	App *Configuration
 )
 
+func init() {
+	App = &Configuration{}
+}
+
 type ModeType string
 
 const (

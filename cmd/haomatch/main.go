@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	config.App = &config.Configuration{}
 	appm := &cli.App{
 		Name:      "haomatch",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",

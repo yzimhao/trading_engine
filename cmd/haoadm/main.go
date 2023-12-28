@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	config.App = &config.Configuration{}
 
 	appm := &cli.App{
 		Name:      "haoadm",
