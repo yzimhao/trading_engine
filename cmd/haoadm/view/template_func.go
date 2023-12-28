@@ -6,8 +6,8 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func templateFuncMap() template.FuncMap {

@@ -9,11 +9,11 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 

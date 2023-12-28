@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/types/token"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 var (

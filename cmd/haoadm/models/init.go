@@ -1,10 +1,10 @@
 package models
 
 import (
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 	"xorm.io/xorm"
 )
 

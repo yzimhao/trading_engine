@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Set(token string, user_id string, ttl int) error {

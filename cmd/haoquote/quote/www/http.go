@@ -7,9 +7,9 @@ import (
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 var ()

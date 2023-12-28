@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/config"
 )
 
 type RedisKey string

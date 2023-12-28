@@ -1,8 +1,8 @@
 package models
 
 import (
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type Adminuser struct {

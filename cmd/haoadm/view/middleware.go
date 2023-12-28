@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func runModeCheck() gin.HandlerFunc {

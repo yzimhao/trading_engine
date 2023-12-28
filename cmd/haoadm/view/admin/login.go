@@ -7,8 +7,8 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type login struct {

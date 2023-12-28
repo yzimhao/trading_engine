@@ -3,9 +3,9 @@ package internal_api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/types/token"
 	"github.com/yzimhao/trading_engine/utils"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 type req_settoken_args struct {

@@ -13,7 +13,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
@@ -37,6 +37,7 @@ var (
 	dbPrefix  = ""
 	redisPool *redis.Pool
 	database  *xorm.Engine
+	runDaemon bool
 )
 
 func ShowVersion() {
@@ -46,7 +47,7 @@ func ShowVersion() {
 	fmt.Println("build:", Build)
 }
 
-func ConfigInit(config_file string, is_daemon bool) {
+func ConfigInit(config_file string, conf any) {
 	if config_file != "" {
 		viper.SetConfigFile(config_file)
 		err := viper.ReadInConfig()
@@ -54,17 +55,15 @@ func ConfigInit(config_file string, is_daemon bool) {
 			logrus.Fatal(err)
 		}
 
-		if err := viper.Unmarshal(&config.App); err != nil {
+		if err := viper.Unmarshal(&conf); err != nil {
 			logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
 		}
-	} else {
-		config.App = &config.Configuration{}
 	}
 
 	//时区
 	time.LoadLocation(config.App.Main.TimeZone)
 	exename := filepath.Base(os.Args[0])
-	initLogs(exename, is_daemon)
+	initLogs(exename, runDaemon)
 
 	if config.App.Main.Mode != config.ModeProd {
 		Logger.Infof("当前运行在%s模式下", config.App.Main.Mode)
@@ -183,6 +182,10 @@ func TablePrefix() string {
 
 func RedisPool() *redis.Pool {
 	return redisPool
+}
+
+func SetDaemon(v bool) {
+	runDaemon = v
 }
 
 func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {

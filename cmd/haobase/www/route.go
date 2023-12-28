@@ -10,9 +10,9 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/order"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Run() {

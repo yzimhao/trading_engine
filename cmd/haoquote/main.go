@@ -6,12 +6,13 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli/v2"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func main() {
+	config.App = &config.Configuration{}
 	appm := &cli.App{
 		Name:      "haoquote",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",
@@ -23,7 +24,8 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
+			app.ConfigInit(ctx.String("config"), config.App)
+
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 			return nil
