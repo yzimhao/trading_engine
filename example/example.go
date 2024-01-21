@@ -38,7 +38,9 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
+			app.ConfigInit(ctx.String("config"), nil)
+			app.TimeZoneInit("Asia/Shanghai")
+			app.LogsInit("example", "./logs", "info", !ctx.Bool("deamon"))
 			return nil
 		},
 

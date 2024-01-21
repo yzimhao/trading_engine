@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 
 	formatter "github.com/antonfisher/nested-logrus-formatter"
@@ -13,7 +12,6 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
@@ -55,27 +53,24 @@ func ConfigInit(config_file string, conf any) {
 			logrus.Fatal(err)
 		}
 
-		if err := viper.Unmarshal(&conf); err != nil {
-			logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
+		if conf != nil {
+			if err := viper.Unmarshal(&conf); err != nil {
+				logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
+			}
+
 		}
-	}
-
-	//时区
-	time.LoadLocation(config.App.Main.TimeZone)
-	exename := filepath.Base(os.Args[0])
-	initLogs(exename, runDaemon)
-
-	if config.App.Main.Mode != config.ModeProd {
-		Logger.Infof("当前运行在%s模式下", config.App.Main.Mode)
 	}
 
 }
 
-func initLogs(logname string, isdaemon bool) {
+func TimeZoneInit(timezone string) {
+	time.LoadLocation(timezone)
+}
+
+func LogsInit(logname string, log_path string, log_level string, show bool) {
 	Logger = logrus.New()
-	level, _ := logrus.ParseLevel(config.App.Main.LogLevel)
+	level, _ := logrus.ParseLevel(log_level)
 	Logger.SetLevel(level)
-	// Logger.SetReportCaller(true)
 
 	Logger.SetFormatter(&formatter.Formatter{
 		TimestampFormat: "2006-01-02 15:04:05",
@@ -84,16 +79,16 @@ func initLogs(logname string, isdaemon bool) {
 	})
 
 	output := []io.Writer{}
-	if !isdaemon {
+	if show {
 		output = append(output, os.Stdout)
 	}
-	if config.App.Main.LogPath != "" {
-		err := fsutil.Mkdir(config.App.Main.LogPath, 0755)
+	if log_path != "" {
+		err := fsutil.Mkdir(log_path, 0755)
 		if err != nil {
 			Logger.Fatal(err)
 		}
 
-		file := fmt.Sprintf("%s/%s_%s.log", config.App.Main.LogPath, logname, time.Now().Format("20060102150405"))
+		file := fmt.Sprintf("%s/%s_%s.log", log_path, logname, time.Now().Format("20060102150405"))
 		f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			Logger.Fatal(err)
@@ -106,6 +101,7 @@ func initLogs(logname string, isdaemon bool) {
 }
 
 func RedisInit(addr, password string, db int) {
+
 	if redisPool == nil {
 		redisPool = &redis.Pool{
 			MaxIdle:     50, //空闲数
@@ -138,8 +134,15 @@ func RedisInit(addr, password string, db int) {
 
 }
 
-func DatabaseInit(driver, dsn string, show_sql bool, prefix string) error {
+func DatabaseInit(driver, dsn string, show_sql bool, prefix string) (err error) {
+	defer func() {
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	if database == nil {
+		fmt.Println("dsn:", dsn)
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
 			return err

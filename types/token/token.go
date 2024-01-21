@@ -33,7 +33,7 @@ func Get(original_token string) string {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	if config.App.Main.Mode == config.ModeDemo {
+	if config.App.Main.Mode == app.ModeDemo.String() {
 		return original_token
 	}
 

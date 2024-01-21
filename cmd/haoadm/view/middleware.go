@@ -14,7 +14,7 @@ import (
 
 func runModeCheck() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
+		if config.App.Main.Mode == app.ModeDemo.String() && config.App.Haoadm.Readonly {
 			if ctx.Request.Method == "POST" {
 				ctx.Abort()
 				utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
