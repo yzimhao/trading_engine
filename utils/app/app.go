@@ -37,6 +37,10 @@ var (
 	runDaemon bool
 )
 
+func init() {
+	Logger = logrus.New()
+}
+
 func ShowVersion() {
 	fmt.Println("version:", Version)
 	fmt.Println("go:", Goversion)
@@ -141,7 +145,6 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) (err error) 
 	}()
 
 	if database == nil {
-		fmt.Println("dsn:", dsn)
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
 			return err
