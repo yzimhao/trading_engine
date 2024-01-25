@@ -19,7 +19,7 @@ func CheckLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user_id := ""
 		_token := c.GetHeader("Token")
-		if config.App.Main.Mode == config.ModeDemo {
+		if config.App.Main.Mode == app.ModeDemo.String() {
 			user_id = _token
 			if user_id == "" {
 				user_id = c.Query("user_id")

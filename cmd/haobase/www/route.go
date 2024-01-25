@@ -57,7 +57,7 @@ func router(r *gin.Engine) {
 
 		api.Use(middle.CheckLogin())
 		{
-			if config.App.Main.Mode == config.ModeDemo {
+			if config.App.Main.Mode == app.ModeDemo.String() {
 				api.GET("/assets/recharge_for_demo", func(ctx *gin.Context) {
 					user_id := ctx.MustGet("user_id").(string)
 					//自动为demo用户充值

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/sevlyar/go-daemon"
 
@@ -26,6 +27,9 @@ func main() {
 
 		Before: func(ctx *cli.Context) error {
 			app.ConfigInit(ctx.String("config"), config.App)
+			app.LogsInit(filepath.Base(os.Args[0]), config.App.Main.LogPath, config.App.Main.LogLevel, !ctx.Bool("deamon"))
+			app.TimeZoneInit(config.App.Main.TimeZone)
+
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
