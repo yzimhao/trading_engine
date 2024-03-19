@@ -20,7 +20,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -37,6 +36,10 @@ var (
 	database  *xorm.Engine
 	runDaemon bool
 )
+
+func init() {
+	Logger = logrus.New()
+}
 
 func ShowVersion() {
 	fmt.Println("version:", Version)
