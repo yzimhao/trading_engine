@@ -14,7 +14,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -32,9 +31,9 @@ func init() {
 
 func initdb() {
 	app.ConfigInit("", false)
-	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test1?charset=utf8&loc=Local", true, "")
+	app.DatabaseInit("mysql", "root:root@tcp(db_host:3306)/test1?charset=utf8&loc=Local", true, "")
 	app.Database().SetLogLevel(log.LOG_DEBUG)
-	app.RedisInit("127.0.0.1:6379", "", 15)
+	app.RedisInit("db_host:6379", "", 15)
 	cleanSymbols()
 	initSymbols()
 }

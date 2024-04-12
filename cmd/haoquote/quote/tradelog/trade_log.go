@@ -10,12 +10,12 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 var ()

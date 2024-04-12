@@ -8,13 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
-	"github.com/yzimhao/trading_engine/utils/app/config"
+	"github.com/yzimhao/trading_engine/config"
+	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func Run() {
 	router := gin.Default()
 
-	if config.App.Main.Mode != config.ModeProd {
+	if config.App.Main.Mode != app.ModeProd.String() {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)

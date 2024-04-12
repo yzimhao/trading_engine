@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func Set(token string, user_id string, ttl int) error {
@@ -33,7 +33,7 @@ func Get(original_token string) string {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	if config.App.Main.Mode == config.ModeDemo {
+	if config.App.Main.Mode == app.ModeDemo.String() {
 		return original_token
 	}
 

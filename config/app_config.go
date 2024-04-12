@@ -4,14 +4,9 @@ var (
 	App *Configuration
 )
 
-type ModeType string
-
-const (
-	ModeProd  ModeType = "prod"
-	ModeDev   ModeType = "dev"
-	ModeDebug ModeType = "debug"
-	ModeDemo  ModeType = "demo"
-)
+func init() {
+	App = &Configuration{}
+}
 
 type Configuration struct {
 	Main     MainConfiguration     `mapstructure:"main"`
@@ -25,12 +20,12 @@ type Configuration struct {
 }
 
 type MainConfiguration struct {
-	Mode             ModeType `mapstructure:"mode"`
-	LogLevel         string   `mapstructure:"log_level"`
-	LogPath          string   `mapstructure:"log_path"`
-	TimeZone         string   `mapstructure:"time_zone"`
-	SecretKey        string   `mapstructure:"secret_key"`
-	StaticServerName string   `mapstructure:"static_server_name"`
+	Mode             string `mapstructure:"mode"`
+	LogLevel         string `mapstructure:"log_level"`
+	LogPath          string `mapstructure:"log_path"`
+	TimeZone         string `mapstructure:"time_zone"`
+	SecretKey        string `mapstructure:"secret_key"`
+	StaticServerName string `mapstructure:"static_server_name"`
 }
 
 type RedisConfiguration struct {

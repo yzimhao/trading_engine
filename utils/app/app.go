@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 
 	formatter "github.com/antonfisher/nested-logrus-formatter"
@@ -13,7 +12,6 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
@@ -22,7 +20,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -37,7 +34,12 @@ var (
 	dbPrefix  = ""
 	redisPool *redis.Pool
 	database  *xorm.Engine
+	runDaemon bool
 )
+
+func init() {
+	Logger = logrus.New()
+}
 
 func ShowVersion() {
 	fmt.Println("version:", Version)
@@ -46,7 +48,7 @@ func ShowVersion() {
 	fmt.Println("build:", Build)
 }
 
-func ConfigInit(config_file string, is_daemon bool) {
+func ConfigInit(config_file string, conf any) {
 	if config_file != "" {
 		viper.SetConfigFile(config_file)
 		err := viper.ReadInConfig()
@@ -54,29 +56,24 @@ func ConfigInit(config_file string, is_daemon bool) {
 			logrus.Fatal(err)
 		}
 
-		if err := viper.Unmarshal(&config.App); err != nil {
-			logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
+		if conf != nil {
+			if err := viper.Unmarshal(&conf); err != nil {
+				logrus.Fatalf("Error unmarshaling config: %s %s\n", config_file, err)
+			}
+
 		}
-	} else {
-		config.App = &config.Configuration{}
-	}
-
-	//时区
-	time.LoadLocation(config.App.Main.TimeZone)
-	exename := filepath.Base(os.Args[0])
-	initLogs(exename, is_daemon)
-
-	if config.App.Main.Mode != config.ModeProd {
-		Logger.Infof("当前运行在%s模式下", config.App.Main.Mode)
 	}
 
 }
 
-func initLogs(logname string, isdaemon bool) {
+func TimeZoneInit(timezone string) {
+	time.LoadLocation(timezone)
+}
+
+func LogsInit(logname string, log_path string, log_level string, show bool) {
 	Logger = logrus.New()
-	level, _ := logrus.ParseLevel(config.App.Main.LogLevel)
+	level, _ := logrus.ParseLevel(log_level)
 	Logger.SetLevel(level)
-	// Logger.SetReportCaller(true)
 
 	Logger.SetFormatter(&formatter.Formatter{
 		TimestampFormat: "2006-01-02 15:04:05",
@@ -85,16 +82,16 @@ func initLogs(logname string, isdaemon bool) {
 	})
 
 	output := []io.Writer{}
-	if !isdaemon {
+	if show {
 		output = append(output, os.Stdout)
 	}
-	if config.App.Main.LogPath != "" {
-		err := fsutil.Mkdir(config.App.Main.LogPath, 0755)
+	if log_path != "" {
+		err := fsutil.Mkdir(log_path, 0755)
 		if err != nil {
 			Logger.Fatal(err)
 		}
 
-		file := fmt.Sprintf("%s/%s_%s.log", config.App.Main.LogPath, logname, time.Now().Format("20060102150405"))
+		file := fmt.Sprintf("%s/%s_%s.log", log_path, logname, time.Now().Format("20060102150405"))
 		f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE, 0755)
 		if err != nil {
 			Logger.Fatal(err)
@@ -107,6 +104,7 @@ func initLogs(logname string, isdaemon bool) {
 }
 
 func RedisInit(addr, password string, db int) {
+
 	if redisPool == nil {
 		redisPool = &redis.Pool{
 			MaxIdle:     50, //空闲数
@@ -139,22 +137,23 @@ func RedisInit(addr, password string, db int) {
 
 }
 
-func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
+func DatabaseInit(driver, dsn string, show_sql bool, prefix string) (err error) {
+	defer func() {
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	if database == nil {
 		conn, err := xorm.NewEngine(driver, dsn)
 		if err != nil {
-			Logger.Error(err)
+			return err
 		}
 
 		if prefix != "" {
 			tbMapper := names.NewPrefixMapper(names.SnakeMapper{}, prefix)
 			conn.SetTableMapper(tbMapper)
 			dbPrefix = prefix
-		}
-		if show_sql {
-			conn.ShowSQL(true)
-		} else {
-			conn.SetLogLevel(log.LOG_ERR)
 		}
 
 		logctx := xormlog.NewLogCtx(Logger)
@@ -164,10 +163,18 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) {
 		conn.TZLocation = time.Local
 
 		if err := conn.Ping(); err != nil {
-			Logger.Fatal(err)
+			return err
+		}
+
+		if show_sql {
+			conn.ShowSQL(true)
+			conn.SetLogLevel(log.LOG_INFO)
+		} else {
+			conn.SetLogLevel(log.LOG_ERR)
 		}
 		database = conn
 	}
+	return nil
 }
 
 func Database() *xorm.Engine {
@@ -180,6 +187,10 @@ func TablePrefix() string {
 
 func RedisPool() *redis.Pool {
 	return redisPool
+}
+
+func SetDaemon(v bool) {
+	runDaemon = v
 }
 
 func Deamon(pid string, logfile string) (*daemon.Context, *os.Process, error) {

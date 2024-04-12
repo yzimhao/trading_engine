@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/sevlyar/go-daemon"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/cmd/haobase/settle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
@@ -28,7 +29,9 @@ func main() {
 		},
 
 		Before: func(ctx *cli.Context) error {
-			app.ConfigInit(ctx.String("config"), ctx.Bool("deamon"))
+			app.ConfigInit(ctx.String("config"), config.App)
+			app.LogsInit(filepath.Base(os.Args[0]), config.App.Main.LogPath, config.App.Main.LogLevel, !ctx.Bool("deamon"))
+			app.TimeZoneInit(config.App.Main.TimeZone)
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
 
@@ -86,7 +89,7 @@ func main() {
 }
 
 func initDemoBaseData() {
-	if config.App.Main.Mode == config.ModeDemo {
+	if config.App.Main.Mode == app.ModeDemo.String() {
 		varieties.DemoData()
 	}
 }

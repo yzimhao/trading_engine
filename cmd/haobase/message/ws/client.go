@@ -15,7 +15,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/types/token"
-	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 const (
@@ -83,7 +82,7 @@ func (c *Client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				app.Logger.Errorf("[wss ] IsUnexpectedCloseError: %v", err)
+				// app.Logger.Errorf("[wss ] IsUnexpectedCloseError: %v", err)
 			}
 			break
 		}
@@ -170,7 +169,7 @@ func (c *Client) handleRecvData(body []byte) {
 		c.delAttr(attr)
 	}
 
-	app.Logger.Debugf("[wss] recv: %v attrs: %v", msg, c.attrs)
+	// app.Logger.Debugf("[wss] recv: %v attrs: %v", msg, c.attrs)
 }
 
 func (c *Client) setAttr(tag string) {

@@ -16,7 +16,6 @@ require (
 	github.com/gookit/goutil v0.6.12
 	github.com/gorilla/websocket v1.5.0
 	github.com/lib/pq v1.10.9
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/sevlyar/go-daemon v0.1.6
 	github.com/shopspring/decimal v1.3.1
 	github.com/sirupsen/logrus v1.9.3

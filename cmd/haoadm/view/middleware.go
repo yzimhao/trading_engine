@@ -7,14 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"github.com/yzimhao/trading_engine/utils/app/config"
 )
 
 func runModeCheck() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if config.App.Main.Mode == config.ModeDemo && config.App.Haoadm.Readonly {
+		if config.App.Main.Mode == app.ModeDemo.String() && config.App.Haoadm.Readonly {
 			if ctx.Request.Method == "POST" {
 				ctx.Abort()
 				utils.ResponseFailJson(ctx, "demo模式，禁止修改数据")
