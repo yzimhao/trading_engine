@@ -38,6 +38,9 @@ jobs:
           --health-retries 5
 
     steps:
+    - name: Edit /etc/hosts
+      run: echo "127.0.0.1 db_host" | sudo tee -a /etc/hosts
+
     - name: Wait for MySQL to start
       run: sleep 15s
 

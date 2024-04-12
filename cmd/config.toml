@@ -7,14 +7,14 @@ secret_key = "2c320e24aa9d40b9"
 static_server_name=""
 
 [redis]
-host="127.0.0.1:6379"
+host="db_host:6379"
 password=""
 db=0
 prefix=""
 
 [database]
 driver="mysql"
-dsn = "root:root@tcp(localhost:3306)/haotrader?charset=utf8&loc=Local"
+dsn = "root:root@tcp(db_host:3306)/haotrader?charset=utf8&loc=Local"
 show_sql = true
 prefix="tt_"
 
