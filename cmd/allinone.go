@@ -17,7 +17,7 @@ import (
 func main() {
 
 	appm := &cli.App{
-		Name:      "allinone",
+		Name:      "haotrader",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",
 		Usage:     "交易软件",
 		Flags: []cli.Flag{
