@@ -33,6 +33,7 @@ type bot struct {
 func StartBot(sec_min, sec_max int64, default_lots string) {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
 	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
+	auto_deposit("bot-test-003", BOTBUY, "eur", "1000000000000")
 
 	b1 := bot{
 		symbol:       "usdjpy",
@@ -41,6 +42,14 @@ func StartBot(sec_min, sec_max int64, default_lots string) {
 		default_lots: default_lots,
 	}
 	go b1.run()
+
+	b2 := bot{
+		symbol:       "eurusd",
+		sec_min:      sec_min,
+		sec_max:      sec_max,
+		default_lots: default_lots,
+	}
+	go b2.run()
 }
 
 func (b *bot) run() {
