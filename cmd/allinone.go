@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli/v2"
 	admview "github.com/yzimhao/trading_engine/cmd/haoadm/view"
 	"github.com/yzimhao/trading_engine/cmd/haobase/core"
@@ -48,6 +49,25 @@ func main() {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			if ctx.Bool("deamon") {
+				context, d, err := app.Deamon(ctx.String("pid"), "")
+				if err != nil {
+					app.Logger.Fatal("创建守护进程失败, err:", err.Error())
+				}
+				if d != nil {
+					app.Logger.Printf("这是在父进程的标志")
+					return nil
+				}
+
+				defer func(context *daemon.Context) {
+					err := context.Release()
+					if err != nil {
+						app.Logger.Printf("释放失败:%s", err.Error())
+					}
+					app.Logger.Printf("释放成功!!!")
+				}(context)
+			}
+
 			keepalive.NewKeepalive(app.RedisPool(), ctx.App.Name, app.Version, 5)
 			start()
 			return nil
