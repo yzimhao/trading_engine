@@ -35,15 +35,17 @@
     - [x] 交易品种
     - [x] 资产模块
     - [x] 订单模块
-    - [x] 结算模块
     - [x] 充值提现
 
   - [x] [haomatch]
     - [x] 撮合模块
+  
+  - [x] [haosettle]
+    - [x] 结算模块
 
   - [x] [haoquote]
     - [x] 深度行情
-    - [x] Kline数据
+    - [x] K线数据
     - [x] websocket推送
 
 ## 撮合

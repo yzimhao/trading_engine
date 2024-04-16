@@ -12,6 +12,7 @@
     cd cmd/ 
     go run haobase/main.go -c config.toml
     go run haomatch/main.go -c config.toml
+    go run haosettle/main.go -c config.toml
     go run haoquote/main.go -c config.toml
 
     
