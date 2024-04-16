@@ -6,6 +6,7 @@ import (
 	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
 	"github.com/yzimhao/trading_engine/config"
@@ -44,6 +45,11 @@ func setMethods(r Router, methods []string, relativePath string, handlers ...gin
 
 func setupRouter(router *gin.Engine) {
 	templateDir := "./template/default"
+
+	if !fsutil.DirExist(templateDir) {
+		templateDir = "./haoadm/template/default"
+	}
+
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Delims:    gintemplate.Delims{Left: "{%", Right: "%}"},
 		Root:      templateDir, //template root path

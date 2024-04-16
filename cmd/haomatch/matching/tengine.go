@@ -2,6 +2,7 @@ package matching
 
 import (
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -26,6 +27,8 @@ func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePa
 		restore_done_signal: make(chan struct{}),
 		update:              make(chan struct{}, 100),
 	}
+
+	app.Logger.Infof("start matching %s", symbol)
 
 	go te.queue_monitor()
 	go te.restore()
@@ -73,8 +76,34 @@ func (t *tengine) push_depth_to_redis() {
 	}
 }
 
+func (t *tengine) save_to_redis(raw Order) {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	if _, err := rdc.Do("zadd", types.FormatSymbolUnfinishedOrders.Format(t.symbol), raw.Price, raw.OrderId); err != nil {
+		app.Logger.Errorf("zadd %s err: %s", t.symbol, err)
+	}
+	if _, err := rdc.Do("set", types.FormatOrderDetail.Format(raw.OrderId), raw.Json()); err != nil {
+		app.Logger.Errorf("set %s err: %s", raw.OrderId, err)
+	}
+}
+
+func (t *tengine) remove_from_redis(order_id string) {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	if _, err := rdc.Do("zrem", types.FormatSymbolUnfinishedOrders.Format(t.symbol), order_id); err != nil {
+		app.Logger.Errorf("zrem %s err: %s", t.symbol, err)
+	}
+	if _, err := rdc.Do("del", types.FormatOrderDetail.Format(order_id)); err != nil {
+		app.Logger.Errorf("del redis %s err: %s", types.FormatOrderDetail.Format(order_id), err)
+	}
+}
+
 func (t *tengine) queue_monitor() {
+
 	t.tp.OnEvent(func(qi trading_core.QueueItem) {
+
 		//恢复数据完成后，再开始数据持久化
 		if t.tp.TriggerEvent() {
 			raw := Order{
@@ -88,7 +117,7 @@ func (t *tengine) queue_monitor() {
 
 			if qi.GetQuantity().Cmp(decimal.Zero) > 0 {
 				app.Logger.Debugf("queue event update: %#v", raw)
-				go localdb.Set(t.symbol, raw.OrderId, raw.Json())
+				t.save_to_redis(raw)
 			}
 		}
 		t.update <- struct{}{}
@@ -103,20 +132,32 @@ func (t *tengine) queue_monitor() {
 				At:        qi.GetCreateTime(),
 			}
 			app.Logger.Debugf("queue event remove: %#v", raw)
-			go localdb.Remove(t.symbol, raw.OrderId)
+			t.remove_from_redis(raw.OrderId)
 		}
 
 		t.update <- struct{}{}
 	}, func(tl trading_core.TradeResult) {
+		rdc := app.RedisPool().Get()
+		defer rdc.Close()
+
 		//只保留最近的1条成交记录,用于恢复最新成交价格
-		localdb.Set("tradelog", t.symbol, tl.Json())
+		// localdb.Set("tradelog", t.symbol, tl.Json())
+		rdc.Do("set", types.FormatSymbolLatestPrice.Format(t.symbol), tl.TradePrice.String())
 	})
 }
 
 func (t *tengine) restore() {
+	rdc := app.RedisPool().Get()
+	defer rdc.Close()
+
+	app.Logger.Infof("[%s]开始恢复未完成的订单", t.symbol)
+
+	begin_time := time.Now()
 
 	defer func() {
-		app.Logger.Infof("数据恢复 [%s] 已完成", t.symbol)
+		end_time := time.Now()
+
+		app.Logger.Infof("[%s]订单重新加载已完成耗时%fs", t.symbol, end_time.Sub(begin_time).Seconds())
 		close(t.restore_done_signal)
 		t.tp.SetTriggerEvent(true)
 		t.tp.SetPauseMatch(false)
@@ -125,29 +166,42 @@ func (t *tengine) restore() {
 	t.tp.SetPauseMatch(true)
 
 	//恢复orderbook
-	data := localdb.Find(t.symbol, "")
-	app.Logger.Infof("正在恢复[%s]数据，共%d条", t.symbol, len(data))
-	for i, v := range data {
-		func(n int, raw []byte) {
-			app.Logger.Infof("恢复数据[%s]第%d条: %s", t.symbol, n+1, raw)
-			var data Order
-			json.Unmarshal(raw, &data)
+	count, _ := redis.Int64(rdc.Do("zcard", types.FormatSymbolUnfinishedOrders.Format(t.symbol)))
+	pagesize := int64(10)
+	pagecount := func() int64 {
+		a := math.Ceil(float64(count) / float64(pagesize))
+		return int64(a)
+	}()
 
-			if data.Side == trading_core.OrderSideSell {
-				t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
-			} else {
-				t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
-			}
-		}(i, v)
+	reload_data := func(n int64, raw []byte) {
+		app.Logger.Infof("恢复数据[%s]: %d/%d %s", t.symbol, n, count, raw)
+		var data Order
+		json.Unmarshal(raw, &data)
+
+		if data.Side == trading_core.OrderSideSell {
+			t.tp.PushNewOrder(trading_core.NewAskLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
+		} else {
+			t.tp.PushNewOrder(trading_core.NewBidLimitItem(data.OrderId, utils.D(data.Price), utils.D(data.Qty), data.At))
+		}
 	}
 
-	//恢复最新成交价格
-	tls := localdb.Find("tradelog", t.symbol)
-	for _, v := range tls {
-		var tlog trading_core.TradeResult
-		json.Unmarshal(v, &tlog)
-		t.tp.SetLatestPrice(tlog.TradePrice)
+	n := int64(1)
+	for page := int64(0); page < pagecount; page++ {
+		start := page * pagesize
+		stop := page*pagesize + pagesize - 1
+		order_ids, _ := redis.ByteSlices(rdc.Do("zrange", types.FormatSymbolUnfinishedOrders.Format(t.symbol), start, stop))
+
+		for _, order_id := range order_ids {
+			app.Logger.Infof("正在恢复[%s] %d/%d %s", t.symbol, n, count, order_id)
+			data, _ := redis.Bytes(rdc.Do("get", types.FormatOrderDetail.Format(string(order_id))))
+			reload_data(n, data)
+			n++
+		}
+
 	}
+
+	price, _ := redis.String(rdc.Do("get", types.FormatSymbolLatestPrice.Format(t.symbol)))
+	t.tp.SetLatestPrice(utils.D(price))
 
 }
 
@@ -217,7 +271,6 @@ func (t *tengine) pull_new_order() {
 
 			}(raw)
 		}()
-
 	}
 }
 func (t *tengine) pull_cancel_order() {
@@ -283,11 +336,13 @@ func (t *tengine) monitor_result() {
 					Status:  "success",
 				}
 
+				t.remove_from_redis(data.OrderId)
+
 				rdc := app.RedisPool().Get()
 				defer rdc.Close()
 
 				raw := data.Json()
-				if _, err := rdc.Do("RPUSH", key, raw); err != nil { //rdc.RPush(cx, key, raw).Err()
+				if _, err := rdc.Do("RPUSH", key, raw); err != nil {
 					app.Logger.Warnf("%s队列RPush: %s %s", key, raw, err)
 				}
 			}()

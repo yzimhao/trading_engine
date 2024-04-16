@@ -2,7 +2,6 @@ package matching
 
 import (
 	"sync"
-	"time"
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
@@ -10,20 +9,16 @@ import (
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
-	"github.com/yzimhao/trading_engine/utils/filecache"
 )
 
 var (
 	wg sync.WaitGroup
 
-	localdb *filecache.Storage
-	teps    map[string]*trading_core.TradePair
+	teps map[string]*trading_core.TradePair
 )
 
 func Run() {
 	teps = make(map[string]*trading_core.TradePair)
-	localdb = filecache.NewStorage(config.App.Haomatch.Cache, time.Duration(10))
-	defer localdb.Close()
 
 	wg = sync.WaitGroup{}
 	wg.Add(1)

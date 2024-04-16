@@ -18,6 +18,10 @@ const (
 	FormatWsMessage            RedisKey = "{prefix}ws.message"
 	FormatDepthData            RedisKey = "{prefix}depth.{symbol}"
 	FormatBroadcastLatestPrice RedisKey = "{prefix}broadcast.latest_price.{symbol}"
+
+	FormatOrderDetail            RedisKey = "{prefix}order.detail.{symbol}"
+	FormatSymbolUnfinishedOrders RedisKey = "{prefix}unfinished.order.{symbol}"
+	FormatSymbolLatestPrice      RedisKey = "{prefix}latest_price.{symbol}"
 )
 
 func (r RedisKey) Format(symbol string) string {

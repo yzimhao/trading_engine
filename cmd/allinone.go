@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/urfave/cli/v2"
 	admview "github.com/yzimhao/trading_engine/cmd/haoadm/view"
@@ -33,7 +34,6 @@ func main() {
 
 			app.DatabaseInit(config.App.Database.Driver, config.App.Database.DSN, config.App.Database.ShowSQL, config.App.Database.Prefix)
 			app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, config.App.Redis.DB)
-
 			return nil
 		},
 
@@ -60,6 +60,8 @@ func main() {
 
 func start() {
 	go haobase()
+	//todo
+	time.Sleep(time.Second)
 	go haomatch()
 	go haoquote()
 	haoadm()

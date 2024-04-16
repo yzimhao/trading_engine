@@ -12,8 +12,8 @@ import (
 type periodCachekey string
 
 const (
-	periodBucket string         = "period"
-	periodKey    periodCachekey = "period_%s_%s_%d_%d" //"period_usdjpy_mn_1695571200_1696175999"
+	// periodBucket string         = "period"
+	klinePeriodKey periodCachekey = "kline.%s.%s.%d_%d" //"kline.usdjpy.mn.1695571200_1696175999"
 )
 
 func (p periodCachekey) Format(pt PeriodType, symbol string, st, et int64) periodCachekey {
@@ -41,7 +41,7 @@ func GetYesterdayClose(symbol string) (string, bool) {
 
 	//获取昨天的收盘价，如果没有则获取今天的开盘价
 	st, et := get_start_end_time(now.AddDate(0, 0, -1), PERIOD_D1)
-	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
+	key := klinePeriodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
 	cache_data, err := key.get()
 	if err != nil {
 		return "", false
@@ -59,7 +59,7 @@ func GetTodyStats(symbol string) (Period, error) {
 	now := time.Now()
 
 	st, et := get_start_end_time(now, PERIOD_D1)
-	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
+	key := klinePeriodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
 	cache_data, err := key.get()
 
 	var data Period

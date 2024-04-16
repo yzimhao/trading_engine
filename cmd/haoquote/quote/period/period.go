@@ -35,7 +35,7 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 	open_at, close_at := get_start_end_time(tradetime, p)
 
 	data := Period{}
-	ckey := periodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
+	ckey := klinePeriodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
 	cache_data, _ := ckey.get()
 	json.Unmarshal(cache_data, &data)
 
