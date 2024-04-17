@@ -22,10 +22,9 @@ func generate_order_id_by_side(side trading_core.OrderSide) string {
 // todo 调整order_id的长度
 func generate_order_id(prefix string) string {
 	prefix = strings.ToUpper(prefix)
-	s := time.Now().Format("060102150405")
-	ns := time.Now().Nanosecond() / 1000
-	rn := rand.Intn(99)
-	return fmt.Sprintf("%s%s%06d%02d", prefix, s, ns, rn)
+	t := time.Now().Format("060102150405")
+	rn := rand.Intn(9999)
+	return fmt.Sprintf("%s%s%04d", prefix, t, rn)
 }
 
 func push_new_order_to_redis(symbol string, data []byte) {
