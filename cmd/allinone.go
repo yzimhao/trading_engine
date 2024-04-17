@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,6 +16,8 @@ import (
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
+
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -80,6 +83,7 @@ func main() {
 }
 
 func start() {
+	debug_pprof()
 	go haobase()
 	//todo
 	time.Sleep(time.Second)
@@ -87,6 +91,14 @@ func start() {
 	go haosettle()
 	go haoquote()
 	haoadm()
+}
+
+func debug_pprof() {
+	if config.App.Main.Mode != app.ModeProd.String() {
+		go func() {
+			app.Logger.Info(http.ListenAndServe("0.0.0.0:26060", nil))
+		}()
+	}
 }
 
 func haobase() {
