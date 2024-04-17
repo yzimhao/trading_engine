@@ -21,6 +21,10 @@ const (
 	BOTBUY  = "demobot2"
 )
 
+var (
+	LIMITSIZE int = 3000
+)
+
 type bot struct {
 	sec_min      int64
 	sec_max      int64
@@ -30,10 +34,14 @@ type bot struct {
 	default_lots string
 }
 
-func StartBot(sec_min, sec_max int64, default_lots string) {
+func StartBot(sec_min, sec_max int64, default_lots string, limit_size int) {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
 	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
 	auto_deposit("bot-test-003", BOTSELL, "eur", "1000000000000")
+
+	if limit_size > 0 {
+		LIMITSIZE = limit_size
+	}
 
 	b1 := bot{
 		symbol:       "usdjpy",
@@ -88,9 +96,9 @@ func (b *bot) auto_depth() {
 
 	// fmt.Printf("\r\nan: %d asks: %#v\r\n", an, depth["asks"])
 	// fmt.Printf("\r\nbn: %d bids: %#v\r\n", bn, depth["bids"])
-	if an < 10 || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
-		if an < 10 {
-			for i := 0; i < 10-an; i++ {
+	if an < LIMITSIZE || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
+		if an < LIMITSIZE {
+			for i := 0; i < LIMITSIZE-an; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
 				b.auto_sell(BOTSELL, price.String(), b.default_lots)
@@ -102,9 +110,9 @@ func (b *bot) auto_depth() {
 		}
 	}
 
-	if bn < 10 || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
-		if bn < 10 {
-			for i := 0; i < 10-bn; i++ {
+	if bn < LIMITSIZE || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
+		if bn < LIMITSIZE {
+			for i := 0; i < LIMITSIZE-bn; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
 				b.auto_buy(BOTBUY, price.String(), b.default_lots)
