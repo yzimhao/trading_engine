@@ -40,7 +40,7 @@ func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePa
 }
 
 func (t *tengine) push_depth_to_redis() {
-	depth_topic := redisdb.DepthData.Format(redisdb.Replace{"symbol": t.symbol})
+	depth_topic := redisdb.OrderBook.Format(redisdb.Replace{"symbol": t.symbol})
 
 	//如果长时间没有触发，5s自动触发一次更新
 	go func() {

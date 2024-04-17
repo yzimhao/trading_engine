@@ -23,7 +23,7 @@ func publish_depth() {
 }
 
 func get_depth_data(symbol string) (*redisdb.OrderBookData, error) {
-	topic := redisdb.DepthData.Format(redisdb.Replace{"symbol": symbol})
+	topic := redisdb.OrderBook.Format(redisdb.Replace{"symbol": symbol})
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()

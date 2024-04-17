@@ -16,7 +16,7 @@ const (
 	QuoteTradeResultQueue redisdb = "{prefix}queue.quote.trade.result.{symbol}"
 	WsMessageQueue        redisdb = "{prefix}queue.ws.message"
 	//#
-	DepthData redisdb = "{prefix}depth.{symbol}"
+	OrderBook redisdb = "{prefix}orderbook.{symbol}"
 
 	BroadcastLatestPrice redisdb = "{prefix}broadcast.latest_price.{symbol}"
 
