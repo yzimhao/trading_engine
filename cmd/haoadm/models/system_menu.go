@@ -11,7 +11,7 @@ var (
 func init() {
 	menuList = []SystemMenu{
 		SystemMenu{Id: 1, Pid: 0, Title: "系统管理", Icon: "fa fa-wrench", Href: "javascript:;", Target: "_self"},
-		SystemMenu{Id: 2, Pid: 0, Title: "资产管理", Icon: "fa fa-btc", Href: "javascript:;", Target: "_self"},
+		SystemMenu{Id: 2, Pid: 0, Title: "资产信息", Icon: "fa fa-btc", Href: "javascript:;", Target: "_self"},
 		SystemMenu{Id: 3, Pid: 0, Title: "用户管理", Icon: "fa fa-user", Href: "javascript:;", Target: "_self"},
 
 		// SystemMenu{Id: 4, Pid: 0, Title: "统计", Icon: "fa fa-bar-chart", Href: "javascript:;", Target: "_self"},
