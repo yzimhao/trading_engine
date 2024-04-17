@@ -17,7 +17,7 @@ func NewTradeStats() []TradeStats {
 
 	data := make([]TradeStats, 0)
 	//从redis中的period_usdjpy_d1_1701532800_1701619199获取
-	for _, v := range base.NewTSymbols().All() {
+	for _, v := range base.NewTradeSymbol().All() {
 		stats, _ := period.GetTodyStats(v.Symbol)
 		t := TradeStats{
 			Symbol:           v.Symbol,

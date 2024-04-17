@@ -16,6 +16,7 @@ import (
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -35,7 +36,7 @@ func SubmitOrderCancel(order_id string, reason trading_core.CancelType) error {
 			OrderId: order.OrderId,
 			Reason:  reason,
 		}
-		rdc.Do("rpush", types.FormatCancelOrder.Format(order.Symbol), cancel.Json())
+		rdc.Do("rpush", redisdb.CancelOrderQueue.Format(redisdb.Replace{"symbol": order.Symbol}), cancel.Json())
 	} else {
 		//已经完成或者已经被取消
 		return fmt.Errorf("已经被取消或已完成")
@@ -47,7 +48,7 @@ func SubmitOrderCancel(order_id string, reason trading_core.CancelType) error {
 func Run() {
 	//监听取消订单队列
 	local_config_symbols := config.App.Local.Symbols
-	db_symbols := base.NewTSymbols().All()
+	db_symbols := base.NewTradeSymbol().All()
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
 			go watch_cancel_order_list(item.Symbol)
@@ -57,7 +58,7 @@ func Run() {
 }
 
 func watch_cancel_order_list(symbol string) {
-	key := types.FormatCancelResult.Format(symbol)
+	key := redisdb.CancelResultQueue.Format(redisdb.Replace{"symbol": symbol})
 	app.Logger.Infof("监听%s取消订单队列...", symbol)
 	for {
 		func() {

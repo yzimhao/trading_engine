@@ -12,7 +12,7 @@ func trans_record(ctx *gin.Context) {
 	symbol := ctx.Query("symbol")
 	limit := utils.S2Int(ctx.Query("limit"))
 
-	tsymbols := base.NewTSymbols()
+	tsymbols := base.NewTradeSymbol()
 	info, err := tsymbols.Get(symbol)
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())

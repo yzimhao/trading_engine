@@ -15,7 +15,7 @@ func kline(ctx *gin.Context) {
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := ctx.Query("symbol")
 
-	tsymbols := base.NewTSymbols()
+	tsymbols := base.NewTradeSymbol()
 	info, err := tsymbols.Get(symbol)
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())

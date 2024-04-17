@@ -47,13 +47,13 @@ type LocalConfiguration struct {
 }
 
 type HaomatchConfiguration struct {
-	Cache   string `mapstructure:"cache"`
-	LogFile string `mapstructure:"log_file"`
-	Listen  string `mapstructure:"listen"`
+	// Cache   string `mapstructure:"cache"`
+	// LogFile string `mapstructure:"log_file"`
+	// Listen  string `mapstructure:"listen"`
 }
 
 type HaoquoteConfiguration struct {
-	Cache  string   `mapstructure:"cache"`
+	// Cache  string   `mapstructure:"cache"`
 	Period []string `mapstructure:"period"`
 	Listen string   `mapstructure:"listen"`
 	Debug  bool     `mapstructure:"debug"`

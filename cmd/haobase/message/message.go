@@ -5,12 +5,12 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
-	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func Subscribe() {
-	topic := types.FormatWsMessage.Format("")
+	topic := redisdb.WsMessageQueue.Format(redisdb.Replace{})
 
 	go func() {
 		rdc := app.RedisPool().Get()
@@ -41,7 +41,7 @@ func Subscribe() {
 func Publish(msg ws.MsgBody) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
-	topic := types.FormatWsMessage.Format("")
+	topic := redisdb.WsMessageQueue.Format(redisdb.Replace{})
 
 	raw := msg.JSON()
 	// app.Logger.Infof("广播消息[topic:%s]: %s", topic, raw)

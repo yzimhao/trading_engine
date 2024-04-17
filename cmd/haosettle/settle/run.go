@@ -11,20 +11,28 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func Run() {
-	//load symbols
+	for {
+		init_symbols()
+		time.Sleep(time.Second * 5)
+	}
+}
+
+func init_symbols() {
 	local_config_symbols := config.App.Local.Symbols
-	db_symbols := base.NewTSymbols().All()
+	db_symbols := base.NewTradeSymbol().All()
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
-			run_clearing(item.Symbol)
-			keepalive.SetExtras("settle_symbols", item.Symbol)
+			if !keepalive.HasExtrasKeyValue("settle.symbols", item.Symbol) {
+				run_clearing(item.Symbol)
+				keepalive.SetExtras("settle.symbols", item.Symbol)
+			}
 		}
 	}
 }
@@ -35,7 +43,7 @@ func run_clearing(symbol string) {
 }
 
 func watch_tradeok_list(symbol string) {
-	key := types.FormatTradeResult.Format(symbol)
+	key := redisdb.TradeResultQueue.Format(redisdb.Replace{"symbol": symbol})
 	app.Logger.Infof("监听%s成交日志，等待结算...", symbol)
 	for {
 		func() {
@@ -94,7 +102,7 @@ func notify_quote(raw trading_core.TradeResult) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	quote_key := types.FormatQuoteTradeResult.Format(raw.Symbol)
+	quote_key := redisdb.QuoteTradeResultQueue.Format(redisdb.Replace{"symbol": raw.Symbol})
 	if _, err := rdc.Do("RPUSH", quote_key, raw.Json()); err != nil {
 		app.Logger.Errorf("RPUSH %s err: %s", quote_key, err.Error())
 	}

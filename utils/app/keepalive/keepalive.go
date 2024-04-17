@@ -10,6 +10,7 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/utils"
 )
 
@@ -86,6 +87,21 @@ func SetExtras(key string, pp ...string) {
 
 	single.app.Extras[key] = append(single.app.Extras[key], pp...)
 }
+
+func HasExtrasKeyValue(key string, value string) bool {
+	single.Lock()
+	defer single.Unlock()
+
+	if _, ok := single.app.Extras[key]; !ok {
+		return false
+	}
+
+	if !arrutil.InStrings(value, single.app.Extras[key]) {
+		return false
+	}
+	return true
+}
+
 func AppInfoTopic() []string {
 	rdc := single.rdc.Get()
 	defer rdc.Close()

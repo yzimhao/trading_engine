@@ -10,19 +10,20 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func publish_depth() {
-	tsymbols := base.NewTSymbols()
+	tsymbols := base.NewTradeSymbol()
 
 	for _, item := range tsymbols.All() {
 		push_depth_message(item.Symbol)
 	}
 }
 
-func get_depth_data(symbol string) (*types.RedisDepthData, error) {
-	topic := types.FormatDepthData.Format(symbol)
+func get_depth_data(symbol string) (*redisdb.OrderBookData, error) {
+	topic := redisdb.DepthData.Format(redisdb.Replace{"symbol": symbol})
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
@@ -32,7 +33,7 @@ func get_depth_data(symbol string) (*types.RedisDepthData, error) {
 		return nil, err
 	}
 
-	var data types.RedisDepthData
+	var data redisdb.OrderBookData
 	err = json.Unmarshal(raw, &data)
 	if err != nil {
 		return nil, err

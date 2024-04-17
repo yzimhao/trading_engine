@@ -68,7 +68,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		total, _ := db.Table(new(orders.UnfinishedOrder)).And(cond).Count()
 
 		for i, v := range data {
-			cfg, _ := base.NewTSymbols().Get(v.Symbol)
+			cfg, _ := base.NewTradeSymbol().Get(v.Symbol)
 			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 		}
 
@@ -77,7 +77,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		} else {
 			ctx.HTML(200, "user_unfinished", gin.H{
 				"search":      search,
-				"all_symbols": base.NewTSymbols().All(),
+				"all_symbols": base.NewTradeSymbol().All(),
 			})
 		}
 		return

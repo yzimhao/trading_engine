@@ -13,7 +13,7 @@ func History(ctx *gin.Context) {
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := ctx.Query("symbol")
 
-	cfg, err := base.NewTSymbols().Get(symbol)
+	cfg, err := base.NewTradeSymbol().Get(symbol)
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())
 		return

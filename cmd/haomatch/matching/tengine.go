@@ -8,7 +8,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -40,7 +40,7 @@ func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePa
 }
 
 func (t *tengine) push_depth_to_redis() {
-	depth_topic := types.FormatDepthData.Format(t.symbol)
+	depth_topic := redisdb.DepthData.Format(redisdb.Replace{"symbol": t.symbol})
 
 	//如果长时间没有触发，5s自动触发一次更新
 	go func() {
@@ -55,7 +55,7 @@ func (t *tengine) push_depth_to_redis() {
 		case <-t.update:
 			go func() {
 				price, at := t.tp.LatestPrice()
-				data := types.RedisDepthData{
+				data := redisdb.OrderBookData{
 					Price: t.tp.Price2String(price),
 					At:    at,
 					Asks:  t.tp.GetAskDepth(50),
@@ -80,10 +80,10 @@ func (t *tengine) save_to_redis(raw Order) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	if _, err := rdc.Do("zadd", types.FormatSymbolUnfinishedOrders.Format(t.symbol), raw.Price, raw.OrderId); err != nil {
+	if _, err := rdc.Do("zadd", redisdb.SymbolUnfinishedOrders.Format(redisdb.Replace{"symbol": t.symbol}), raw.Price, raw.OrderId); err != nil {
 		app.Logger.Errorf("zadd %s err: %s", t.symbol, err)
 	}
-	if _, err := rdc.Do("set", types.FormatOrderDetail.Format(raw.OrderId), raw.Json()); err != nil {
+	if _, err := rdc.Do("set", redisdb.OrderDetail.Format(redisdb.Replace{"order_id": raw.OrderId}), raw.Json()); err != nil {
 		app.Logger.Errorf("set %s err: %s", raw.OrderId, err)
 	}
 }
@@ -92,11 +92,11 @@ func (t *tengine) remove_from_redis(order_id string) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	if _, err := rdc.Do("zrem", types.FormatSymbolUnfinishedOrders.Format(t.symbol), order_id); err != nil {
+	if _, err := rdc.Do("zrem", redisdb.SymbolUnfinishedOrders.Format(redisdb.Replace{"symbol": t.symbol}), order_id); err != nil {
 		app.Logger.Errorf("zrem %s err: %s", t.symbol, err)
 	}
-	if _, err := rdc.Do("del", types.FormatOrderDetail.Format(order_id)); err != nil {
-		app.Logger.Errorf("del redis %s err: %s", types.FormatOrderDetail.Format(order_id), err)
+	if _, err := rdc.Do("del", redisdb.OrderDetail.Format(redisdb.Replace{"order_id": order_id})); err != nil {
+		app.Logger.Errorf("del redis %s err: %s", redisdb.OrderDetail.Format(redisdb.Replace{"order_id": order_id}), err)
 	}
 }
 
@@ -142,7 +142,7 @@ func (t *tengine) queue_monitor() {
 
 		//只保留最近的1条成交记录,用于恢复最新成交价格
 		// localdb.Set("tradelog", t.symbol, tl.Json())
-		rdc.Do("set", types.FormatSymbolLatestPrice.Format(t.symbol), tl.TradePrice.String())
+		rdc.Do("set", redisdb.SymbolLatestPrice.Format(redisdb.Replace{"symbol": t.symbol}), tl.TradePrice.String())
 	})
 }
 
@@ -166,7 +166,8 @@ func (t *tengine) restore() {
 	t.tp.SetPauseMatch(true)
 
 	//恢复orderbook
-	count, _ := redis.Int64(rdc.Do("zcard", types.FormatSymbolUnfinishedOrders.Format(t.symbol)))
+	count, _ := redis.Int64(rdc.Do("zcard", redisdb.SymbolUnfinishedOrders.Format(redisdb.Replace{"symbol": t.symbol})))
+
 	pagesize := int64(10)
 	pagecount := func() int64 {
 		a := math.Ceil(float64(count) / float64(pagesize))
@@ -189,25 +190,25 @@ func (t *tengine) restore() {
 	for page := int64(0); page < pagecount; page++ {
 		start := page * pagesize
 		stop := page*pagesize + pagesize - 1
-		order_ids, _ := redis.ByteSlices(rdc.Do("zrange", types.FormatSymbolUnfinishedOrders.Format(t.symbol), start, stop))
+		order_ids, _ := redis.ByteSlices(rdc.Do("zrange", redisdb.SymbolUnfinishedOrders.Format(redisdb.Replace{"symbol": t.symbol}), start, stop))
 
 		for _, order_id := range order_ids {
 			app.Logger.Infof("正在恢复[%s] %d/%d %s", t.symbol, n, count, order_id)
-			data, _ := redis.Bytes(rdc.Do("get", types.FormatOrderDetail.Format(string(order_id))))
+			data, _ := redis.Bytes(rdc.Do("get", redisdb.OrderDetail.Format(redisdb.Replace{"order_id": string(order_id)})))
 			reload_data(n, data)
 			n++
 		}
 
 	}
 
-	price, _ := redis.String(rdc.Do("get", types.FormatSymbolLatestPrice.Format(t.symbol)))
+	price, _ := redis.String(rdc.Do("get", redisdb.SymbolLatestPrice.Format(redisdb.Replace{"symbol": t.symbol})))
 	t.tp.SetLatestPrice(utils.D(price))
 
 }
 
 func (t *tengine) pull_new_order() {
 	<-t.restore_done_signal
-	key := types.FormatNewOrder.Format(t.symbol)
+	key := redisdb.NewOrderQueue.Format(redisdb.Replace{"symbol": t.symbol})
 	app.Logger.Infof("监听队列: %s", key)
 
 	rdc := app.RedisPool().Get()
@@ -276,7 +277,7 @@ func (t *tengine) pull_new_order() {
 func (t *tengine) pull_cancel_order() {
 	<-t.restore_done_signal
 
-	key := types.FormatCancelOrder.Format(t.symbol)
+	key := redisdb.CancelOrderQueue.Format(redisdb.Replace{"symbol": t.symbol})
 	app.Logger.Infof("监听取消订单队列: %s", key)
 	for {
 		func() {
@@ -328,7 +329,7 @@ func (t *tengine) monitor_result() {
 			}()
 		case dat := <-t.tp.ChCancelResult:
 			go func() {
-				key := types.FormatCancelResult.Format(t.symbol)
+				key := redisdb.CancelResultQueue.Format(redisdb.Replace{"symbol": t.symbol})
 
 				data := StructCancelOrder{
 					OrderId: dat.OrderId,
@@ -358,7 +359,7 @@ func (t *tengine) push_match_result(data []byte) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	key := types.FormatTradeResult.Format(t.symbol)
+	key := redisdb.TradeResultQueue.Format(redisdb.Replace{"symbol": t.symbol})
 	if _, err := rdc.Do("RPUSH", key, data); err != nil {
 		app.Logger.Warnf("撮合结果推送 %s 失败: %s %s", key, data, err)
 	}

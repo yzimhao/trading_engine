@@ -28,7 +28,7 @@ func newClean(raw trading_core.TradeResult) error {
 	db := app.Database().NewSession()
 	defer db.Close()
 
-	tv, err := base.NewTSymbols().Get(raw.Symbol)
+	tv, err := base.NewTradeSymbol().Get(raw.Symbol)
 	if err != nil {
 		app.Logger.Errorf("tsymbol error: %s", err)
 		return err

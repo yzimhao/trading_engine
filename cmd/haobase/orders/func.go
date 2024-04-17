@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/yzimhao/trading_engine/trading_core"
-	"github.com/yzimhao/trading_engine/types"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
@@ -29,7 +29,7 @@ func generate_order_id(prefix string) string {
 }
 
 func push_new_order_to_redis(symbol string, data []byte) {
-	topic := types.FormatNewOrder.Format(symbol)
+	topic := redisdb.NewOrderQueue.Format(redisdb.Replace{"symbol": symbol})
 	app.Logger.Infof("推送新订单%s: %s", topic, data)
 
 	rdc := app.RedisPool().Get()

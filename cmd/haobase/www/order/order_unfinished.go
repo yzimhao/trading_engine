@@ -25,7 +25,7 @@ func Unfinished(ctx *gin.Context) {
 	query.Where("user_id=?", user_id).OrderBy("create_time desc").Limit(limit).Find(&rows)
 
 	for i, v := range rows {
-		cfg, _ := base.NewTSymbols().Get(v.Symbol)
+		cfg, _ := base.NewTradeSymbol().Get(v.Symbol)
 		rows[i] = v.FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 	}
 
