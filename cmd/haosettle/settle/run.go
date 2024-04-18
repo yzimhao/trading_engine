@@ -57,6 +57,7 @@ func watch_tradeok_list(symbol string) {
 
 			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
 			app.Logger.Infof("收到%s成交记录: %s", symbol, raw)
+			//todo 控制协程的数量
 			go clearing_trade_order(symbol, raw)
 		}()
 
