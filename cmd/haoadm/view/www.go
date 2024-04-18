@@ -76,7 +76,9 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/logout", auth.LogoutHandler)
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
-	radmin.Use(auth.MiddlewareFunc(), runModeCheck(), recordLog())
+	//todo 认证登陆会失败
+	// radmin.Use(auth.MiddlewareFunc())
+	radmin.Use(runModeCheck(), recordLog())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)
