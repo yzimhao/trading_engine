@@ -147,6 +147,19 @@ example_reload: example_upload example_stop example_start
 example_restart: example_upload example_stop example_clean example_start	
 
 
+clean_localdb:
+
+	mysql -h db_host -proot -e "drop database haotrader"
+	mysql -h db_host -proot -e "create database haotrader"
+	redis-cli -h db_host -p 6379 flushall
+	
+
+local_start:
+
+	go run cmd/haotrader/main.go -d
+
+
+
 require:
 	brew tap messense/macos-cross-toolchains
 	# install x86_64-unknown-linux-gnu toolchain
