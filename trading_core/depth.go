@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"github.com/yzimhao/trading_engine/utils"
 )
 
 func (t *TradePair) GetAskDepth(size int) [][2]string {
@@ -28,7 +29,7 @@ func (t *TradePair) depth(queue *OrderQueue, size int) [][2]string {
 
 func (t *TradePair) depthTicker(que *OrderQueue) {
 
-	ticker := time.NewTicker(time.Duration(50) * time.Millisecond)
+	ticker := time.NewTicker(time.Duration(100) * time.Millisecond)
 
 	for {
 		<-ticker.C
@@ -44,16 +45,22 @@ func (t *TradePair) depthTicker(que *OrderQueue) {
 			if que.pq.Len() > 0 {
 
 				for i := 0; i < que.pq.Len(); i++ {
+
+					if len(depthMap) > 50 {
+						break
+					}
+
 					item := (*que.pq)[i]
 
-					price := FormatDecimal2String(item.GetPrice(), t.priceDigit)
+					price := utils.D2Str(item.GetPrice(), t.priceDigit)
 
 					if _, ok := depthMap[price]; !ok {
-						depthMap[price] = FormatDecimal2String(item.GetQuantity(), t.quantityDigit)
+						depthMap[price] = utils.D2Str(item.GetQuantity(), t.quantityDigit)
 					} else {
 						old_qunantity, _ := decimal.NewFromString(depthMap[price])
-						depthMap[price] = FormatDecimal2String(old_qunantity.Add(item.GetQuantity()), t.quantityDigit)
+						depthMap[price] = utils.D2Str(old_qunantity.Add(item.GetQuantity()), t.quantityDigit)
 					}
+
 				}
 
 				//按价格排序map

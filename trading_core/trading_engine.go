@@ -18,8 +18,8 @@ type TradePair struct {
 
 	onEventTrade func(TradeResult)
 
-	priceDigit    int
-	quantityDigit int
+	priceDigit    int32
+	quantityDigit int32
 	miniTradeQty  decimal.Decimal
 
 	latestPriceAt int64
@@ -31,7 +31,7 @@ type TradePair struct {
 	w sync.Mutex
 }
 
-func NewTradePair(symbol string, priceDigit, quantityDigit int) *TradePair {
+func NewTradePair(symbol string, priceDigit, quantityDigit int32) *TradePair {
 	t := &TradePair{
 		Symbol:         symbol,
 		ChTradeResult:  make(chan TradeResult, 10),

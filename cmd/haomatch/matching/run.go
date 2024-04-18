@@ -22,7 +22,7 @@ func init_symbols() {
 	for _, item := range db_symbols {
 		if len(local_config_symbols) > 0 && arrutil.Contains(local_config_symbols, item.Symbol) || len(local_config_symbols) == 0 {
 			if !keepalive.HasExtrasKeyValue("match.symbols", item.Symbol) {
-				NewTengine(item.Symbol, item.PricePrecision, item.QtyPrecision)
+				NewTengine(item.Symbol, int32(item.PricePrecision), int32(item.QtyPrecision))
 				keepalive.SetExtras("match.symbols", item.Symbol)
 			}
 		}

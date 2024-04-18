@@ -20,7 +20,7 @@ type tengine struct {
 	update              chan struct{}
 }
 
-func NewTengine(symbol string, price_digit, qty_digit int) *trading_core.TradePair {
+func NewTengine(symbol string, price_digit, qty_digit int32) *trading_core.TradePair {
 	te := tengine{
 		symbol:              symbol,
 		tp:                  trading_core.NewTradePair(symbol, price_digit, qty_digit),

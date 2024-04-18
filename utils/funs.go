@@ -15,6 +15,19 @@ func D(a string) decimal.Decimal {
 	return d
 }
 
+func D2Str(d decimal.Decimal, places int32) string {
+	str := d.String()
+	if places > 0 {
+		d = d.Truncate(places)
+		str = d.StringFixed(places)
+	}
+	return str
+}
+
+func FormatDecimal(d string, digit int) string {
+	return D(d).StringFixedBank(int32(digit))
+}
+
 func S2F64(a string) float64 {
 	v, _ := strconv.ParseFloat(a, 64)
 	return v

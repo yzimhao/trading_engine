@@ -1,11 +1,14 @@
 package trading_core
 
-import "github.com/shopspring/decimal"
+import (
+	"github.com/shopspring/decimal"
+	"github.com/yzimhao/trading_engine/utils"
+)
 
 func (t *TradePair) Price2String(price decimal.Decimal) string {
-	return FormatDecimal2String(price, t.priceDigit)
+	return utils.D2Str(price, t.priceDigit)
 }
 
 func (t *TradePair) Qty2String(qty decimal.Decimal) string {
-	return FormatDecimal2String(qty, t.quantityDigit)
+	return utils.D2Str(qty, t.quantityDigit)
 }
