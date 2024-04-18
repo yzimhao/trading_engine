@@ -34,7 +34,7 @@ func main() {
 			&cli.BoolFlag{Name: "bot", Value: false, Aliases: []string{"b"}},
 			&cli.Int64Flag{Name: "interval_min", Value: 5},
 			&cli.Int64Flag{Name: "interval_max", Value: 20},
-			&cli.Int64Flag{Name: "limit_size", Value: 20},
+			&cli.Int64Flag{Name: "limit_size", Value: 10},
 			&cli.StringFlag{Name: "lots", Value: "20"},
 		},
 
