@@ -7,6 +7,7 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
+// todo
 type LockType string
 
 const (

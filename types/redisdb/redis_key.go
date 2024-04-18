@@ -9,6 +9,7 @@ import (
 type redisdb string
 
 const (
+	Keepalive             redisdb = "{prefix}keepalive.{uuid}"
 	NewOrderQueue         redisdb = "{prefix}queue.new.order.{symbol}"
 	CancelOrderQueue      redisdb = "{prefix}queue.cancel.order.{symbol}"
 	TradeResultQueue      redisdb = "{prefix}queue.trade.result.{symbol}"
@@ -17,6 +18,8 @@ const (
 	WsMessageQueue        redisdb = "{prefix}queue.ws.message"
 	//#
 	OrderBook redisdb = "{prefix}orderbook.{symbol}"
+	//订单结算
+	OrderLock redisdb = "{prefix}order.lock.{order_id}"
 
 	BroadcastLatestPrice redisdb = "{prefix}broadcast.latest_price.{symbol}"
 

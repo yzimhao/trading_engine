@@ -11,6 +11,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils"
 )
 
@@ -19,13 +20,14 @@ var (
 )
 
 type App struct {
-	Name     string              `json:"name"`
-	Pid      string              `json:"pid"`
-	Version  string              `json:"version"`
-	Extras   map[string][]string `json:"extras"`
-	Runos    string              `json:"runos"`
-	Runarch  string              `json:"runarch"`
-	Hostname string              `json:"hostname"`
+	Name      string              `json:"name"`
+	Pid       string              `json:"pid"`
+	Version   string              `json:"version"`
+	Extras    map[string][]string `json:"extras"`
+	Runos     string              `json:"runos"`
+	Runarch   string              `json:"runarch"`
+	Hostname  string              `json:"hostname"`
+	StartTime utils.Time          `json:"start_time"`
 }
 
 type Keepalive struct {
@@ -53,7 +55,8 @@ func NewKeepalive(rdc *redis.Pool, name, version string, interval int) *Keepaliv
 					n, _ := os.Hostname()
 					return n
 				}(),
-				Extras: make(map[string][]string),
+				Extras:    make(map[string][]string),
+				StartTime: utils.Time(time.Now()),
 			},
 		}
 		single.run()
@@ -72,7 +75,7 @@ func (k *Keepalive) run() {
 				defer k.Unlock()
 
 				_data, _ := json.Marshal(k.app)
-				topic := fmt.Sprintf("keepalive.%s", k.id)
+				topic := redisdb.Keepalive.Format(redisdb.Replace{"uuid": k.id})
 				rdc.Do("set", topic, _data)
 				rdc.Do("expire", topic, k.interval+3)
 			}()
@@ -106,6 +109,8 @@ func AppInfoTopic() []string {
 	rdc := single.rdc.Get()
 	defer rdc.Close()
 
-	keys, _ := utils.ScanRedisKeys(rdc, 0, "keepalive.*")
+	//todo 下面的函数redis key多了就遍历不出来了需要的key了
+	keys, _ := utils.ScanRedisKeys(rdc, 0, "*keepalive.*")
+
 	return keys
 }

@@ -24,7 +24,7 @@ type clean struct {
 	err               error
 }
 
-func newClean(raw trading_core.TradeResult) error {
+func cleanflow(raw trading_core.TradeResult) error {
 	db := app.Database().NewSession()
 	defer db.Close()
 
