@@ -81,6 +81,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 			for {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				app.Logger.Infof("等待订单%s 其他成交结算完成...", data.Last)
+				//todo 会进入到死锁 一直无法结算
 				if orders.GetLock(orders.SettleLock, data.Last) == 1 {
 					cleanflow(data)
 					break
