@@ -32,6 +32,7 @@ func Subscribe() {
 			case redis.Subscription:
 				// app.Logger.Infof("%s: %s %d\n", v.Channel, v.Kind, v.Count)
 			case error:
+				//todo message queue.ws.message subscribe: read tcp 10.10.10.50:54276->10.10.10.15:6379: use of closed network connection
 				app.Logger.Errorf("message %s subscribe: %s", topic, v.Error())
 			}
 		}
