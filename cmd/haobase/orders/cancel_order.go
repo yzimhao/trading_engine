@@ -13,6 +13,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settlelock"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
@@ -81,7 +82,7 @@ func watch_cancel_order_list(symbol string) {
 }
 
 func cancel_order(symbol string, cancel matching.StructCancelOrder, retry int) {
-	lock := GetLock(SettleLock, cancel.OrderId)
+	lock := settlelock.GetLock(cancel.OrderId)
 	wait := 10
 
 	app.Logger.Infof("取消订单%s lock: %d retry: %d", cancel.OrderId, lock, retry)

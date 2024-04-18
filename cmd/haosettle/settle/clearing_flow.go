@@ -7,6 +7,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settlelock"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
@@ -54,9 +55,8 @@ func cleanflow(raw trading_core.TradeResult) error {
 
 	err = item.flow()
 
-	//解锁
-	orders.UnLock(orders.SettleLock, item.ask.OrderId)
-	orders.UnLock(orders.SettleLock, item.bid.OrderId)
+	//
+	settlelock.UnLock(item.ask.OrderId, item.bid.OrderId)
 
 	//记录失败的订单
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settlelock"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
@@ -117,8 +118,8 @@ func TestLimitOrder(t *testing.T) {
 		clearing_trade_order(testSymbol, result.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(sell.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -171,8 +172,8 @@ func TestLimitOrderCase1(t *testing.T) {
 		}
 		clearing_trade_order(testSymbol, result.Json())
 		for {
-			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(sell.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -231,9 +232,9 @@ func TestMarketCase1(t *testing.T) {
 		clearing_trade_order(testSymbol, result1.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(s1.OrderId) == 0 &&
+				settlelock.GetLock(s2.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -294,11 +295,11 @@ func TestMarketCase2(t *testing.T) {
 		clearing_trade_order(testSymbol, result3.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s3.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s4.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(s1.OrderId) == 0 &&
+				settlelock.GetLock(s2.OrderId) == 0 &&
+				settlelock.GetLock(s3.OrderId) == 0 &&
+				settlelock.GetLock(s4.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)

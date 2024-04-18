@@ -8,7 +8,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settlelock"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/redisdb"
@@ -71,8 +71,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 		return
 	}
 
-	orders.Lock(orders.SettleLock, data.AskOrderId)
-	orders.Lock(orders.SettleLock, data.BidOrderId)
+	settlelock.Lock(data.AskOrderId, data.BidOrderId)
 
 	if data.Last == "" {
 		go cleanflow(data)
@@ -82,7 +81,7 @@ func clearing_trade_order(symbol string, raw []byte) {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				app.Logger.Infof("等待订单%s 其他成交结算完成...", data.Last)
 				//todo 会进入到死锁 一直无法结算
-				if orders.GetLock(orders.SettleLock, data.Last) == 1 {
+				if settlelock.GetLock(data.Last) == 1 {
 					cleanflow(data)
 					break
 				}
