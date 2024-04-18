@@ -36,8 +36,12 @@ type bot struct {
 
 func StartBot(sec_min, sec_max int64, default_lots string, limit_size int) {
 	auto_deposit("bot-test-001", BOTSELL, "usd", "1000000000000")
-	auto_deposit("bot-test-002", BOTBUY, "jpy", "1000000000000")
-	auto_deposit("bot-test-003", BOTSELL, "eur", "1000000000000")
+	auto_deposit("bot-test-002", BOTSELL, "eur", "1000000000000")
+	auto_deposit("bot-test-003", BOTSELL, "jpy", "1000000000000")
+
+	auto_deposit("bot-test-004", BOTBUY, "usd", "1000000000000")
+	auto_deposit("bot-test-005", BOTBUY, "eur", "1000000000000")
+	auto_deposit("bot-test-006", BOTBUY, "jpy", "1000000000000")
 
 	if limit_size > 0 {
 		LIMITSIZE = limit_size
