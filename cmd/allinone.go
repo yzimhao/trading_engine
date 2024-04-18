@@ -85,7 +85,7 @@ func main() {
 func start() {
 	debug_pprof()
 	go haobase()
-	//todo
+	//todo 加入context，优化掉这个sleep
 	time.Sleep(time.Second)
 	go haomatch()
 	go haosettle()

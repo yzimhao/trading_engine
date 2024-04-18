@@ -83,7 +83,6 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				Ask:           data.AskOrderId,
 				Bid:           data.BidOrderId,
 			}
-
 			row.Save()
 
 			// todo 更多的period
