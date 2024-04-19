@@ -94,15 +94,12 @@ func (b *bot) get_now_price() {
 }
 
 func (b *bot) auto_depth() {
-	depth := get_depth(b.symbol)
-	an := len(depth["asks"])
-	bn := len(depth["bids"])
+	depth, asksize, bidsize := get_depth(b.symbol)
 
-	// fmt.Printf("\r\nan: %d asks: %#v\r\n", an, depth["asks"])
-	// fmt.Printf("\r\nbn: %d bids: %#v\r\n", bn, depth["bids"])
-	if an < LIMITSIZE || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
-		if an < LIMITSIZE {
-			for i := 0; i < LIMITSIZE-an; i++ {
+	fmt.Printf("\r\n symbol: %s asksize: %d  bidsize: %d\r\n", b.symbol, asksize, bidsize)
+	if asksize < LIMITSIZE || utils.D(depth["asks"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
+		if asksize < LIMITSIZE {
+			for i := 0; i < LIMITSIZE-asksize; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Add(decimal.NewFromFloat(float))
 				b.auto_sell(BOTSELL, price.String(), b.default_lots)
@@ -114,9 +111,9 @@ func (b *bot) auto_depth() {
 		}
 	}
 
-	if bn < LIMITSIZE || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
-		if bn < LIMITSIZE {
-			for i := 0; i < LIMITSIZE-bn; i++ {
+	if bidsize < LIMITSIZE || utils.D(depth["bids"][0][0]).Sub(utils.D(b.remote_price)).Abs().Cmp(utils.D("1")) > 0 {
+		if bidsize < LIMITSIZE {
+			for i := 0; i < LIMITSIZE-bidsize; i++ {
 				float := rand.Float64()
 				price := utils.D(b.remote_price).Sub(decimal.NewFromFloat(float))
 				b.auto_buy(BOTBUY, price.String(), b.default_lots)
@@ -234,7 +231,7 @@ func get_latest_price(symbol string) string {
 	return "0"
 }
 
-func get_depth(symbol string) map[string][][2]string {
+func get_depth(symbol string) (raw map[string][][2]string, asksize, bidsize int) {
 	// 创建 HTTP 请求头
 	headers := make(http.Header)
 	headers.Set("Content-Type", "application/json")
@@ -244,7 +241,7 @@ func get_depth(symbol string) map[string][][2]string {
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())
-		return map[string][][2]string{}
+		return map[string][][2]string{}, 0, 0
 	}
 	req.Header = headers
 
@@ -252,26 +249,35 @@ func get_depth(symbol string) map[string][][2]string {
 	resp, err := client.Do(req)
 	if err != nil {
 		app.Logger.Warnf("HTTP GET request failed: %s", err.Error())
-		return map[string][][2]string{}
+		return map[string][][2]string{}, 0, 0
 	}
 	defer resp.Body.Close()
 
-	type response_data struct {
+	type response_data_depth struct {
 		Ok   bool                   `json:"ok"`
 		Data map[string][][2]string `json:"data"`
+	}
+
+	type response_data_size struct {
+		Ok   bool           `json:"ok"`
+		Data map[string]int `json:"data"`
 	}
 
 	// 读取响应
 	if resp.Status == "200 OK" {
 		// 在这里处理响应数据
 		body, _ := ioutil.ReadAll(resp.Body)
-		var data response_data
+		var data response_data_depth
 		json.Unmarshal(body, &data)
-		return data.Data
+
+		var size response_data_size
+		json.Unmarshal(body, &size)
+
+		return data.Data, size.Data["asksize"], size.Data["bidsize"]
 	} else {
 		app.Logger.Warnf("HTTP GET request failed with status: %s", resp.Status)
 	}
-	return map[string][][2]string{}
+	return map[string][][2]string{}, 0, 0
 }
 
 func get_remote_price(symbol string) string {

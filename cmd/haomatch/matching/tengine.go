@@ -56,10 +56,12 @@ func (t *tengine) push_depth_to_redis() {
 			go func() {
 				price, at := t.tp.LatestPrice()
 				data := redisdb.OrderBookData{
-					Price: t.tp.Price2String(price),
-					At:    at,
-					Asks:  t.tp.GetAskDepth(50),
-					Bids:  t.tp.GetBidDepth(50),
+					Price:    t.tp.Price2String(price),
+					At:       at,
+					Asks:     t.tp.GetAskDepth(50),
+					Bids:     t.tp.GetBidDepth(50),
+					AsksSize: int64(t.tp.AskLen()),
+					BidsSize: int64(t.tp.BidLen()),
 				}
 
 				rdc := app.RedisPool().Get()

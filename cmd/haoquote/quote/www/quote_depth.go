@@ -21,13 +21,15 @@ func qutoe_depth(ctx *gin.Context) {
 		return
 	}
 
-	if limit <= 0 || limit > 100 {
+	if limit <= 0 || limit > 50 {
 		limit = 10
 	}
 
 	utils.ResponseOkJson(ctx, gin.H{
-		"asks": limitSize(data.Asks, limit),
-		"bids": limitSize(data.Bids, limit),
+		"asks":    limitSize(data.Asks, limit),
+		"bids":    limitSize(data.Bids, limit),
+		"asksize": data.AsksSize,
+		"bidsize": data.BidsSize,
 	})
 }
 
