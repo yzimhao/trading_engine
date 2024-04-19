@@ -122,7 +122,7 @@ example_upload: clean dist build_allinone_linux_amd64
 example_start:
 
 	ssh demo 'cd haotrader/ && ./haotrader -d'
-	ssh demo 'cd trading_engine_example/ && ./example -d --bot --interval_min=1 --interval_max=10 --limit_size=100'
+	ssh demo 'cd trading_engine_example/ && ./example -d --bot --interval_min=1 --interval_max=10 --limit_size=500 --lots=10'
 
 
 example_stop:
