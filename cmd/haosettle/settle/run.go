@@ -17,6 +17,10 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
+var (
+	clean_limit = make(chan struct{}, 30)
+)
+
 func Run() {
 	for {
 		init_symbols()
@@ -57,7 +61,8 @@ func watch_tradeok_list(symbol string) {
 
 			raw, _ := redis.Bytes(rdc.Do("Lpop", key))
 			app.Logger.Infof("收到%s成交记录: %s", symbol, raw)
-			//todo 控制协程的数量 太多会导致mysql连接错误 redis连接失败导致结算失败
+			//控制协程的数量 太多会导致mysql连接错误 redis连接失败导致结算失败
+			clean_limit <- struct{}{}
 			go clearing_trade_order(symbol, raw)
 		}()
 

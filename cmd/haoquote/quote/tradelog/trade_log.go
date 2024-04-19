@@ -73,7 +73,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				return
 			}
 
-			//todo 保存成交日志到数据库
+			//保存成交日志到数据库
 			row := TradeLog{
 				Symbol:        symbol,
 				TradeAt:       data.TradeTime,

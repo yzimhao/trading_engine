@@ -25,3 +25,4 @@ dist/
 *.dat
 *.pid
 */**/logs/
+*.log

@@ -29,6 +29,10 @@ func cleanflow(raw trading_core.TradeResult) error {
 	db := app.Database().NewSession()
 	defer db.Close()
 
+	defer func() {
+		<-clean_limit
+	}()
+
 	tv, err := base.NewTradeSymbol().Get(raw.Symbol)
 	if err != nil {
 		app.Logger.Errorf("tsymbol error: %s", err)

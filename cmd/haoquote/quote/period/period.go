@@ -36,15 +36,18 @@ func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period
 
 	data := Period{}
 	ckey := klinePeriodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
-	cache_data, _ := ckey.get()
+	cache_data, err := ckey.get()
+	if err != nil {
+		app.Logger.Errorf("get %s cache error: %s", ckey, err)
+	}
 	json.Unmarshal(cache_data, &data)
 
-	app.Logger.Infof("get %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
+	app.Logger.Infof("get %s cache: [%#v]", ckey, data)
 	defer func() {
 		raw, _ := json.Marshal(data)
-		app.Logger.Infof("set %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
+		app.Logger.Infof("set %s cache: [%#v cur_price:%s]", ckey, data, tr.TradePrice.String())
 
-		ttl := close_at.Unix() - time.Now().Unix() + 5
+		ttl := close_at.Unix() - time.Now().Unix() + 60*60
 		// app.Logger.Warnf("ttl: %d, %d,  %d", close_at.Unix(), time.Now().Unix(), ttl)
 		ckey.set(raw, ttl)
 	}()
