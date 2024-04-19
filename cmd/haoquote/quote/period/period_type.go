@@ -32,7 +32,7 @@ func Periods() []PeriodType {
 	}
 }
 
-func get_start_end_time(at time.Time, pt PeriodType) (start, end time.Time) {
+func parse_start_end_time(at time.Time, pt PeriodType) (start, end time.Time) {
 	switch pt {
 	case PERIOD_M1:
 		start = time.Date(at.Year(), at.Month(), at.Day(), at.Hour(), at.Minute(), 0, 0, time.Local)

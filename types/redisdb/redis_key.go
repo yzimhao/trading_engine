@@ -29,6 +29,9 @@ const (
 
 	//base
 	BaseTradeSymbolAll redisdb = "{prefix}base.trade.symbol.all"
+
+	//quote
+	KLinePeriod redisdb = "{prefix}kline.{symbol}.{period}.{start_time}_{end_time}"
 )
 
 type Replace map[string]string
