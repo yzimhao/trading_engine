@@ -19,16 +19,10 @@ func SystemInfo(ctx *gin.Context) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	data["haoadm"] = make([]keepalive.App, 0)
-	data["haobase"] = make([]keepalive.App, 0)
-	data["haomatch"] = make([]keepalive.App, 0)
-	data["haoquote"] = make([]keepalive.App, 0)
-
 	for _, topic := range keepalive.AppInfoTopic() {
 		var ap keepalive.App
 		info, _ := redis.Bytes(rdc.Do("get", topic))
 		json.Unmarshal([]byte(info), &ap)
-
 		data[ap.Name] = append(data[ap.Name], ap)
 	}
 

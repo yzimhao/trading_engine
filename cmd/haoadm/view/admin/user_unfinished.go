@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -16,7 +17,7 @@ func CancelUserOrder(ctx *gin.Context) {
 	order := ctx.PostForm("order_ids")
 	ids := strings.Split(order, ",")
 	for _, order_id := range ids {
-		if err := orders.SubmitOrderCancel(order_id); err != nil {
+		if err := orders.SubmitOrderCancel(order_id, trading_core.CancelTypeBySystem); err != nil {
 			logrus.Errorf("CancelUserOrder %s err: %s", order_id, err.Error())
 		}
 	}
@@ -67,7 +68,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		total, _ := db.Table(new(orders.UnfinishedOrder)).And(cond).Count()
 
 		for i, v := range data {
-			cfg, _ := base.NewTSymbols().Get(v.Symbol)
+			cfg, _ := base.NewTradeSymbol().Get(v.Symbol)
 			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 		}
 
@@ -76,7 +77,7 @@ func UserOrderUnfinished(ctx *gin.Context) {
 		} else {
 			ctx.HTML(200, "user_unfinished", gin.H{
 				"search":      search,
-				"all_symbols": base.NewTSymbols().All(),
+				"all_symbols": base.NewTradeSymbol().All(),
 			})
 		}
 		return

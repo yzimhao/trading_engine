@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -97,7 +98,7 @@ func AuthMiddleware() *jwt.GinJWTMiddleware {
 				})
 			},
 			LoginResponse: func(c *gin.Context, code int, message string, time time.Time) {
-				c.Redirect(301, "/admin/index")
+				c.Redirect(301, fmt.Sprintf("/admin/index?t=%d", time.Nanosecond()))
 			},
 			LogoutResponse: func(c *gin.Context, code int) {
 				c.Redirect(301, "/admin/login")

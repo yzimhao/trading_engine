@@ -1,8 +1,6 @@
 package trading_core
 
 import (
-	"fmt"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -37,12 +35,6 @@ func (ot OrderType) String() string {
 	default:
 		return "limit"
 	}
-}
-
-func FormatDecimal2String(d decimal.Decimal, digit int) string {
-	f, _ := d.Float64()
-	format := "%." + fmt.Sprintf("%d", digit) + "f"
-	return fmt.Sprintf(format, f)
 }
 
 func quickSort(nums []string, asc_desc string) []string {

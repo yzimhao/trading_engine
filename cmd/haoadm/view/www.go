@@ -6,6 +6,7 @@ import (
 	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/gookit/goutil/fsutil"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/models"
 	"github.com/yzimhao/trading_engine/cmd/haoadm/view/admin"
 	"github.com/yzimhao/trading_engine/config"
@@ -44,6 +45,11 @@ func setMethods(r Router, methods []string, relativePath string, handlers ...gin
 
 func setupRouter(router *gin.Engine) {
 	templateDir := "./template/default"
+
+	if !fsutil.DirExist(templateDir) {
+		templateDir = "./haoadm/template/default"
+	}
+
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Delims:    gintemplate.Delims{Left: "{%", Right: "%}"},
 		Root:      templateDir, //template root path
@@ -70,7 +76,9 @@ func setupPages(router *gin.Engine) {
 	setMethods(radmin, []string{"GET"}, "/logout", auth.LogoutHandler)
 	setMethods(radmin, []string{"GET"}, "/refresh_token", auth.RefreshHandler)
 
-	radmin.Use(auth.MiddlewareFunc(), runModeCheck(), recordLog())
+	//todo 认证登陆会失败
+	radmin.Use(auth.MiddlewareFunc())
+	radmin.Use(runModeCheck(), recordLog())
 	{
 		setMethods(radmin, []string{"GET"}, "/index", admin.Index)
 		setMethods(radmin, []string{"GET"}, "/welcome", admin.Welcome)

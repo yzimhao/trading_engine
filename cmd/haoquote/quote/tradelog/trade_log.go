@@ -14,6 +14,7 @@ import (
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
 	"github.com/yzimhao/trading_engine/types/dbtables"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
@@ -51,7 +52,7 @@ func (t *TradeLog) Save() error {
 }
 
 func Monitor(symbol string, price_digit, qty_digit int64) {
-	key := types.FormatQuoteTradeResult.Format(symbol)
+	key := redisdb.QuoteTradeResultQueue.Format(redisdb.Replace{"symbol": symbol})
 	app.Logger.Infof("监听 %s 成交日志...", symbol)
 
 	for {
@@ -72,7 +73,7 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				return
 			}
 
-			//todo 保存成交日志到数据库
+			//保存成交日志到数据库
 			row := TradeLog{
 				Symbol:        symbol,
 				TradeAt:       data.TradeTime,
@@ -82,7 +83,6 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 				Ask:           data.AskOrderId,
 				Bid:           data.BidOrderId,
 			}
-
 			row.Save()
 
 			// todo 更多的period

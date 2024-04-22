@@ -32,21 +32,24 @@ type Period struct {
 
 func NewPeriod(symbol string, p PeriodType, tr trading_core.TradeResult) *Period {
 	tradetime := time.Unix(int64(tr.TradeTime/1e9), 0)
-	open_at, close_at := get_start_end_time(tradetime, p)
+	open_at, close_at := parse_start_end_time(tradetime, p)
 
 	data := Period{}
-	ckey := periodKey.Format(p, symbol, open_at.Unix(), close_at.Unix())
-	cache_data, _ := ckey.get()
+
+	ckey := formatKLineKey(p, symbol, open_at.Unix(), close_at.Unix())
+	cache_data, err := getKLinePeriod(ckey)
+	if err != nil {
+		app.Logger.Errorf("get %s cache error: %s", ckey, err)
+	}
 	json.Unmarshal(cache_data, &data)
 
-	app.Logger.Infof("get %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
+	app.Logger.Infof("get %s cache: [%#v]", ckey, data)
 	defer func() {
 		raw, _ := json.Marshal(data)
-		app.Logger.Infof("set %s cache: [open:%s heigh:%s low:%s close:%s cur_price:%s]", ckey, data.Open, data.High, data.Low, data.Close, tr.TradePrice.String())
+		app.Logger.Infof("set %s cache: [%#v cur_price:%s]", ckey, data, tr.TradePrice.String())
 
-		ttl := close_at.Unix() - time.Now().Unix() + 5
-		// app.Logger.Warnf("ttl: %d, %d,  %d", close_at.Unix(), time.Now().Unix(), ttl)
-		ckey.set(raw, ttl)
+		ttl := close_at.Unix() - time.Now().Unix() + 60*60
+		setKLinePeriod(ckey, raw, ttl)
 	}()
 
 	data.raw = tr

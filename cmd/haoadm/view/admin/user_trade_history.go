@@ -42,7 +42,7 @@ func TradeHistory(ctx *gin.Context) {
 		data := []orders.TradeLog{}
 
 		if search.Symbol == "" {
-			for _, item := range base.NewTSymbols().All() {
+			for _, item := range base.NewTradeSymbol().All() {
 				tb := &orders.Order{Symbol: item.Symbol}
 				if dbtables.Exist(db, tb) {
 					search.Symbol = item.Symbol
@@ -76,7 +76,7 @@ func TradeHistory(ctx *gin.Context) {
 
 		total, _ := q.Table(tablename).And(cond).Count()
 
-		cfg, _ := base.NewTSymbols().Get(search.Symbol)
+		cfg, _ := base.NewTradeSymbol().Get(search.Symbol)
 		for i, _ := range data {
 			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 		}
@@ -86,7 +86,7 @@ func TradeHistory(ctx *gin.Context) {
 		} else {
 			ctx.HTML(200, "user_trade_history", gin.H{
 				"search":      search,
-				"all_symbols": base.NewTSymbols().All(),
+				"all_symbols": base.NewTradeSymbol().All(),
 			})
 		}
 		return

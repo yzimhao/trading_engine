@@ -87,11 +87,12 @@ func limit_order(user_id string, symbol string, side trading_core.OrderSide, pri
 		}
 	}
 
+	unfinished.Order = neworder
 	if err = neworder.Save(db); err != nil {
 		return nil, err
 	}
 
-	unfinished.Order = neworder
+	unfinished.Order.CreateTime = neworder.CreateTime
 	err = unfinished.Save(db)
 	if err != nil {
 		return nil, err

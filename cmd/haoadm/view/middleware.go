@@ -33,9 +33,7 @@ func recordLog() gin.HandlerFunc {
 		body, _ := ioutil.ReadAll(ctx.Request.Body)
 		ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		err := models.NewAdminActivityLog(user_id, ctx.Request.Method, ctx.Request.RequestURI, string(body), ctx.ClientIP())
-		app.Logger.Warnf("activity log: %s", err)
-
+		models.NewAdminActivityLog(user_id, ctx.Request.Method, ctx.Request.RequestURI, string(body), ctx.ClientIP())
 		ctx.Next()
 	}
 }

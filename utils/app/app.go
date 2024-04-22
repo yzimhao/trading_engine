@@ -12,7 +12,6 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/xormlog"
 
 	"xorm.io/xorm"
 	"xorm.io/xorm/log"
@@ -156,8 +155,8 @@ func DatabaseInit(driver, dsn string, show_sql bool, prefix string) (err error) 
 			dbPrefix = prefix
 		}
 
-		logctx := xormlog.NewLogCtx(Logger)
-		conn.SetLogger(logctx)
+		// logctx := xormlog.NewLogCtx(Logger)
+		// conn.SetLogger(logctx)
 
 		conn.DatabaseTZ = time.Local
 		conn.TZLocation = time.Local

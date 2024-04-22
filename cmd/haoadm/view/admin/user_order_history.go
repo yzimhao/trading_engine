@@ -42,7 +42,7 @@ func UserOrderHistory(ctx *gin.Context) {
 		data := []orders.Order{}
 
 		if search.Symbol == "" {
-			for _, item := range base.NewTSymbols().All() {
+			for _, item := range base.NewTradeSymbol().All() {
 				bean := orders.Order{Symbol: item.Symbol}
 				if dbtables.Exist(db, &bean) {
 					search.Symbol = item.Symbol
@@ -53,7 +53,7 @@ func UserOrderHistory(ctx *gin.Context) {
 
 		tablename := &orders.Order{Symbol: search.Symbol}
 		q := db.Table(tablename)
-		q = q.Where("symbol = ? and status>0", search.Symbol)
+		q = q.Where("symbol = ? and status>?", search.Symbol, orders.OrderStatusNew)
 
 		if search.UserId != "" {
 			q = q.Where("user_id = ?", search.UserId)
@@ -76,7 +76,7 @@ func UserOrderHistory(ctx *gin.Context) {
 
 		total, _ := q.Table(tablename).And(cond).Count()
 
-		cfg, _ := base.NewTSymbols().Get(search.Symbol)
+		cfg, _ := base.NewTradeSymbol().Get(search.Symbol)
 		for i, _ := range data {
 			data[i].FormatDecimal(cfg.PricePrecision, cfg.QtyPrecision)
 		}
@@ -86,7 +86,7 @@ func UserOrderHistory(ctx *gin.Context) {
 		} else {
 			ctx.HTML(200, "user_order_history", gin.H{
 				"search":      search,
-				"all_symbols": base.NewTSymbols().All(),
+				"all_symbols": base.NewTradeSymbol().All(),
 			})
 		}
 		return

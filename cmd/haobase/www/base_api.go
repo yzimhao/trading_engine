@@ -28,7 +28,7 @@ type tvarieties struct {
 func trading_varieties(ctx *gin.Context) {
 	data := make([]tvarieties, 0)
 
-	for _, v := range base.NewTSymbols().All() {
+	for _, v := range base.NewTradeSymbol().All() {
 		item := tvarieties{
 			Symbol:         v.Symbol,
 			Name:           v.Name,
@@ -50,7 +50,7 @@ func trading_varieties(ctx *gin.Context) {
 
 func varieties_config(ctx *gin.Context) {
 	symbol := ctx.Query("symbol")
-	v, _ := base.NewTSymbols().Get(symbol)
+	v, _ := base.NewTradeSymbol().Get(symbol)
 
 	item := tvarieties{
 		Symbol:         v.Symbol,

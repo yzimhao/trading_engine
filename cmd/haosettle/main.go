@@ -7,7 +7,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haobase/core"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settle"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
@@ -15,12 +15,12 @@ import (
 
 func main() {
 	appm := &cli.App{
-		Name:      "haobase",
+		Name:      "haosettle",
 		UsageText: "Issues: https://github.com/yzimhao/trading_engine/issues",
-		Usage:     "交易所基础模块",
+		Usage:     "",
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Value: "./config.toml", Aliases: []string{"c"}},
-			&cli.StringFlag{Name: "pid", Value: "./run/haobase.pid"},
+			&cli.StringFlag{Name: "pid", Value: "./run/haosettle.pid"},
 			&cli.BoolFlag{Name: "deamon", Value: false, Aliases: []string{"d"}},
 		},
 
@@ -70,7 +70,7 @@ func main() {
 			}
 
 			keepalive.NewKeepalive(app.RedisPool(), ctx.App.Name, app.Version, 5)
-			core.Run()
+			settle.Run()
 			return nil
 		},
 	}

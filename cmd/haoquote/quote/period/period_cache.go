@@ -6,43 +6,41 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-type periodCachekey string
-
-const (
-	periodBucket string         = "period"
-	periodKey    periodCachekey = "period_%s_%s_%d_%d" //"period_usdjpy_mn_1695571200_1696175999"
-)
-
-func (p periodCachekey) Format(pt PeriodType, symbol string, st, et int64) periodCachekey {
-	v := fmt.Sprintf(string(p), symbol, pt, st, et)
-	return periodCachekey(v)
+func formatKLineKey(pt PeriodType, symbol string, st, et int64) string {
+	k := redisdb.KLinePeriod.Format(redisdb.Replace{"symbol": symbol, "period": string(pt), "start_time": fmt.Sprintf("%d", st), "end_time": fmt.Sprintf("%d", et)})
+	return k
 }
 
-func (p periodCachekey) set(value []byte, ttl int64) {
+func setKLinePeriod(key string, value []byte, ttl int64) {
 	rc := app.RedisPool().Get()
 	defer rc.Close()
 
-	rc.Do("set", p, value)
-	rc.Do("expire", p, ttl)
+	if _, err := rc.Do("set", key, value); err != nil {
+		app.Logger.Errorf("set kline period key %s error: %s", key, err)
+	}
+	if _, err := rc.Do("expire", key, ttl); err != nil {
+		app.Logger.Errorf("set kline period key %s expire error: %s", key, err)
+	}
 }
 
-func (p periodCachekey) get() ([]byte, error) {
+func getKLinePeriod(key string) ([]byte, error) {
 	rc := app.RedisPool().Get()
 	defer rc.Close()
 
-	return redis.Bytes(rc.Do("get", p))
+	return redis.Bytes(rc.Do("get", key))
 }
 
 func GetYesterdayClose(symbol string) (string, bool) {
 	now := time.Now()
 
 	//获取昨天的收盘价，如果没有则获取今天的开盘价
-	st, et := get_start_end_time(now.AddDate(0, 0, -1), PERIOD_D1)
-	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
-	cache_data, err := key.get()
+	st, et := parse_start_end_time(now.AddDate(0, 0, -1), PERIOD_D1)
+	key := formatKLineKey(PERIOD_D1, symbol, st.Unix(), et.Unix())
+	cache_data, err := getKLinePeriod(key)
 	if err != nil {
 		return "", false
 	}
@@ -58,9 +56,9 @@ func GetYesterdayClose(symbol string) (string, bool) {
 func GetTodyStats(symbol string) (Period, error) {
 	now := time.Now()
 
-	st, et := get_start_end_time(now, PERIOD_D1)
-	key := periodKey.Format(PERIOD_D1, symbol, st.Unix(), et.Unix())
-	cache_data, err := key.get()
+	st, et := parse_start_end_time(now, PERIOD_D1)
+	key := formatKLineKey(PERIOD_D1, symbol, st.Unix(), et.Unix())
+	cache_data, err := getKLinePeriod(key)
 
 	var data Period
 

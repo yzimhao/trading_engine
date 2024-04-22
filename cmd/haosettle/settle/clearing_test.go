@@ -8,6 +8,7 @@ import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
 	"github.com/yzimhao/trading_engine/cmd/haobase/orders"
+	"github.com/yzimhao/trading_engine/cmd/haosettle/settlelock"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
 	"github.com/yzimhao/trading_engine/utils"
@@ -33,9 +34,9 @@ func init() {
 
 func initdb() {
 	app.ConfigInit("", false)
-	app.DatabaseInit("mysql", "root:root@tcp(localhost:3306)/test?charset=utf8&loc=Local", true, "")
+	app.DatabaseInit("mysql", "root:root@tcp(db_host:3306)/test?charset=utf8&loc=Local", true, "")
 	app.Database().SetLogLevel(log.LOG_DEBUG)
-	app.RedisInit("127.0.0.1:6379", "", 15)
+	app.RedisInit("db_host:6379", "", 15)
 	cleanSymbols()
 	initSymbols()
 }
@@ -117,8 +118,8 @@ func TestLimitOrder(t *testing.T) {
 		clearing_trade_order(testSymbol, result.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(sell.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -137,9 +138,9 @@ func TestLimitOrder(t *testing.T) {
 
 		//检查订单状态
 		sell_order := orders.Find(testSymbol, sell.OrderId)
-		So(sell_order.Status, ShouldEqual, orders.OrderStatusDone)
+		So(sell_order.Status, ShouldEqual, orders.OrderStatusFilled)
 		buy_order := orders.Find(testSymbol, buy.OrderId)
-		So(buy_order.Status, ShouldEqual, orders.OrderStatusDone)
+		So(buy_order.Status, ShouldEqual, orders.OrderStatusFilled)
 
 		sell_unfinished := orders.FindUnfinished(testSymbol, sell.OrderId)
 		So(sell_unfinished, ShouldBeNil)
@@ -171,8 +172,8 @@ func TestLimitOrderCase1(t *testing.T) {
 		}
 		clearing_trade_order(testSymbol, result.Json())
 		for {
-			if orders.GetLock(orders.SettleLock, sell.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(sell.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -231,9 +232,9 @@ func TestMarketCase1(t *testing.T) {
 		clearing_trade_order(testSymbol, result1.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(s1.OrderId) == 0 &&
+				settlelock.GetLock(s2.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
@@ -241,11 +242,11 @@ func TestMarketCase1(t *testing.T) {
 
 		//检查买卖双方订单状态及资产
 		s1 = orders.Find(testSymbol, s1.OrderId)
-		So(s1.Status, ShouldEqual, orders.OrderStatusDone)
+		So(s1.Status, ShouldEqual, orders.OrderStatusFilled)
 		s2 = orders.Find(testSymbol, s2.OrderId)
-		So(s2.Status, ShouldEqual, orders.OrderStatusDone)
+		So(s2.Status, ShouldEqual, orders.OrderStatusFilled)
 		buy = orders.Find(testSymbol, buy.OrderId)
-		So(buy.Status, ShouldEqual, orders.OrderStatusDone)
+		So(buy.Status, ShouldEqual, orders.OrderStatusFilled)
 
 		//资产
 		sell_assets_target := assets.FindSymbol(sellUser, testTargetSymbol)
@@ -294,11 +295,11 @@ func TestMarketCase2(t *testing.T) {
 		clearing_trade_order(testSymbol, result3.Json())
 
 		for {
-			if orders.GetLock(orders.SettleLock, s1.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s2.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s3.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, s4.OrderId) == 0 &&
-				orders.GetLock(orders.SettleLock, buy.OrderId) == 0 {
+			if settlelock.GetLock(s1.OrderId) == 0 &&
+				settlelock.GetLock(s2.OrderId) == 0 &&
+				settlelock.GetLock(s3.OrderId) == 0 &&
+				settlelock.GetLock(s4.OrderId) == 0 &&
+				settlelock.GetLock(buy.OrderId) == 0 {
 				break
 			}
 			time.Sleep(1 * time.Second)
