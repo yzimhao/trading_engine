@@ -7,14 +7,15 @@ secret_key = "2c320e24aa9d40b9"
 static_server_name=""
 
 [redis]
-host="db_host:6379"
+host="redis_host:6379"
 password=""
 db=0
 prefix=""
 
 [database]
 driver="mysql"
-dsn = "root:root@tcp(db_host:3306)/haotrader?charset=utf8&loc=Local"
+#单元测试的时候 需要重新创建test、test1的两个数据库用来单元测试
+dsn = "root:root@tcp(db_host:3306)/haotrader?charset=utf8mb4&loc=Local"
 show_sql = true
 prefix="tt_"
 

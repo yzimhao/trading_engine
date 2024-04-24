@@ -3,14 +3,16 @@ package orders
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base/varieties"
+	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types/dbtables"
+	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
-	"xorm.io/xorm/log"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -30,10 +32,11 @@ func init() {
 }
 
 func initdb() {
-	app.ConfigInit("", false)
-	app.DatabaseInit("mysql", "root:root@tcp(db_host:3306)/test1?charset=utf8&loc=Local", true, "")
-	app.Database().SetLogLevel(log.LOG_DEBUG)
-	app.RedisInit("db_host:6379", "", 15)
+	root := utils.ProjectRoot()
+	app.ConfigInit(root+"/cmd/config.toml", config.App)
+	app.DatabaseInit(config.App.Database.Driver, strings.Replace(config.App.Database.DSN, "haotrader", "test", -1), config.App.Database.ShowSQL, config.App.Database.Prefix)
+	app.RedisInit(config.App.Redis.Host, config.App.Redis.Password, 15)
+
 	cleanSymbols()
 	initSymbols()
 }
