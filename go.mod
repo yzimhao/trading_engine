@@ -1,6 +1,6 @@
 module github.com/yzimhao/trading_engine
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
@@ -22,7 +22,6 @@ require (
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/spf13/viper v1.16.0
 	github.com/urfave/cli/v2 v2.25.7
-	github.com/yzimhao/xormlog v0.0.0-20231130145816-d7883c17ab64
 	golang.org/x/crypto v0.14.0
 	xorm.io/xorm v1.3.3
 )
