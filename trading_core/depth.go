@@ -46,7 +46,7 @@ func (t *TradePair) depthTicker(que *OrderQueue) {
 
 				for i := 0; i < que.pq.Len(); i++ {
 
-					if len(depthMap) > 50 {
+					if len(depthMap) > t.depthMaxLen {
 						break
 					}
 

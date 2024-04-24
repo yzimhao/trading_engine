@@ -18,6 +18,7 @@ type TradePair struct {
 
 	onEventTrade func(TradeResult)
 
+	depthMaxLen   int
 	priceDigit    int32
 	quantityDigit int32
 	miniTradeQty  decimal.Decimal
@@ -40,6 +41,7 @@ func NewTradePair(symbol string, priceDigit, quantityDigit int32) *TradePair {
 		pausePushNew: false,
 		pauseMatch:   false,
 
+		depthMaxLen:   50,
 		priceDigit:    priceDigit,
 		quantityDigit: quantityDigit,
 		miniTradeQty:  decimal.New(1, int32(-quantityDigit)),
@@ -74,6 +76,13 @@ func (t *TradePair) SetPausePushNew(v bool) {
 
 func (t *TradePair) SetPauseMatch(v bool) {
 	t.pauseMatch = v
+}
+
+func (t *TradePair) SetDepthMaxLen(v int) {
+	if v > 100 || v <= 0 {
+		t.depthMaxLen = 50
+	}
+	t.depthMaxLen = v
 }
 
 func (t *TradePair) SetTriggerEvent(v bool) {
