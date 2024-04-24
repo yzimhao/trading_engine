@@ -124,6 +124,8 @@ func Monitor(symbol string, price_digit, qty_digit int64) {
 			}
 
 			//成交日志通知
+			//todo 当一次很多条成交记录，按顺序通知出去，会出现早就成交完成了，但是还有通知在不停的下发，
+			// 需要优化到，每秒钟只读取最新的1-10条消息进行通知，中间的省略掉
 			tradelog_msg(symbol, row, price_digit, qty_digit)
 		}()
 
