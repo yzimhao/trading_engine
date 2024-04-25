@@ -72,9 +72,9 @@ func AssetsList(ctx *gin.Context) {
 }
 
 func AddUserAssets(ctx *gin.Context) {
-	symbol := ctx.Query("symbol")
-	amount := ctx.Query("amount")
-	userId := ctx.Query("userId")
+	symbol := ctx.PostForm("symbol")
+	amount := ctx.PostForm("amount")
+	userId := ctx.PostForm("userId")
 	_, err := assets.SysDeposit(userId, symbol, amount, "sys.give:"+userId)
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())
@@ -85,9 +85,9 @@ func AddUserAssets(ctx *gin.Context) {
 }
 
 func DecreaseUserAssets(ctx *gin.Context) {
-	symbol := ctx.Query("symbol")
-	amount := ctx.Query("amount")
-	userId := ctx.Query("userId")
+	symbol := ctx.PostForm("symbol")
+	amount := ctx.PostForm("amount")
+	userId := ctx.PostForm("userId")
 	_, err := assets.SysWithdraw(userId, symbol, amount, "sys.decrease:"+userId)
 	if err != nil {
 		utils.ResponseFailJson(ctx, err.Error())
