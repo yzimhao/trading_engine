@@ -306,8 +306,7 @@ body{
     var CURRENT_SYMBOL = "{{ .symbol }}";
     var latest_price = "";
     var API_HAOBASE_HOST = {{ .haobase_host | unsafe }};
-    var API_HAOQUOTE_HOST = {{ .haoquote_host | unsafe }};
-    var WSHOST = {{ .ws_host | unsafe}};
+    var WSHOST = {{ .haobase_host | unsafe}};
     
 </script>
 

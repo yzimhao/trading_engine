@@ -7,16 +7,21 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/cmd/haobase/assets"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message"
+	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/internal_api"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/middle"
 	"github.com/yzimhao/trading_engine/cmd/haobase/www/order"
+	"github.com/yzimhao/trading_engine/cmd/haobase/www/quote"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
 func Run() {
-	if !config.App.Haobase.Debug {
+	if config.App.Main.Mode != app.ModeProd.String() {
+		gin.SetMode(gin.DebugMode)
+	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
@@ -29,6 +34,13 @@ func Run() {
 func router(r *gin.Engine) {
 	r.Use(utils.CorsMiddleware())
 
+	router_internal(r)
+	router_base(r)
+	router_quote(r)
+	router_wss(r)
+}
+
+func router_internal(r *gin.Engine) {
 	internal := r.Group("/api/v1/internal")
 	{ //内部通信接口
 		//todo 加入ip限制
@@ -39,26 +51,35 @@ func router(r *gin.Engine) {
 		internal.POST("/deposit", internal_api.Deposit)
 		internal.POST("/withdraw", internal_api.Withdraw)
 	}
+}
 
-	api := r.Group("/api/v1/base")
+func router_base(r *gin.Engine) {
+	base_api := r.Group("/api/v1/base")
 	{
-		api.GET("/ping", func(ctx *gin.Context) {
+		base_api.GET("/ping", func(ctx *gin.Context) {
 			utils.ResponseOkJson(ctx, gin.H{})
 		})
-		api.GET("/time", func(ctx *gin.Context) {
+		base_api.GET("/time", func(ctx *gin.Context) {
 			utils.ResponseOkJson(ctx, gin.H{
 				"server_time": time.Now().Unix(),
 			})
 		})
-		//全部交易品类
-		api.GET("/trading/varieties", trading_varieties)
-		//指定交易品类
-		api.GET("/varieties/config", varieties_config)
+		base_api.GET("/version", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{
+				"version": app.Version,
+				"build":   app.Build,
+			})
+		})
 
-		api.Use(middle.CheckLogin())
+		//全部交易品类
+		base_api.GET("/trading/varieties", trading_varieties)
+		//指定交易品类
+		base_api.GET("/varieties/config", varieties_config)
+
+		base_api.Use(middle.CheckLogin())
 		{
 			if config.App.Main.Mode == app.ModeDemo.String() {
-				api.GET("/assets/recharge_for_demo", func(ctx *gin.Context) {
+				base_api.GET("/assets/recharge_for_demo", func(ctx *gin.Context) {
 					user_id := ctx.MustGet("user_id").(string)
 					//自动为demo用户充值
 					default_amount := "10000.00"
@@ -71,12 +92,32 @@ func router(r *gin.Engine) {
 					utils.ResponseOkJson(ctx, "")
 				})
 			}
-			api.GET("/assets", assets_balance)
-			api.POST("/order/create", order.Create)
-			api.POST("/order/cancel", order.Cancel)
-			api.GET("/order/history", order.History)
-			api.GET("/order/unfinished", order.Unfinished)
+			base_api.GET("/assets", assets_balance)
+			base_api.POST("/order/create", order.Create)
+			base_api.POST("/order/cancel", order.Cancel)
+			base_api.GET("/order/history", order.History)
+			base_api.GET("/order/unfinished", order.Unfinished)
 		}
 	}
+}
 
+func router_wss(r *gin.Engine) {
+	ws.NewHub()
+	message.Subscribe()
+
+	r.GET("/ws", func(ctx *gin.Context) {
+		ws.M.ServeWs(ctx)
+	})
+}
+
+func router_quote(r *gin.Engine) {
+
+	quote_api := r.Group("/api/v1/quote")
+	quote_api.Use(utils.CorsMiddleware())
+	{
+		quote_api.GET("/depth", quote.QuoteDepth)
+		quote_api.GET("/price", quote.QuoteLatestPrice)
+		quote_api.GET("/trans/record", quote.TransRecord)
+		quote_api.GET("/kline", quote.KLine)
+	}
 }

@@ -1,4 +1,4 @@
-package www
+package quote
 
 import (
 	"time"
@@ -10,7 +10,7 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func kline(ctx *gin.Context) {
+func KLine(ctx *gin.Context) {
 	interval := ctx.Query("interval")
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := ctx.Query("symbol")

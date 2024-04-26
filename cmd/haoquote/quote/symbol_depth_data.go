@@ -1,4 +1,4 @@
-package www
+package quote
 
 import (
 	"encoding/json"
@@ -13,6 +13,10 @@ import (
 	"github.com/yzimhao/trading_engine/types/redisdb"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
+
+func GetDepthData(symbol string) (*redisdb.OrderBookData, error) {
+	return get_depth_data(symbol)
+}
 
 func publish_depth() {
 	tsymbols := base.NewTradeSymbol()
@@ -38,7 +42,6 @@ func get_depth_data(symbol string) (*redisdb.OrderBookData, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &data, nil
 }
 
@@ -66,8 +69,8 @@ func push_depth_message(symbol string) {
 					Response: ws.Response{
 						Type: to_msg_depth,
 						Body: gin.H{
-							"asks": limitSize(data.Asks, 10),
-							"bids": limitSize(data.Bids, 10),
+							"asks": LimitSize(data.Asks, 10),
+							"bids": LimitSize(data.Bids, 10),
 						},
 					},
 				})
@@ -95,4 +98,15 @@ func push_depth_message(symbol string) {
 			}()
 		}
 	}()
+}
+
+func LimitSize(arr [][2]string, n int) [][2]string {
+	a := len(arr)
+	if n >= a {
+		n = a
+	}
+	if n <= 0 {
+		n = 0
+	}
+	return arr[0:n]
 }

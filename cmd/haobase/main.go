@@ -7,7 +7,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 
 	"github.com/urfave/cli/v2"
-	"github.com/yzimhao/trading_engine/cmd/haobase/core"
+	haobase "github.com/yzimhao/trading_engine/cmd/haobase/run"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
@@ -70,7 +70,7 @@ func main() {
 			}
 
 			keepalive.NewKeepalive(app.RedisPool(), ctx.App.Name, app.Version, 5)
-			core.Run()
+			haobase.Run()
 			return nil
 		},
 	}

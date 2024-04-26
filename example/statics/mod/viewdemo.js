@@ -133,14 +133,14 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
 
         load_depth_data: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
+            $.get(API_HAOBASE_HOST + "/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
                 if(d.ok){
                     utils.renderdepth(d.data);
                 }
             });
         },
         load_tradelog_data: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
+            $.get(API_HAOBASE_HOST + "/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
                 if (d.ok) {
                     var data = d.data.reverse();
                     for(var i=0; i<data.length; i++){
@@ -151,7 +151,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         load_system_info: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/system", function(d){
+            $.get(API_HAOBASE_HOST + "/api/v1/base/version", function(d){
                 $(".version").html(d.version);
                 $(".build").html(d.build);
             });

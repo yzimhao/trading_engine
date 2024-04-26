@@ -1,4 +1,4 @@
-package core
+package run
 
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"

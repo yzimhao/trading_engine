@@ -1,4 +1,4 @@
-package www
+package quote
 
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"

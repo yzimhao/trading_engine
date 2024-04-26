@@ -9,7 +9,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli/v2"
 	admview "github.com/yzimhao/trading_engine/cmd/haoadm/view"
-	"github.com/yzimhao/trading_engine/cmd/haobase/core"
+	base "github.com/yzimhao/trading_engine/cmd/haobase/run"
 	"github.com/yzimhao/trading_engine/cmd/haomatch/matching"
 	"github.com/yzimhao/trading_engine/cmd/haoquote/quote"
 	"github.com/yzimhao/trading_engine/cmd/haosettle/settle"
@@ -102,7 +102,7 @@ func debug_pprof() {
 }
 
 func haobase() {
-	core.Run()
+	base.Run()
 }
 
 func haomatch() {

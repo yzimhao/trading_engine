@@ -1,4 +1,4 @@
-package www
+package quote
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,7 +8,7 @@ import (
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func trans_record(ctx *gin.Context) {
+func TransRecord(ctx *gin.Context) {
 	symbol := ctx.Query("symbol")
 	limit := utils.S2Int(ctx.Query("limit"))
 

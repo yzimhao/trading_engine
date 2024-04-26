@@ -1,21 +1,22 @@
-package www
+package quote
 
 import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	haoquote "github.com/yzimhao/trading_engine/cmd/haoquote/quote"
 	"github.com/yzimhao/trading_engine/utils"
 	"github.com/yzimhao/trading_engine/utils/app"
 )
 
-func qutoe_depth(ctx *gin.Context) {
+func QuoteDepth(ctx *gin.Context) {
 	limit := utils.S2Int(ctx.Query("limit"))
 	symbol := strings.ToLower(ctx.Query("symbol"))
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	data, err := get_depth_data(symbol)
+	data, err := haoquote.GetDepthData(symbol)
 	if err != nil {
 		utils.ResponseFailJson(ctx, "invalid symbol")
 		return
@@ -26,20 +27,20 @@ func qutoe_depth(ctx *gin.Context) {
 	}
 
 	utils.ResponseOkJson(ctx, gin.H{
-		"asks":    limitSize(data.Asks, limit),
-		"bids":    limitSize(data.Bids, limit),
+		"asks":    haoquote.LimitSize(data.Asks, limit),
+		"bids":    haoquote.LimitSize(data.Bids, limit),
 		"asksize": data.AsksSize,
 		"bidsize": data.BidsSize,
 	})
 }
 
-func qutoe_latest_price(ctx *gin.Context) {
+func QuoteLatestPrice(ctx *gin.Context) {
 	symbol := strings.ToLower(ctx.Query("symbol"))
 
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
-	data, err := get_depth_data(symbol)
+	data, err := haoquote.GetDepthData(symbol)
 	if err != nil {
 		utils.ResponseFailJson(ctx, "invalid symbol")
 		return
@@ -48,15 +49,4 @@ func qutoe_latest_price(ctx *gin.Context) {
 	utils.ResponseOkJson(ctx, gin.H{
 		symbol: data.Price,
 	})
-}
-
-func limitSize(arr [][2]string, n int) [][2]string {
-	a := len(arr)
-	if n >= a {
-		n = a
-	}
-	if n <= 0 {
-		n = 0
-	}
-	return arr[0:n]
 }
