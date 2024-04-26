@@ -1,0 +1,115 @@
+{% include "iframe_header" %}
+
+
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form">
+        <form action="" class="layui-form" lay-filter="addform">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required">userId</label>
+                <div class="layui-input-block">
+                    <input type="text" name="userId" lay-verify="required" lay-reqtext="不能为空" placeholder="用户Id" value="" class="layui-input">
+                    <tip></tip>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required">Symbol</label>
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="">
+                    <input type="text" name="symbol" lay-verify="required" lay-reqtext="不能为空" placeholder="资产符号" value="" class="layui-input">
+                    <tip>唯一的</tip>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required">修改数值</label>
+                <div class="layui-input-block">
+                    <input type="number" name="amount" lay-reqtext="" placeholder="0" value="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required">增加/减少</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="true" title="增加" checked="">
+                    <input type="radio" name="status" value="false" title="减少">
+                </div>
+            </div>
+
+
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="saveBtn">确认保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    layui.use(['form', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            $ = layui.$;
+
+        form.render();
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            //如果是增加
+            console.log(data.field.status)
+            let status = data.field.status === "true";
+            if (status){
+                $.ajax({
+                    url: "/admin/user/assets/addAssets",
+                    type: "post",
+                    data: data.field,
+                    success: function(d){
+                        if(d.ok){
+                            layer.msg("成功");
+                        }else{
+                            layer.alert(d.reason);
+                        }
+                    }
+                })
+                //如果是减少
+            }else {
+                $.ajax({
+                    url: "/admin/user/assets/decreaseAssets",
+                    type: "post",
+                    data: data.field,
+                    success: function(d){
+                        if(d.ok){
+                            layer.msg("成功");
+                        }else{
+                            layer.alert(d.reason);
+                        }
+                    }
+                })
+            }
+
+
+
+            return false;
+        });
+
+
+        form.val("addform", {
+                "id": {% .data.Id %},
+            "symbol": {% .data.Symbol %},
+            "userId": {% .data.Symbol %},
+        "amount": {% .data.Name %}
+    });
+
+    });
+
+</script>
+
+
+{% include "iframe_footer" %}

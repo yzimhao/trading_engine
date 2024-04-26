@@ -96,8 +96,11 @@ func setupPages(router *gin.Engine) {
 
 		//用户资产
 		setMethods(radmin, []string{"GET"}, "/user/assets", admin.AssetsList)
+		setMethods(radmin, []string{"POST"}, "/user/assets/addAssets", admin.AddUserAssets)
+		setMethods(radmin, []string{"POST"}, "/user/assets/decreaseAssets", admin.DecreaseUserAssets)
 		setMethods(radmin, []string{"GET"}, "/user/assets/freeze", admin.AssetsFreezeList)
 		setMethods(radmin, []string{"GET"}, "/user/assets/logs", admin.AssetsLogsList)
+		setMethods(radmin, []string{"GET"}, "/user/assets/manage", admin.AssetsModify)
 
 		//订单、成交
 		setMethods(radmin, []string{"GET"}, "/user/order/history", admin.UserOrderHistory)

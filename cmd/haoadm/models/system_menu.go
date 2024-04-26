@@ -27,6 +27,7 @@ func init() {
 		SystemMenu{Id: 31, Pid: 3, Title: "当前委托", Icon: "fa fa-newspaper-o", Href: "/admin/user/unfinished", Target: "_self"},
 		SystemMenu{Id: 32, Pid: 3, Title: "历史订单", Icon: "fa fa-reorder", Href: "/admin/user/order/history", Target: "_self"},
 		SystemMenu{Id: 32, Pid: 3, Title: "成交记录", Icon: "fa fa-reorder", Href: "/admin/user/trade/history", Target: "_self"},
+		SystemMenu{Id: 34, Pid: 3, Title: "资产管理", Icon: "fa fa-reorder", Href: "/admin/user/assets/manage", Target: "_self"},
 	}
 }
 
