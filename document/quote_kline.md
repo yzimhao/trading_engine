@@ -2,7 +2,7 @@
 
 ##### 1) 请求地址
 
->{haoquote_host}/api/v1/quote/kline
+>{haobase_host}/api/v1/quote/kline
 
 ##### 2) 调用方式：HTTP GET
 

@@ -1,6 +1,6 @@
 #### Websocket 行情推送
 
-  - 订阅地址 ws://{haoquote_host}/quote/ws
+  - 订阅地址 ws://{haobase_host}/ws
   - 用户可以侦听/订阅数个数据流
 
 ```go
