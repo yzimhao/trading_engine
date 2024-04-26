@@ -2,7 +2,7 @@ package orders
 
 import (
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/period"
 	"github.com/yzimhao/trading_engine/utils"
 )
 

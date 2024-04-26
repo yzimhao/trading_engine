@@ -5,14 +5,13 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/base"
-	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/tradelog"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/tradelog"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/utils/app/keepalive"
 )
 
 func Run() {
 	publish_depth()
-
 	go func() {
 		for {
 			init_symbols()

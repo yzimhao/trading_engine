@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/goutil/arrutil"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message"
 	"github.com/yzimhao/trading_engine/cmd/haobase/message/ws"
-	"github.com/yzimhao/trading_engine/cmd/haoquote/quote/period"
+	"github.com/yzimhao/trading_engine/cmd/haoquote/period"
 	"github.com/yzimhao/trading_engine/config"
 	"github.com/yzimhao/trading_engine/trading_core"
 	"github.com/yzimhao/trading_engine/types"
