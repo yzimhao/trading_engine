@@ -393,8 +393,11 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.市价订单完全成交了
 				if t.bidQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
+					if item.GetQuantity().Equal(decimal.Zero) {
+						//完全成交不发送 取消信号
+						finish = true
+					}
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
-					finish = true
 				} else {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 				}
@@ -434,7 +437,11 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.金额完全成交
 				// c.剩余资金不满足最小成交量
-				if t.bidQueue.Len() == 0 || maxQty(item.GetAmount(), t.bidQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 {
+				if t.bidQueue.Len() == 0 || maxQty(item.GetAmount(), t.bidQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 || item.GetAmount().Equal(decimal.Zero) {
+					if item.GetAmount().Equal(decimal.Zero) {
+						//完全成交不发送 取消信号
+						finish = true
+					}
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
