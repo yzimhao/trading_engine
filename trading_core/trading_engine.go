@@ -361,6 +361,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 }
 func (t *TradePair) doMarketSell(item QueueItem) {
 	trade_cnt := 0
+	var finish = false
 	for {
 		ok := func() bool {
 
@@ -393,6 +394,7 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// b.市价订单完全成交了
 				if t.bidQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
+					finish = true
 				} else {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 				}
@@ -446,16 +448,21 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 
 		if !ok {
 			//市价单都需要触发一个成交后取消剩余部分的信号
-			t.ChCancelResult <- CancelBody{
-				OrderId: item.GetUniqueId(),
-				Reason: func() CancelType {
-					if trade_cnt > 0 {
-						return CancelTypeByPartial
-					}
-					//一个都没有成交则系统自动取消
-					return CancelTypeBySystem
-				}(),
+			//没有完成的市价单才需要发送取消信号
+			if !finish {
+				t.ChCancelResult <- CancelBody{
+					OrderId: item.GetUniqueId(),
+					Reason: func() CancelType {
+
+						if trade_cnt > 0 {
+							return CancelTypeByPartial
+						}
+						//一个都没有成交则系统自动取消
+						return CancelTypeBySystem
+					}(),
+				}
 			}
+
 			break
 		} else {
 			trade_cnt++
