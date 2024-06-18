@@ -166,7 +166,7 @@ func open_order(user string, data []byte) {
 	headers.Set("Token", user)
 
 	// 发送 POST 请求
-	url := fmt.Sprintf("http:%s/api/v1/base/order/create", viper.GetString("api.haobase_host"))
+	url := fmt.Sprintf("http://%s/api/v1/base/order/create", viper.GetString("api.haobase_host"))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())
@@ -197,7 +197,7 @@ func get_latest_price(symbol string) string {
 	headers := make(http.Header)
 	headers.Set("Content-Type", "application/json")
 
-	url := fmt.Sprintf("http:%s/api/v1/quote/price?symbol=%s", viper.GetString("api.haoquote_host"), symbol)
+	url := fmt.Sprintf("http://%s/api/v1/quote/price?symbol=%s", viper.GetString("api.haobase_host"), symbol)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())
@@ -342,7 +342,7 @@ func auto_deposit(order_id, user_id, symbol, amount string) {
 	data, _ := json.Marshal(args)
 	headers := make(http.Header)
 	// 发送 POST 请求
-	url := fmt.Sprintf("http:%s/api/v1/internal/deposit", viper.GetString("api.haobase_host"))
+	url := fmt.Sprintf("http://%s/api/v1/internal/deposit", viper.GetString("api.haobase_host"))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())
