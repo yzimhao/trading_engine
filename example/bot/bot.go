@@ -237,7 +237,7 @@ func get_depth(symbol string) (raw map[string][][2]string, asksize, bidsize int)
 	headers.Set("Content-Type", "application/json")
 
 	// 发送 POST 请求
-	url := fmt.Sprintf("http:%s/api/v1/quote/depth?symbol=%s&limit=10", viper.GetString("api.haoquote_host"), symbol)
+	url := fmt.Sprintf("http://%s/api/v1/quote/depth?symbol=%s&limit=10", viper.GetString("api.haobase_host"), symbol)
 	req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
 	if err != nil {
 		app.Logger.Warnf("HTTP request creation failed: %s", err.Error())

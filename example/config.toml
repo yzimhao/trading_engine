@@ -6,5 +6,5 @@ mode="test"
 host="0.0.0.0:8080"
 
 [api]
-haobase_host = "//127.0.0.1:8082"
+haobase_host = "127.0.0.1:8082"
 haoadm_host = "127.0.0.1:8079"
