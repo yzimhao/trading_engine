@@ -26,24 +26,40 @@ func NewTradeSymbol() *TradeSymbol {
 	return tsymbol
 }
 
-func (t *TradeSymbol) all_symbols() []varieties.TradingVarieties {
+func (t *TradeSymbol) all_symbols() ([]varieties.TradingVarieties, error) {
 	rdc := app.RedisPool().Get()
 	defer rdc.Close()
 
 	var data []varieties.TradingVarieties
 
-	raw, _ := redis.Bytes(rdc.Do("get", redisdb.BaseTradeSymbolAll.Format(redisdb.Replace{})))
-	if err := json.Unmarshal(raw, &data); err != nil {
-		data = varieties.AllTradingVarieties()
-		raw, _ = json.Marshal(data)
-		rdc.Do("set", redisdb.BaseTradeSymbolAll.Format(redisdb.Replace{}), raw)
+	raw, err := redis.Bytes(rdc.Do("get", redisdb.BaseTradeSymbolAll.Format(redisdb.Replace{})))
+
+	if err != nil {
+		return []varieties.TradingVarieties{}, err
 	}
 
-	return data
+	if err := json.Unmarshal(raw, &data); err != nil {
+		data = varieties.AllTradingVarieties()
+		if raw, err = json.Marshal(data); err != nil {
+			return []varieties.TradingVarieties{}, err
+		}
+
+		if _, err := rdc.Do("set", redisdb.BaseTradeSymbolAll.Format(redisdb.Replace{}), raw); err != nil {
+			return []varieties.TradingVarieties{}, err
+		}
+
+	}
+
+	return data, nil
 }
 
 func (t *TradeSymbol) Get(symbol string) (*varieties.TradingVarieties, error) {
-	for _, item := range t.all_symbols() {
+	symbols, err := t.all_symbols()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range symbols {
 		if item.Symbol == symbol {
 			return &item, nil
 		}
@@ -52,5 +68,9 @@ func (t *TradeSymbol) Get(symbol string) (*varieties.TradingVarieties, error) {
 }
 
 func (t *TradeSymbol) All() []varieties.TradingVarieties {
-	return t.all_symbols()
+	a, err := t.all_symbols()
+	if err != nil {
+		app.Logger.Warnf("获取交易对失败: %s", err)
+	}
+	return a
 }
