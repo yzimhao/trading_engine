@@ -361,6 +361,7 @@ func (t *TradePair) doMarketBuy(item QueueItem) {
 }
 func (t *TradePair) doMarketSell(item QueueItem) {
 	trade_cnt := 0
+	var finish = false
 	for {
 		ok := func() bool {
 
@@ -392,6 +393,10 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.市价订单完全成交了
 				if t.bidQueue.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
+					if item.GetQuantity().Equal(decimal.Zero) {
+						//完全成交不发送 取消信号
+						finish = true
+					}
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
@@ -432,7 +437,11 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.金额完全成交
 				// c.剩余资金不满足最小成交量
-				if t.bidQueue.Len() == 0 || maxQty(item.GetAmount(), t.bidQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 {
+				if t.bidQueue.Len() == 0 || maxQty(item.GetAmount(), t.bidQueue.Top().GetPrice(), item.GetQuantity()).Cmp(t.miniTradeQty) < 0 || item.GetAmount().Equal(decimal.Zero) {
+					if item.GetAmount().Equal(decimal.Zero) {
+						//完全成交不发送 取消信号
+						finish = true
+					}
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
@@ -446,16 +455,21 @@ func (t *TradePair) doMarketSell(item QueueItem) {
 
 		if !ok {
 			//市价单都需要触发一个成交后取消剩余部分的信号
-			t.ChCancelResult <- CancelBody{
-				OrderId: item.GetUniqueId(),
-				Reason: func() CancelType {
-					if trade_cnt > 0 {
-						return CancelTypeByPartial
-					}
-					//一个都没有成交则系统自动取消
-					return CancelTypeBySystem
-				}(),
+			//没有完成的市价单才需要发送取消信号
+			if !finish {
+				t.ChCancelResult <- CancelBody{
+					OrderId: item.GetUniqueId(),
+					Reason: func() CancelType {
+
+						if trade_cnt > 0 {
+							return CancelTypeByPartial
+						}
+						//一个都没有成交则系统自动取消
+						return CancelTypeBySystem
+					}(),
+				}
 			}
+
 			break
 		} else {
 			trade_cnt++

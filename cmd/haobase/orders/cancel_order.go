@@ -144,7 +144,7 @@ func cancel_order(symbol string, cancel matching.StructCancelOrder, retry int) {
 	//更新订单状态
 	item.Status = OrderStatusCanceled
 	if utils.D(item.Fee).Cmp(utils.D("0")) > 0 {
-		if cancel.Reason == trading_core.CancelTypeByUser {
+		if cancel.Reason == trading_core.CancelTypeByUser || cancel.Reason == trading_core.CancelTypeByPartial {
 			item.Status = OrderStatusPartialCancel
 		} else if cancel.Reason == trading_core.CancelTypeBySystem {
 			item.Status = OrderStatusFilled
