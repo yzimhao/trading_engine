@@ -15,13 +15,3 @@
 # vendor/
 
 .idea/
-
-example/build_local.sh
-example/trading_engine_example
-dist/
-.vscode/
-*.logs
-*.db
-*.dat
-*.pid
-*/**/logs/
