@@ -1,3 +1,0 @@
-theme: jekyll-theme-cayman
-title: HaoTrader 证券交易系统撮合引擎 | yzimhao/trading_engine
-description: HaoTrader 是一款用 Go 语言编写的开源订单撮合引擎，旨在为金融交易平台和数字货币交易所提供高性能、可扩展和可配置的交易解决方案。
