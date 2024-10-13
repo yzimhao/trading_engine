@@ -1,24 +1,18 @@
 package di
 
 import (
-	"context"
-
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
+	http_server "github.com/yzimhao/trading_engine/v2/pkg/http"
 )
 
-type HttpServer struct {
-	addr   string
-	engine *gin.Engine
-	logger *zap.Logger
-}
-
-func NewHttpServer(in context.Context, v *viper.Viper) Server {
-	v.SetDefault("port", 13081)
+func NewHttpServer(v *viper.Viper, engine *gin.Engine) Server {
+	v.SetDefault("port", 8080)
 	port := v.GetInt("port")
 
-	registerFn := func(s *gin.RouteInfo) {
+	return http_server.NewHttpServer(
+		http_server.WithPort(port),
+		http_server.WithHandler(engine),
+	)
 
-	}
 }

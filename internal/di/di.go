@@ -34,6 +34,8 @@ func App() *fx.App {
 			zap.NewDevelopment,
 			NewViper,
 			NewRedis,
+			NewGinEngine,
+			NewHttpServer,
 		),
 
 		fx.Invoke(RunServer),
