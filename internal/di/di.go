@@ -3,6 +3,7 @@ package di
 import (
 	"context"
 
+	"github.com/yzimhao/trading_engine/v2/api/handlers"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -38,6 +39,7 @@ func App() *fx.App {
 			NewHttpServer,
 		),
 
+		handlers.Module,
 		fx.Invoke(RunServer),
 	)
 }
