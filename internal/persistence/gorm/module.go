@@ -1,7 +1,14 @@
 package gorm
 
-import "go.uber.org/fx"
+import (
+	"github.com/duolacloud/crud-core/datasource"
+	"go.uber.org/fx"
+	_gorm "gorm.io/gorm"
+)
 
 var Module = fx.Options(
-// fx.Provide(),
+	fx.Provide(
+		datasource.NewDataSource[_gorm.DB],
+		// NewUserRepo,
+	),
 )
