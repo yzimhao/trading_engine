@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run cmd/trader/main.go
+go run cmd/allinone/main.go

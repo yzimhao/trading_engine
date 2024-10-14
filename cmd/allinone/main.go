@@ -20,7 +20,7 @@ func main() {
 	}
 
 	cmd := &cli.Command{
-		Name: "trader",
+		Name: "haotrader",
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			app := di.App()
 			app.Run()
