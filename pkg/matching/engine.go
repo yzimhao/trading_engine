@@ -50,6 +50,12 @@ func WithQuantityDecimals(decimals int32) Option {
 	}
 }
 
+func WithDebug(debug bool) Option {
+	return func(opts *options) {
+		opts.debug = debug
+	}
+}
+
 type Engine struct {
 	ctx          context.Context
 	symbol       string
@@ -154,8 +160,25 @@ func (e *Engine) GetAskOrderBook(size int) [][2]string {
 	return e.orderBook(e.asks, size)
 }
 
-func (e *Engine) GetBidDepth(size int) [][2]string {
+func (e *Engine) GetBidOrderBook(size int) [][2]string {
 	return e.orderBook(e.bids, size)
+}
+
+func (e *Engine) AskQueue() *OrderQueue {
+	return e.asks
+}
+
+func (e *Engine) BidQueue() *OrderQueue {
+	return e.bids
+}
+
+func (e *Engine) Clean() {
+	if e.opts.debug {
+		e.mx.Lock()
+		defer e.mx.Unlock()
+		e.asks.clean()
+		e.bids.clean()
+	}
 }
 
 func (e *Engine) matching() {
