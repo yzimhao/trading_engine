@@ -16,6 +16,10 @@ type gormAssetsRepo struct {
 	*repositories.MapperRepository[models.Assets, models.CreateAssets, models.UpdateAssets, entities.Assets, entities.Assets, map[string]any]
 }
 
+type gormAssetsLogRepo struct {
+	*repositories.MapperRepository[models.AssetsLog, models.CreateAssetsLog, models.UpdateAssetsLog, entities.AssetsLog, entities.AssetsLog, map[string]any]
+}
+
 func NewAssetsRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) persistence.AssetsRepository {
 	cacheWrapperRepo := repositories.NewCacheRepository(
 		k_repo.NewGormCrudRepository[entities.Assets, entities.Assets, map[string]any](datasource),
@@ -28,6 +32,22 @@ func NewAssetsRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache)
 	)
 
 	return &gormAssetsRepo{
-		mapperRepo,
+		MapperRepository: mapperRepo,
+	}
+}
+
+func NewAssetsLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetsLogRepo {
+	cacheWrapperRepo := repositories.NewCacheRepository(
+		k_repo.NewGormCrudRepository[entities.AssetsLog, entities.AssetsLog, map[string]any](datasource),
+		cache,
+	)
+
+	mapperRepo := repositories.NewMapperRepository(
+		cacheWrapperRepo,
+		b_mappers.NewJSONMapper[models.AssetsLog, models.CreateAssetsLog, models.UpdateAssetsLog, entities.AssetsLog, entities.AssetsLog, map[string]any](),
+	)
+
+	return &gormAssetsLogRepo{
+		MapperRepository: mapperRepo,
 	}
 }
