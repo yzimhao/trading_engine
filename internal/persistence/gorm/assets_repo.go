@@ -14,6 +14,7 @@ import (
 
 type gormAssetsRepo struct {
 	*repositories.MapperRepository[models.Assets, models.CreateAssets, models.UpdateAssets, entities.Assets, entities.Assets, map[string]any]
+	assetsLogRepo *gormAssetsLogRepo
 }
 
 type gormAssetsLogRepo struct {
@@ -33,10 +34,12 @@ func NewAssetsRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache)
 
 	return &gormAssetsRepo{
 		MapperRepository: mapperRepo,
+		assetsLogRepo:    newAssetsLogRepo(datasource, cache),
 	}
+
 }
 
-func NewAssetsLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetsLogRepo {
+func newAssetsLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetsLogRepo {
 	cacheWrapperRepo := repositories.NewCacheRepository(
 		k_repo.NewGormCrudRepository[entities.AssetsLog, entities.AssetsLog, map[string]any](datasource),
 		cache,

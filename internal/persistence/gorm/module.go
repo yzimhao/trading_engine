@@ -11,4 +11,6 @@ var Module = fx.Options(
 		datasource.NewDataSource[_gorm.DB],
 		NewAssetsRepo,
 	),
+
+	fx.Invoke(autoMigrate),
 )
