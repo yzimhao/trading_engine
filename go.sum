@@ -18,6 +18,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
+github.com/duolacloud/crud-cache-redis v0.0.7 h1:dDBG2BB1BkANp3SMPL+qfSmg+TKMNWxPWgK+mKKz0N4=
+github.com/duolacloud/crud-cache-redis v0.0.7/go.mod h1:LoRY+fSALNPxVKmaaNdQaLGnaRIPgjMa3lU6Tu2J9dU=
 github.com/duolacloud/crud-core v0.0.24 h1:U3GqS3jQQGsCpzv8VzrijwWB4dwUUx2WQaxl6yqLqQw=
 github.com/duolacloud/crud-core v0.0.24/go.mod h1:+rsMCb7MbdMKUHysK431WPozo6m5aBAvj08w6e1ZDPk=
 github.com/duolacloud/crud-core-gorm v0.0.27 h1:TpC2b0Sqs4JV0o0SN1sTqsFMXzVTO6XyBVcdXMqohhM=

@@ -1,0 +1,110 @@
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - '5432:5432'
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: 'develop'
+      POSTGRES_PASSWORD: 'postgres'
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    restart: always
+  kafka:
+    image: 'bitnami/kafka:latest'
+    volumes:
+      - kafka_volume:/data/kafka
+    environment:
+      # General
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_AUTO_LEADER_REBALANCE_ENABLE=true
+      # KRaft
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-0:9092,EXTERNAL://host.docker.internal:10000
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_VOLUME_DIR=/data/kafka
+    ports:
+      - "10000:9094"
+  kafka-ui:
+    image: provectuslabs/kafka-ui:master
+    ports:
+      - "8001:8001"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
+      - KAFKA_CLUSTERS_0_READONLY=false
+    depends_on:
+      - kafka
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.1
+    user: root
+    # restart: always
+    # container_name: rocketmq-broker
+    volumes:
+      # 映射本地目录权限一定要设置为 777 权限，否则启动不成功
+      - rocketmq_broker_logs:/home/rocketmq/logs
+      - rocketmq_broker_data:/home/rocketmq/store
+      # - ./conf/broker.conf:/home/rocketmq-${ROCKETMQ_VERSION}/conf/broker.conf
+      - ./conf:/home/rocketmq-5.3.1/conf
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv:9876
+      # - JAVA_OPTS:=-Duser.home=/opt
+      - JAVA_OPT_EXT=-server -Xms64m -Xmx64m -Xmn64m
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    command: sh mqbroker -c /home/rocketmq-5.3.1/conf/broker.conf
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.1
+    restart: always
+    # container_name: rocketmq-namesrv
+      # environment:
+      #   JAVA_OPT_EXT: "-server -Xms64m -Xmx64m -Xmn64m"
+    volumes:
+      # 映射本地目录权限一定要设置为 777 权限，否则启动不成功
+      - rocketmq_namesrv_logs:/home/rocketmq/logs
+    ports:
+      - 9876:9876
+    command: sh mqnamesrv
+  rmqdashboard:
+    image: apacherocketmq/rocketmq-dashboard:1.0.0
+    restart: always
+    # container_name: rocketmq-dashboard
+    environment:
+      - JAVA_OPTS=-Drocketmq.config.namesrvAddr=rocketmq-namesrv:9876 -Dserver.port=8180 -Drocketmq.config.isVIPChannel=false
+      # - JAVA_OPT_EXT=-Xms128m -Xmx128m -Xmn128m
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - 8180:8180
+
+volumes:
+  kafka_volume:
+    name: kafka_volume
+    external: true
+  rocketmq_namesrv_logs:
+    name: rocketmq_namesrv_logs
+    external: true
+  rocketmq_broker_data:
+    name: rocketmq_broker_data
+    external: true 
+  rocketmq_broker_logs:
+    name: rocketmq_broker_logs
+    external: true
+  db_data:
+    name: "db_data"
+    external: true

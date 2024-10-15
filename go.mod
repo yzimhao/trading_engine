@@ -3,6 +3,7 @@ module github.com/yzimhao/trading_engine/v2
 go 1.21.2
 
 require (
+	github.com/duolacloud/crud-cache-redis v0.0.7
 	github.com/duolacloud/crud-core v0.0.24
 	github.com/duolacloud/crud-core-gorm v0.0.27
 	github.com/gin-gonic/gin v1.10.0
