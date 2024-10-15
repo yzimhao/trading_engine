@@ -1,8 +1,10 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type option func(*options)
@@ -37,7 +39,8 @@ func WithHandler(handler http.Handler) option {
 }
 
 type HttpServer struct {
-	opts *options
+	opts   *options
+	server *http.Server
 }
 
 func NewHttpServer(opts ...option) *HttpServer {
@@ -49,11 +52,17 @@ func NewHttpServer(opts ...option) *HttpServer {
 }
 
 func (s *HttpServer) Start() error {
-	return http.ListenAndServe(s.Addr(), s.opts.handler)
+	s.server = &http.Server{
+		Addr:    s.Addr(),
+		Handler: s.opts.handler,
+	}
+	return s.server.ListenAndServe()
 }
 
 func (s *HttpServer) Stop() error {
-	return nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return s.server.Shutdown(ctx)
 }
 
 func (s *HttpServer) Scheme() string {
