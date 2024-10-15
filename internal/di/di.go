@@ -37,6 +37,7 @@ func App() *fx.App {
 			NewRedis,
 			NewGinEngine,
 			NewHttpServer,
+			NewGorm,
 		),
 
 		handlers.Module,
