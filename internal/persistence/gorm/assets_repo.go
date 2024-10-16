@@ -3,7 +3,6 @@ package gorm
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -269,8 +268,6 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 			Symbol: symbol,
 		}, nil
 	}
-
-	fmt.Printf("user: %+v\n", user)
 
 	return &user, nil
 }
