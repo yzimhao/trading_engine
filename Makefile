@@ -8,12 +8,12 @@ install:
 .PHONY: migrate-up
 migrate-up:
 	@echo "Migrating up..."
-	@bash scripts/migrate-up.sh
+	@bash scripts/migrate_up.sh
 
 .PHONY: migrate-down
 migrate-down:
 	@echo "Migrating down..."
-	@bash scripts/migrate-down.sh
+	@bash scripts/migrate_down.sh
 
 .PHONY: docker-up
 docker-up:

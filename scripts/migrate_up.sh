@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run cmd/allinone/main.go migrate up
+go run cmd/main/main.go migrate up

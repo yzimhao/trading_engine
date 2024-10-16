@@ -246,7 +246,7 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 	// 查询是否存在指定的资产记录
 	row := rawDb.QueryRowContext(ctx, "SELECT * FROM assets WHERE user_id = $1 AND symbol = $2 LIMIT 1", userId, symbol)
 	var user entities.Assets
-	err := row.Scan(&user)
+	err := row.Scan(&user.Id, &user.UserId, &user.Symbol, &user.TotalBalance, &user.AvailBalance, &user.FreezeBalance, &user.CreatedAt, &user.UpdatedAt)
 
 	// 如果出现数据库查询错误
 	if err != nil && err != sql.ErrNoRows {
