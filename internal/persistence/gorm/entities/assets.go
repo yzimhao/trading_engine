@@ -1,15 +1,16 @@
 package entities
 
 type FreezeStatus int
-type AssetsChangeType string
+type AssetChangeType string
+type FreezeType AssetChangeType
 
 const (
-	FreezeStatusNew          FreezeStatus     = 0
-	FreezeStatusDone         FreezeStatus     = 1
-	AssetsChangeTypeTrade    AssetsChangeType = "trade"
-	AssetsChangeTypeRecharge AssetsChangeType = "deposit"
-	AssetsChangeTypeWithdraw AssetsChangeType = "withdraw"
-	AssetsChangeTypeTransfer AssetsChangeType = "transfer"
+	FreezeStatusNew         FreezeStatus    = 0
+	FreezeStatusDone        FreezeStatus    = 1
+	AssetChangeTypeTrade    AssetChangeType = "trade"
+	AssetChangeTypeRecharge AssetChangeType = "deposit"
+	AssetChangeTypeWithdraw AssetChangeType = "withdraw"
+	AssetChangeTypeTransfer AssetChangeType = "transfer"
 )
 
 type Assets struct {

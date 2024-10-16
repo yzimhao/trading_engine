@@ -36,9 +36,4 @@ func (ctx *RoutesContext) registerRoutes() {
 		PATCH("", ctx.userAssetsController.Update).
 		DELETE("", ctx.userAssetsController.Delete)
 
-	v1Group.Group("order").
-		POST("", ctx.orderController.Create).
-		GET("/:orderId", ctx.orderController.List).
-		PATCH("/:orderId", ctx.orderController.Update).
-		DELETE("/:orderId", ctx.orderController.Delete)
 }
