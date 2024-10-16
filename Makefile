@@ -28,7 +28,7 @@ docker-down:
 .PHONY: image-build
 image-build:
 	@echo "Building a docker image..."
-	@bash scripts/image-build.sh $(TAG)
+	@bash scripts/image_build.sh $(TAG)
 
 .PHONY: run
 run:
