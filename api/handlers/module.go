@@ -1,9 +1,13 @@
 package handlers
 
-import "go.uber.org/fx"
+import (
+	"github.com/yzimhao/trading_engine/v2/api/handlers/controllers"
+	"go.uber.org/fx"
+)
 
 var Module = fx.Options(
-	fx.Invoke(
-		NewRoutesHandler,
+	fx.Provide(
+		controllers.NewUserAssetsController,
 	),
+	fx.Invoke(NewRoutesContext),
 )

@@ -6,3 +6,7 @@ type Base struct {
 	CreatedAt time.Time `json:"created_at" gorm:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"updated_at"`
 }
+
+type UUID struct {
+	Id string `gorm:"primarykey"`
+}

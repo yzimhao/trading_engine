@@ -7,6 +7,8 @@ import (
 
 func autoMigrate(db *gorm.DB) error {
 
+	return nil
+
 	return db.AutoMigrate(
 		&entities.Assets{},
 		&entities.AssetsLog{},

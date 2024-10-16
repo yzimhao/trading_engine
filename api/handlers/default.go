@@ -12,15 +12,19 @@ type RoutesContext struct {
 	//middleware
 	//controllers
 	userAssetsController *controllers.UserAssetsController
-	orderController      *controllers.OrderController
 }
 
-func NewRoutesHandler(engine *gin.Engine) {
+func NewRoutesContext(
+	engine *gin.Engine,
+	userAssetsController *controllers.UserAssetsController,
+) *RoutesContext {
 	r := &RoutesContext{
-		engine: engine,
+		engine:               engine,
+		userAssetsController: userAssetsController,
 	}
 
 	r.registerRoutes()
+	return r
 }
 
 func (ctx *RoutesContext) registerRoutes() {
@@ -31,9 +35,7 @@ func (ctx *RoutesContext) registerRoutes() {
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
 
-	v1Group.Group("user").
-		POST("", ctx.userAssetsController.Create).
-		PATCH("", ctx.userAssetsController.Update).
-		DELETE("", ctx.userAssetsController.Delete)
+	v1Group.Group("wallet").
+		GET("/:symbol", ctx.userAssetsController.Query)
 
 }
