@@ -4,7 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yzimhao/trading_engine/v2/api/handlers/controllers"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
+	_ "github.com/yzimhao/trading_engine/v2/app/docs"
 )
 
 type RoutesContext struct {
@@ -32,10 +35,14 @@ func (ctx *RoutesContext) registerRoutes() {
 		c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 
+	ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
 
-	v1Group.Group("wallet").
-		GET("/:symbol", ctx.userAssetsController.Query)
+	wallet := v1Group.Group("wallet")
+	wallet.GET("/assets/:symbol", ctx.userAssetsController.Query)
+	wallet.GET("/assets/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
+	wallet.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
 
 }

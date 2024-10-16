@@ -1,0 +1,105 @@
+definitions:
+  app_api_handlers_controllers.TransferRequest:
+    properties:
+      amount:
+        type: string
+      from:
+        type: string
+      symbol:
+        type: string
+      to:
+        type: string
+    type: object
+  github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets:
+    properties:
+      UUID:
+        type: string
+      avail_balance:
+        type: string
+      created_at:
+        type: string
+      freeze_balance:
+        type: string
+      symbol:
+        type: string
+      total_balance:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/wallet/assets/{symbol}:
+    get:
+      consumes:
+      - application/json
+      description: get an asset balance
+      operationId: v1.wallet.asset.query
+      parameters:
+      - description: symbol
+        in: path
+        name: symbol
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets'
+      summary: get wallet asset
+      tags:
+      - wallet
+  /api/v1/wallet/assets/{symbol}/history:
+    get:
+      consumes:
+      - application/json
+      description: get an asset history
+      operationId: v1.wallet.asset.history
+      parameters:
+      - description: symbol
+        in: path
+        name: symbol
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets'
+            type: array
+      summary: get wallet asset history
+      tags:
+      - wallet
+  /api/v1/wallet/transfer/{symbol}:
+    post:
+      consumes:
+      - application/json
+      description: transfer an asset
+      operationId: v1.wallet.asset.transfer
+      parameters:
+      - description: symbol
+        in: path
+        name: symbol
+        required: true
+        type: string
+      - description: transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.TransferRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: asset transfer
+      tags:
+      - wallet
+swagger: "2.0"

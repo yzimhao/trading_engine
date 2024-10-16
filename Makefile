@@ -1,17 +1,19 @@
 .PHONY: install
 install:
 	go install github.com/rubenv/sql-migrate/...@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/swaggo/swag/cmd/swag@v1.8.12
 
 
 .PHONY: migrate-up
 migrate-up:
 	@echo "Migrating up..."
-	sql-migrate up
+	@bash scripts/migrate-up.sh
 
 .PHONY: migrate-down
 migrate-down:
 	@echo "Migrating down..."
-	sql-migrate down
+	@bash scripts/migrate-down.sh
 
 .PHONY: docker-up
 docker-up:
@@ -31,3 +33,8 @@ image-build:
 .PHONY: run
 run:
 	@bash scripts/run.sh
+
+
+.PHONY: docs-gen
+docs-gen:
+	swag init -g cmd/main/main.go --parseDependency --parseInternal -o app/docs

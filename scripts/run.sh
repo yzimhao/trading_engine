@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go run cmd/allinone/main.go
+go run cmd/main/main.go

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/yzimhao/trading_engine/v2/api/handlers/controllers"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
 	"go.uber.org/fx"
 )
 
