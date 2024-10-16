@@ -1,4 +1,13 @@
 definitions:
+  app_api_handlers_controllers.DespoitRequest:
+    properties:
+      amount:
+        type: string
+      symbol:
+        type: string
+      user_id:
+        type: string
+    type: object
   app_api_handlers_controllers.TransferRequest:
     properties:
       amount:
@@ -8,6 +17,15 @@ definitions:
       symbol:
         type: string
       to:
+        type: string
+    type: object
+  app_api_handlers_controllers.WithdrawRequest:
+    properties:
+      amount:
+        type: string
+      symbol:
+        type: string
+      user_id:
         type: string
     type: object
   github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets:
@@ -76,6 +94,52 @@ paths:
               $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets'
             type: array
       summary: get wallet asset history
+      tags:
+      - wallet
+  /api/v1/wallet/assets/despoit:
+    post:
+      consumes:
+      - application/json
+      description: despoit an asset
+      operationId: v1.wallet.asset.despoit
+      parameters:
+      - description: despoit request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.DespoitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: asset despoit
+      tags:
+      - wallet
+  /api/v1/wallet/assets/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: withdraw an asset
+      operationId: v1.wallet.asset.withdraw
+      parameters:
+      - description: withdraw request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.WithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: asset withdraw
       tags:
       - wallet
   /api/v1/wallet/transfer/{symbol}:

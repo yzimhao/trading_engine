@@ -40,7 +40,10 @@ func (ctx *RoutesContext) registerRoutes() {
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
 
+	//for test
 	wallet := v1Group.Group("wallet")
+	wallet.POST("/assets/despoit", ctx.userAssetsController.Despoit)
+	wallet.POST("/assets/withdraw", ctx.userAssetsController.Withdraw)
 	wallet.GET("/assets/:symbol", ctx.userAssetsController.Query)
 	wallet.GET("/assets/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
 	wallet.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)

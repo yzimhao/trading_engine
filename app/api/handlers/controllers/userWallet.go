@@ -17,27 +17,83 @@ type UserAssetsController struct {
 }
 
 func NewUserAssetsController(repo persistence.AssetsRepository, logger *zap.Logger) *UserAssetsController {
-
 	return &UserAssetsController{repo: repo, logger: logger}
 }
 
-// TODO implement
-func (ctrl *UserAssetsController) Create(c *gin.Context) {
-	c.JSON(http.StatusOK, "ok")
+type DespoitRequest struct {
+	UserId string `json:"user_id"`
+	Symbol string `json:"symbol"`
+	Amount string `json:"amount"`
 }
 
-// TODO implement
-func (ctrl *UserAssetsController) List(c *gin.Context) {
+// @Summary asset despoit
+// @Description despoit an asset
+// @ID v1.wallet.asset.despoit
+// @Tags wallet
+// @Accept json
+// @Produce json
+// @Param body body DespoitRequest true "despoit request"
+// @Success 200 {string} order_id
+// @Router /api/v1/wallet/assets/despoit [post]
+func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
+	var req DespoitRequest
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	order_id, err := ctrl.repo.Despoit(ctx, req.UserId, req.Symbol, req.Amount)
+	if err != nil {
+		ctrl.logger.Error("Despoit", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"data": "test",
+		"ok":   true,
+		"data": order_id,
+	})
+
+}
+
+type WithdrawRequest struct {
+	UserId string `json:"user_id"`
+	Symbol string `json:"symbol"`
+	Amount string `json:"amount"`
+}
+
+// @Summary asset withdraw
+// @Description withdraw an asset
+// @ID v1.wallet.asset.withdraw
+// @Tags wallet
+// @Accept json
+// @Produce json
+// @Param body body WithdrawRequest true "withdraw request"
+// @Success 200 {string} order_id
+// @Router /api/v1/wallet/assets/withdraw [post]
+func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
+	var req WithdrawRequest
+	err := c.BindJSON(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	order_id, err := ctrl.repo.Withdraw(ctx, req.UserId, req.Symbol, req.Amount)
+	if err != nil {
+		ctrl.logger.Error("Withdraw", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok":   true,
+		"data": order_id,
 	})
 }
-
-// TODO implement
-func (ctrl *UserAssetsController) Update(c *gin.Context) {}
-
-// TODO implement
-func (ctrl *UserAssetsController) Delete(c *gin.Context) {}
 
 // @Summary get wallet asset
 // @Description get an asset balance

@@ -3,6 +3,7 @@ package gorm
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -87,13 +88,16 @@ func newAssetsFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.
 	}
 }
 
-func (r *gormAssetsRepo) Despoit(ctx context.Context, userId, symbol string, amount string) error {
-	return r.transfer(ctx, symbol, entities.SYSTEM_USER_ID, userId, types.Amount(amount), "despoit")
-
+func (r *gormAssetsRepo) Despoit(ctx context.Context, userId, symbol string, amount string) (order_id string, err error) {
+	order_id = uuid.New().String()
+	err = r.transfer(ctx, symbol, entities.SYSTEM_USER_ID, userId, types.Amount(amount), order_id)
+	return
 }
 
-func (r *gormAssetsRepo) Withdraw(ctx context.Context, userId, symbol, amount string) error {
-	return r.transfer(ctx, symbol, userId, entities.SYSTEM_USER_ID, types.Amount(amount), "withdraw")
+func (r *gormAssetsRepo) Withdraw(ctx context.Context, userId, symbol, amount string) (order_id string, err error) {
+	order_id = uuid.New().String()
+	err = r.transfer(ctx, symbol, userId, entities.SYSTEM_USER_ID, types.Amount(amount), order_id)
+	return
 }
 
 func (r *gormAssetsRepo) Transfer(ctx context.Context, from, to, symbol, amount string) error {
@@ -130,6 +134,12 @@ func (r *gormAssetsRepo) transfer(ctx context.Context, symbol, from, to string, 
 
 	fromUser.TotalBalance = fromUser.TotalBalance.Sub(amount)
 	fromUser.AvailBalance = fromUser.AvailBalance.Sub(amount)
+
+	if fromUser.UserId != entities.SYSTEM_USER_ID {
+		if fromUser.AvailBalance.Cmp(types.Amount("0")) < 0 {
+			return errors.New("insufficient balance")
+		}
+	}
 
 	toUser.TotalBalance = toUser.TotalBalance.Add(amount)
 	toUser.AvailBalance = toUser.AvailBalance.Add(amount)
@@ -246,7 +256,7 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 	// 查询是否存在指定的资产记录
 	row := rawDb.QueryRowContext(ctx, "SELECT * FROM assets WHERE user_id = $1 AND symbol = $2 LIMIT 1", userId, symbol)
 	var user entities.Assets
-	err := row.Scan(&user.Id, &user.UserId, &user.Symbol, &user.TotalBalance, &user.AvailBalance, &user.FreezeBalance, &user.CreatedAt, &user.UpdatedAt)
+	err := row.Scan(&user.Id, &user.UserId, &user.Symbol, &user.TotalBalance, &user.FreezeBalance, &user.AvailBalance, &user.CreatedAt, &user.UpdatedAt)
 
 	// 如果出现数据库查询错误
 	if err != nil && err != sql.ErrNoRows {
@@ -259,6 +269,8 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 			Symbol: symbol,
 		}, nil
 	}
+
+	fmt.Printf("user: %+v\n", user)
 
 	return &user, nil
 }

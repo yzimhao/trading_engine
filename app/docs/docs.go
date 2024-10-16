@@ -16,6 +16,76 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/wallet/assets/despoit": {
+            "post": {
+                "description": "despoit an asset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "asset despoit",
+                "operationId": "v1.wallet.asset.despoit",
+                "parameters": [
+                    {
+                        "description": "despoit request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.DespoitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/wallet/assets/withdraw": {
+            "post": {
+                "description": "withdraw an asset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "asset withdraw",
+                "operationId": "v1.wallet.asset.withdraw",
+                "parameters": [
+                    {
+                        "description": "withdraw request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.WithdrawRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/wallet/assets/{symbol}": {
             "get": {
                 "description": "get an asset balance",
@@ -122,6 +192,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "app_api_handlers_controllers.DespoitRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "app_api_handlers_controllers.TransferRequest": {
             "type": "object",
             "properties": {
@@ -135,6 +219,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "app_api_handlers_controllers.WithdrawRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
