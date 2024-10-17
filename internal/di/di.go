@@ -5,6 +5,8 @@ import (
 
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
+	"github.com/yzimhao/trading_engine/v2/internal/services"
+	"github.com/yzimhao/trading_engine/v2/internal/subscribers"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -45,6 +47,8 @@ func App() *fx.App {
 
 		gorm.Module,
 		handlers.Module,
+		services.Module,
+		subscribers.Module,
 		fx.Invoke(RunServer),
 	)
 }
