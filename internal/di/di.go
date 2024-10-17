@@ -40,6 +40,7 @@ func App() *fx.App {
 			NewHttpServer,
 			NewCache,
 			NewGorm,
+			NewBroker,
 		),
 
 		gorm.Module,

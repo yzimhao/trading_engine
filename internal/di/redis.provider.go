@@ -10,17 +10,17 @@ import (
 )
 
 func NewRedis(v *viper.Viper, logger *zap.Logger) *redis.Client {
-	v.SetDefault("redis_address", "localhost:6379")
-	v.SetDefault("redis_db", 0)
-	v.SetDefault("redis_username", "")
-	v.SetDefault("redis_password", "")
-	v.SetDefault("redis_tls_enabled", false)
+	v.SetDefault("redis.address", "localhost:6379")
+	v.SetDefault("redis.db", 0)
+	v.SetDefault("redis.username", "")
+	v.SetDefault("redis.password", "")
+	v.SetDefault("redis.tls_enabled", false)
 
-	address := v.GetString("redis_address")
-	db := v.GetInt("redis_db")
-	username := v.GetString("redis_username")
-	password := v.GetString("redis_password")
-	tlsEnabled := v.GetBool("redis_tls_enabled")
+	address := v.GetString("redis.address")
+	db := v.GetInt("redis.db")
+	username := v.GetString("redis.username")
+	password := v.GetString("redis.password")
+	tlsEnabled := v.GetBool("redis.tls_enabled")
 
 	opts := redis.Options{
 		Addr:     address,
