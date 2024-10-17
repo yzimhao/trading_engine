@@ -206,8 +206,8 @@ func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal
 		Symbol:                 e.symbol,
 		AskOrderId:             ask.GetUniqueId(),
 		BidOrderId:             bid.GetUniqueId(),
-		TradeQuantity:          tradeQty,
-		TradePrice:             price,
+		TradeQuantity:          tradeQty.String(),
+		TradePrice:             price.String(),
 		TradeTime:              tradeAt,
 		RemainderMarketOrderId: remainder,
 	}
