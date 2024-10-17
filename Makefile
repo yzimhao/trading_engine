@@ -38,3 +38,7 @@ run:
 .PHONY: docs-gen
 docs-gen:
 	swag init -g cmd/main/main.go --parseDependency --parseInternal -o app/docs
+
+.PHONY: lint
+lint:
+	golangci-lint run --fix
