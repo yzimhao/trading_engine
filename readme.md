@@ -1,3 +1,5 @@
+
+### 新订单
 ```mermaid
 graph LR
     client(new order) --1 postgres --> db(postgres)
@@ -10,4 +12,13 @@ graph LR
     datafeed(datafeed) --> KlineData(Kline Data)
     datafeed(datafeed) --> tickerData(Ticker Data)
     datafeed(datafeed) --> db(postgres)
+```
+
+### 取消订单
+```mermaid
+graph LR
+    client(cancel order) --1--> rocketmq
+    rocketmq --2--> matching
+    matching --3--> rocketmq
+    rocketmq --4--> db(postgres)
 ```
