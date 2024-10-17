@@ -50,7 +50,7 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 	key := cacheKey(k.symbol, openAt, closeAt)
 	cache, err := k.redis.Get(ctx, key).Result()
 	if err != nil {
-		k.logger.Error("[kline] get open price from redis failed", zap.Error(err))
+		k.logger.Error("[kline] get cache data from redis failed", zap.Error(err))
 		return nil, err
 	}
 
