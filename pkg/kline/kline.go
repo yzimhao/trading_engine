@@ -31,7 +31,7 @@ type kLine struct {
 
 var _ KLinePeriod = &kLine{}
 
-func NewKLinePeriod(cli *redis.Client, logger *zap.Logger, symbol string) KLinePeriod {
+func NewKLine(cli *redis.Client, logger *zap.Logger, symbol string) KLinePeriod {
 	return &kLine{
 		redis:  cli,
 		symbol: symbol,
