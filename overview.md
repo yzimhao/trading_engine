@@ -3,15 +3,15 @@
 ```mermaid
 graph LR
     client(new order) --1 postgres --> db(postgres)
-    client(new order) --2 publish --> rocketmq --3 subscriber --> matching
-    matching --4 publish --> rocketmq
+    client(new order) --2 event --> rocketmq --3 subscriber --> matching
+    matching --4 event --> rocketmq
     rocketmq --5 subscribe --> settlement(settlement) --6--> db(postgres)
     settlement(settlement) --7 tradelog --> rocketmq
-    rocketmq --8 tradelog --> datafeed(datafeed)
+    rocketmq --8 event --> Datafeed(Datafeed)
 
-    datafeed(datafeed) --> KlineData(Kline Data)
-    datafeed(datafeed) --> tickerData(Ticker Data)
-    datafeed(datafeed) --> db(postgres)
+    Datafeed(Datafeed) --> KlineData(Kline Data)
+    Datafeed(Datafeed) --> tickerData(Ticker Data)
+    Datafeed(Datafeed) --> db(postgres)
 ```
 
 ### 取消订单
