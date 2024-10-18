@@ -54,6 +54,20 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 	openAt, closeAt := types.ParsePeriodTime(tradeTime, periodType)
 
 	key := cacheKey(k.symbol, openAt, closeAt)
+
+	//lock
+	lockKey := fmt.Sprintf("lock:%s", key)
+	lock, err := k.redis.SetNX(ctx, lockKey, 1, 10*time.Second).Result()
+	if err != nil {
+		k.logger.Error("[kline] set lock for kline calculation failed", zap.Error(err))
+		return nil, err
+	}
+	if !lock {
+		k.logger.Warn("[kline] failed to acquire lock for kline calculation")
+		return nil, fmt.Errorf("failed to acquire lock for kline calculation")
+	}
+	defer k.redis.Del(ctx, lockKey)
+
 	cache, err := k.redis.Get(ctx, key).Result()
 	if err != nil && err != redis.Nil {
 		k.logger.Error("[kline] get cache data from redis failed", zap.Error(err))
