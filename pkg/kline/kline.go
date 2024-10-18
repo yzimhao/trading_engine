@@ -21,6 +21,7 @@ type kline struct {
 
 type KLinePeriod interface {
 	GetData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error)
+	Clean(ctx context.Context, openAt, closeAt time.Time) error
 }
 
 type kLine struct {
@@ -43,23 +44,31 @@ func cacheKey(symbol string, openAt, closeAt time.Time) string {
 	return fmt.Sprintf("kline:%s:%d:%d", symbol, openAt.Unix(), closeAt.Unix())
 }
 
+func (k *kLine) Clean(ctx context.Context, openAt, closeAt time.Time) error {
+	key := cacheKey(k.symbol, openAt, closeAt)
+	return k.redis.Del(ctx, key).Err()
+}
+
 func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error) {
 	tradeTime := time.Unix(int64(tradeResult.TradeTime/1e9), 0)
 	openAt, closeAt := types.ParsePeriodTime(tradeTime, periodType)
 
 	key := cacheKey(k.symbol, openAt, closeAt)
 	cache, err := k.redis.Get(ctx, key).Result()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		k.logger.Error("[kline] get cache data from redis failed", zap.Error(err))
 		return nil, err
 	}
 
 	var cacheData kline
-	if err := json.Unmarshal([]byte(cache), &cacheData); err != nil {
-		k.logger.Error("[kline] unmarshal kline cachedata from redis failed", zap.Error(err))
-		return nil, err
+	if err == redis.Nil {
+		cacheData = kline{}
+	} else {
+		if err := json.Unmarshal([]byte(cache), &cacheData); err != nil {
+			k.logger.Error("[kline] unmarshal kline cachedata from redis failed", zap.Error(err))
+			return nil, err
+		}
 	}
-
 	data := types.KLine{
 		Symbol:  k.symbol,
 		OpenAt:  openAt,
@@ -87,6 +96,10 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 
 	//update key ttl
 	ttl := data.CloseAt.Unix() - time.Now().Unix() + 3600*24
+	if ttl < 0 {
+		ttl = 3600 * 24
+	}
+
 	err = k.redis.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
 	if err != nil {
 		k.logger.Error("[kline] update kline key ttl failed", zap.Error(err))
