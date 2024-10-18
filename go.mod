@@ -1,6 +1,6 @@
 module github.com/yzimhao/trading_engine/v2
 
-go 1.23.2
+go 1.22
 
 require (
 	github.com/duolacloud/broker-core v0.0.5-0.20240605111610-c8619ff3e84b
