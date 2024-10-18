@@ -26,42 +26,47 @@ func (e *Engine) orderBookTicker(que *OrderQueue) {
 	ticker := time.NewTicker(time.Duration(50) * time.Millisecond)
 
 	for {
-		<-ticker.C
-		func() {
-			e.mx.Lock()
-			defer e.mx.Unlock()
+		select {
+		case <-e.ctx.Done():
+			return
+		case <-ticker.C:
+			func() {
+				e.mx.Lock()
+				defer e.mx.Unlock()
 
-			que.Lock()
-			defer que.Unlock()
+				que.Lock()
+				defer que.Unlock()
 
-			que.orderBook = [][2]string{}
+				que.orderBook = [][2]string{}
 
-			bookMap := make(map[string]string)
+				bookMap := make(map[string]string)
 
-			if que.pq.Len() > 0 {
+				if que.pq.Len() > 0 {
 
-				for i := 0; i < que.pq.Len(); i++ {
+					for i := 0; i < que.pq.Len(); i++ {
 
-					if len(bookMap) > e.opts.orderBookMaxLen {
-						break
+						if len(bookMap) > e.opts.orderBookMaxLen {
+							break
+						}
+
+						item := (*que.pq)[i]
+
+						price := types.Number(item.GetPrice()).String(e.opts.priceDecimals)
+
+						if _, ok := bookMap[price]; !ok {
+							bookMap[price] = types.Number(item.GetQuantity()).String(e.opts.quantityDecimals)
+						} else {
+							old_qunantity, _ := decimal.NewFromString(bookMap[price])
+							bookMap[price] = types.Number(old_qunantity.Add(item.GetQuantity())).String(e.opts.quantityDecimals)
+						}
 					}
 
-					item := (*que.pq)[i]
-
-					price := types.Number(item.GetPrice()).String(e.opts.priceDecimals)
-
-					if _, ok := bookMap[price]; !ok {
-						bookMap[price] = types.Number(item.GetQuantity()).String(e.opts.quantityDecimals)
-					} else {
-						old_qunantity, _ := decimal.NewFromString(bookMap[price])
-						bookMap[price] = types.Number(old_qunantity.Add(item.GetQuantity())).String(e.opts.quantityDecimals)
-					}
+					//按价格排序map
+					que.orderBook = sortMap2Slice(bookMap, que.Top().GetOrderSide())
 				}
+			}()
+		}
 
-				//按价格排序map
-				que.orderBook = sortMap2Slice(bookMap, que.Top().GetOrderSide())
-			}
-		}()
 	}
 }
 

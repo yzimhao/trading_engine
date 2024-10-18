@@ -33,6 +33,7 @@ func (s *SettlementSubscriber) Subscribe() {
 
 func (s *SettlementSubscriber) On(ctx context.Context, event broker.Event) error {
 	s.logger.Info("settlement", zap.Any("event", event))
+	//TODO
 
 	return nil
 }
