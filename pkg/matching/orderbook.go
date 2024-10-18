@@ -16,7 +16,9 @@ func (e *Engine) orderBook(queue *OrderQueue, size int) [][2]string {
 		size = max
 	}
 
-	return queue.orderBook[0:size]
+	book := make([][2]string, size)
+	copy(book, queue.orderBook[0:size])
+	return book
 }
 
 func (e *Engine) orderBookTicker(que *OrderQueue) {
