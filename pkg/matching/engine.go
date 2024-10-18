@@ -80,8 +80,8 @@ func NewEngine(ctx context.Context, symbol string, opts ...Option) *Engine {
 		opts:         o,
 		asks:         NewQueue(),
 		bids:         NewQueue(),
-		resultNotify: make(chan types.TradeResult, 10),
-		removeNotify: make(chan types.RemoveResult, 10),
+		resultNotify: make(chan types.TradeResult, 1),
+		removeNotify: make(chan types.RemoveResult, 1),
 	}
 	go e.matching()
 	go e.orderBookTicker(e.asks)
