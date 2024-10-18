@@ -67,7 +67,60 @@ func (suite *klineTest) Test_GetKLine() {
 				suite.Equal(*kline.Close, "1.00")
 				suite.Equal(*kline.Volume, "10")
 				suite.Equal(*kline.Amount, "10")
-				suite.service.Clean(suite.ctx, kline.OpenAt, kline.CloseAt)
+				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
+
+			},
+		},
+
+		{
+			name: "kline成交记录不按先后顺序到达",
+			setup: func() {
+				tradeTime, err := time.Parse("2006-01-02 15:04:05", "2024-05-01 10:00:15")
+				suite.Require().NoError(err)
+				tradeResult := matching_types.TradeResult{
+					Symbol:        suite.symbol,
+					AskOrderId:    "ask1",
+					BidOrderId:    "bid1",
+					TradePrice:    "1.00",
+					TradeQuantity: "10",
+					TradeTime:     tradeTime.UnixNano(),
+				}
+
+				tradeTime1, err := time.Parse("2006-01-02 15:04:05", "2024-05-01 10:00:05")
+				suite.Require().NoError(err)
+				tradeResult1 := matching_types.TradeResult{
+					Symbol:        suite.symbol,
+					AskOrderId:    "ask1",
+					BidOrderId:    "bid1",
+					TradePrice:    "2.00",
+					TradeQuantity: "10",
+					TradeTime:     tradeTime1.UnixNano(),
+				}
+
+				tradeTime2, err := time.Parse("2006-01-02 15:04:05", "2024-05-01 10:00:30")
+				suite.Require().NoError(err)
+				tradeResult2 := matching_types.TradeResult{
+					Symbol:        suite.symbol,
+					AskOrderId:    "ask1",
+					BidOrderId:    "bid1",
+					TradePrice:    "0.95",
+					TradeQuantity: "10",
+					TradeTime:     tradeTime2.UnixNano(),
+				}
+
+				_, err = suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult)
+				suite.Require().NoError(err)
+				_, err = suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult1)
+				suite.Require().NoError(err)
+				kline, err := suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult2)
+				suite.Require().NoError(err)
+				suite.Equal(*kline.Open, "2.00")
+				suite.Equal(*kline.High, "2.00")
+				suite.Equal(*kline.Low, "0.95")
+				suite.Equal(*kline.Close, "0.95")
+				suite.Equal(*kline.Volume, "30")
+				suite.Equal(*kline.Amount, "39.5") //0.95 *10 + 2 *10 + 1* 10
+				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
 
 			},
 		},

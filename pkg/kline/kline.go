@@ -14,14 +14,14 @@ import (
 )
 
 type kline struct {
-	types.KLine
+	TypesKLine    types.KLine
 	OpenLastTime  int64
 	CloseLastTime int64
 }
 
 type KLinePeriod interface {
 	GetData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error)
-	Clean(ctx context.Context, openAt, closeAt time.Time) error
+	CleanCache(ctx context.Context, openAt, closeAt time.Time) error
 }
 
 type kLine struct {
@@ -44,7 +44,7 @@ func cacheKey(symbol string, openAt, closeAt time.Time) string {
 	return fmt.Sprintf("kline:%s:%d:%d", symbol, openAt.Unix(), closeAt.Unix())
 }
 
-func (k *kLine) Clean(ctx context.Context, openAt, closeAt time.Time) error {
+func (k *kLine) CleanCache(ctx context.Context, openAt, closeAt time.Time) error {
 	key := cacheKey(k.symbol, openAt, closeAt)
 	return k.redis.Del(ctx, key).Err()
 }
@@ -69,17 +69,21 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 			return nil, err
 		}
 	}
-	data := types.KLine{
-		Symbol:  k.symbol,
-		OpenAt:  openAt,
-		CloseAt: closeAt,
-		Period:  periodType,
-		Open:    k.getOpen(&cacheData, &tradeResult),
-		High:    k.getHigh(&cacheData, &tradeResult),
-		Low:     k.getLow(&cacheData, &tradeResult),
-		Close:   k.getClose(&cacheData, &tradeResult),
-		Volume:  k.getVolume(&cacheData, &tradeResult),
-		Amount:  k.getAmount(&cacheData, &tradeResult),
+	data := kline{
+		TypesKLine: types.KLine{
+			Symbol:  k.symbol,
+			OpenAt:  openAt,
+			CloseAt: closeAt,
+			Period:  periodType,
+			Open:    k.getOpen(&cacheData, &tradeResult),
+			High:    k.getHigh(&cacheData, &tradeResult),
+			Low:     k.getLow(&cacheData, &tradeResult),
+			Close:   k.getClose(&cacheData, &tradeResult),
+			Volume:  k.getVolume(&cacheData, &tradeResult),
+			Amount:  k.getAmount(&cacheData, &tradeResult),
+		},
+		OpenLastTime:  cacheData.OpenLastTime,
+		CloseLastTime: cacheData.CloseLastTime,
 	}
 
 	dataJson, err := json.Marshal(data)
@@ -95,7 +99,7 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 	}
 
 	//update key ttl
-	ttl := data.CloseAt.Unix() - time.Now().Unix() + 3600*24
+	ttl := data.TypesKLine.CloseAt.Unix() - time.Now().Unix() + 3600*24
 	if ttl < 0 {
 		ttl = 3600 * 24
 	}
@@ -106,86 +110,86 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 		return nil, err
 	}
 
-	return &data, nil
+	return &data.TypesKLine, nil
 }
 
 func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
 
-	if cacheData.Open == nil {
-		cacheData.Open = &tradeResult.TradePrice
+	if cacheData.TypesKLine.Open == nil {
+		cacheData.TypesKLine.Open = &tradeResult.TradePrice
 		cacheData.OpenLastTime = tradeResult.TradeTime
 	} else {
 
 		if tradeResult.TradeTime < cacheData.OpenLastTime {
-			cacheData.Open = &tradeResult.TradePrice
+			cacheData.TypesKLine.Open = &tradeResult.TradePrice
 			cacheData.OpenLastTime = tradeResult.TradeTime
 		}
 	}
 
-	return cacheData.Open
+	return cacheData.TypesKLine.Open
 }
 
 func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	if cacheData.High == nil {
-		cacheData.High = &tradeResult.TradePrice
+	if cacheData.TypesKLine.High == nil {
+		cacheData.TypesKLine.High = &tradeResult.TradePrice
 	} else {
 
-		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.High)) > 0 {
-			cacheData.High = &tradeResult.TradePrice
+		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.TypesKLine.High)) > 0 {
+			cacheData.TypesKLine.High = &tradeResult.TradePrice
 		}
 	}
 
-	return cacheData.High
+	return cacheData.TypesKLine.High
 }
 
 func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	if cacheData.Low == nil {
-		cacheData.Low = &tradeResult.TradePrice
+	if cacheData.TypesKLine.Low == nil {
+		cacheData.TypesKLine.Low = &tradeResult.TradePrice
 	} else {
 
-		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.Low)) < 0 {
-			cacheData.Low = &tradeResult.TradePrice
+		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.TypesKLine.Low)) < 0 {
+			cacheData.TypesKLine.Low = &tradeResult.TradePrice
 		}
 	}
 
-	return cacheData.Low
+	return cacheData.TypesKLine.Low
 }
 
 func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	if cacheData.Close == nil {
-		cacheData.Close = &tradeResult.TradePrice
+	if cacheData.TypesKLine.Close == nil {
+		cacheData.TypesKLine.Close = &tradeResult.TradePrice
 		cacheData.CloseLastTime = tradeResult.TradeTime
 	} else {
 
 		if tradeResult.TradeTime > cacheData.CloseLastTime {
-			cacheData.Close = &tradeResult.TradePrice
+			cacheData.TypesKLine.Close = &tradeResult.TradePrice
 			cacheData.CloseLastTime = tradeResult.TradeTime
 		}
 	}
-	return cacheData.Close
+	return cacheData.TypesKLine.Close
 }
 
 func (k *kLine) getVolume(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	if cacheData.Volume == nil {
-		cacheData.Volume = &tradeResult.TradeQuantity
+	if cacheData.TypesKLine.Volume == nil {
+		cacheData.TypesKLine.Volume = &tradeResult.TradeQuantity
 	} else {
-		volume := k.formatD(*cacheData.Volume).Add(k.formatD(tradeResult.TradeQuantity)).String()
-		cacheData.Volume = &volume
+		volume := k.formatD(*cacheData.TypesKLine.Volume).Add(k.formatD(tradeResult.TradeQuantity)).String()
+		cacheData.TypesKLine.Volume = &volume
 	}
-	return cacheData.Volume
+	return cacheData.TypesKLine.Volume
 }
 
 func (k *kLine) getAmount(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
 	amount := k.formatD(tradeResult.TradePrice).Mul(k.formatD(tradeResult.TradeQuantity)).String()
 
-	if cacheData.Amount == nil {
-		cacheData.Amount = &amount
+	if cacheData.TypesKLine.Amount == nil {
+		cacheData.TypesKLine.Amount = &amount
 	} else {
-		amount = k.formatD(*cacheData.Amount).Add(k.formatD(amount)).String()
-		cacheData.Amount = &amount
+		amount = k.formatD(*cacheData.TypesKLine.Amount).Add(k.formatD(amount)).String()
+		cacheData.TypesKLine.Amount = &amount
 	}
 
-	return cacheData.Amount
+	return cacheData.TypesKLine.Amount
 }
 
 func (k *kLine) formatD(d1 string) decimal.Decimal {
