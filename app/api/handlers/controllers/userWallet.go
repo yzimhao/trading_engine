@@ -12,11 +12,11 @@ import (
 )
 
 type UserAssetsController struct {
-	repo   persistence.AssetsRepository
+	repo   persistence.AssetRepository
 	logger *zap.Logger
 }
 
-func NewUserAssetsController(repo persistence.AssetsRepository, logger *zap.Logger) *UserAssetsController {
+func NewUserAssetsController(repo persistence.AssetRepository, logger *zap.Logger) *UserAssetsController {
 	return &UserAssetsController{repo: repo, logger: logger}
 }
 
@@ -110,7 +110,7 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 	symbol := c.Param("symbol")
 	userId := c.Query("userId")
 
-	var asset *entities.Assets
+	var asset *entities.Asset
 
 	ctx := context.Background()
 	asset, err := ctrl.repo.FindOne(ctx, userId, symbol)

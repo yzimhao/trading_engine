@@ -13,97 +13,97 @@ import (
 	"github.com/duolacloud/crud-core/datasource"
 	b_mappers "github.com/duolacloud/crud-core/mappers"
 	"github.com/duolacloud/crud-core/repositories"
-	"github.com/yzimhao/trading_engine/v2/internal/models"
+	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	"gorm.io/gorm"
 )
 
-type gormAssetsRepo struct {
-	*repositories.MapperRepository[models.Assets, models.CreateAssets, models.UpdateAssets, entities.Assets, entities.Assets, map[string]any]
-	datasource       datasource.DataSource[gorm.DB]
-	assetsLogRepo    *gormAssetsLogRepo
-	assetsFreezeRepo *gormAssetsFreezeRepo
+type gormAssetRepo struct {
+	*repositories.MapperRepository[models.Asset, models.CreateAsset, models.UpdateAsset, entities.Asset, entities.Asset, map[string]any]
+	datasource      datasource.DataSource[gorm.DB]
+	assetLogRepo    *gormAssetLogRepo
+	assetFreezeRepo *gormAssetFreezeRepo
 }
 
-type gormAssetsLogRepo struct {
-	*repositories.MapperRepository[models.AssetsLog, models.CreateAssetsLog, models.UpdateAssetsLog, entities.AssetsLog, entities.AssetsLog, map[string]any]
+type gormAssetLogRepo struct {
+	*repositories.MapperRepository[models.AssetLog, models.CreateAssetLog, models.UpdateAssetLog, entities.AssetLog, entities.AssetLog, map[string]any]
 }
 
-type gormAssetsFreezeRepo struct {
-	*repositories.MapperRepository[models.AssetsFreeze, models.CreateAssetsFreeze, models.UpdateAssetsFreeze, entities.AssetsFreeze, entities.AssetsFreeze, map[string]any]
+type gormAssetFreezeRepo struct {
+	*repositories.MapperRepository[models.AssetFreeze, models.CreateAssetFreeze, models.UpdateAssetFreeze, entities.AssetFreeze, entities.AssetFreeze, map[string]any]
 }
 
-func NewAssetsRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) persistence.AssetsRepository {
+func NewAssetRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) persistence.AssetRepository {
 	cacheWrapperRepo := repositories.NewCacheRepository(
-		k_repo.NewGormCrudRepository[entities.Assets, entities.Assets, map[string]any](datasource),
+		k_repo.NewGormCrudRepository[entities.Asset, entities.Asset, map[string]any](datasource),
 		cache,
 	)
 
 	mapperRepo := repositories.NewMapperRepository(
 		cacheWrapperRepo,
-		b_mappers.NewJSONMapper[models.Assets, models.CreateAssets, models.UpdateAssets, entities.Assets, entities.Assets, map[string]any](),
+		b_mappers.NewJSONMapper[models.Asset, models.CreateAsset, models.UpdateAsset, entities.Asset, entities.Asset, map[string]any](),
 	)
 
-	return &gormAssetsRepo{
+	return &gormAssetRepo{
 		MapperRepository: mapperRepo,
 		datasource:       datasource,
-		assetsLogRepo:    newAssetsLogRepo(datasource, cache),
-		assetsFreezeRepo: newAssetsFreezeRepo(datasource, cache),
+		assetLogRepo:     newAssetLogRepo(datasource, cache),
+		assetFreezeRepo:  newAssetFreezeRepo(datasource, cache),
 	}
 
 }
 
-func newAssetsLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetsLogRepo {
+func newAssetLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetLogRepo {
 	cacheWrapperRepo := repositories.NewCacheRepository(
-		k_repo.NewGormCrudRepository[entities.AssetsLog, entities.AssetsLog, map[string]any](datasource),
+		k_repo.NewGormCrudRepository[entities.AssetLog, entities.AssetLog, map[string]any](datasource),
 		cache,
 	)
 
 	mapperRepo := repositories.NewMapperRepository(
 		cacheWrapperRepo,
-		b_mappers.NewJSONMapper[models.AssetsLog, models.CreateAssetsLog, models.UpdateAssetsLog, entities.AssetsLog, entities.AssetsLog, map[string]any](),
+		b_mappers.NewJSONMapper[models.AssetLog, models.CreateAssetLog, models.UpdateAssetLog, entities.AssetLog, entities.AssetLog, map[string]any](),
 	)
 
-	return &gormAssetsLogRepo{
+	return &gormAssetLogRepo{
 		MapperRepository: mapperRepo,
 	}
 }
 
-func newAssetsFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetsFreezeRepo {
+func newAssetFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) *gormAssetFreezeRepo {
 	cacheWrapperRepo := repositories.NewCacheRepository(
-		k_repo.NewGormCrudRepository[entities.AssetsFreeze, entities.AssetsFreeze, map[string]any](datasource),
+		k_repo.NewGormCrudRepository[entities.AssetFreeze, entities.AssetFreeze, map[string]any](datasource),
 		cache,
 	)
 
 	mapperRepo := repositories.NewMapperRepository(
 		cacheWrapperRepo,
-		b_mappers.NewJSONMapper[models.AssetsFreeze, models.CreateAssetsFreeze, models.UpdateAssetsFreeze, entities.AssetsFreeze, entities.AssetsFreeze, map[string]any](),
+		b_mappers.NewJSONMapper[models.AssetFreeze, models.CreateAssetFreeze, models.UpdateAssetFreeze, entities.AssetFreeze, entities.AssetFreeze, map[string]any](),
 	)
 
-	return &gormAssetsFreezeRepo{
+	return &gormAssetFreezeRepo{
 		MapperRepository: mapperRepo,
 	}
 }
 
-func (r *gormAssetsRepo) Despoit(ctx context.Context, userId, symbol string, amount string) (order_id string, err error) {
+func (r *gormAssetRepo) Despoit(ctx context.Context, userId, symbol string, amount string) (order_id string, err error) {
 	order_id = uuid.New().String()
 	err = r.transfer(ctx, symbol, entities.SYSTEM_USER_ID, userId, types.Amount(amount), order_id)
 	return
 }
 
-func (r *gormAssetsRepo) Withdraw(ctx context.Context, userId, symbol, amount string) (order_id string, err error) {
+func (r *gormAssetRepo) Withdraw(ctx context.Context, userId, symbol, amount string) (order_id string, err error) {
 	order_id = uuid.New().String()
 	err = r.transfer(ctx, symbol, userId, entities.SYSTEM_USER_ID, types.Amount(amount), order_id)
 	return
 }
 
-func (r *gormAssetsRepo) Transfer(ctx context.Context, from, to, symbol, amount string) error {
+func (r *gormAssetRepo) Transfer(ctx context.Context, from, to, symbol, amount string) error {
 	return r.transfer(ctx, symbol, from, to, types.Amount(amount), uuid.New().String())
 }
 
-func (r *gormAssetsRepo) transfer(ctx context.Context, symbol, from, to string, amount types.Amount, transId string) error {
+func (r *gormAssetRepo) transfer(ctx context.Context, symbol, from, to string, amount types.Amount, transId string) error {
 
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
@@ -153,7 +153,7 @@ func (r *gormAssetsRepo) transfer(ctx context.Context, symbol, from, to string, 
 	}
 
 	//create logs
-	err = r.createLog(ctx, tx, &entities.AssetsLog{
+	err = r.createLog(ctx, tx, &entities.AssetLog{
 		UserId:        from,
 		Symbol:        symbol,
 		BeforeBalance: fromUser.TotalBalance.Add(amount),
@@ -167,7 +167,7 @@ func (r *gormAssetsRepo) transfer(ctx context.Context, symbol, from, to string, 
 		return errors.Wrap(err, "create from log")
 	}
 
-	err = r.createLog(ctx, tx, &entities.AssetsLog{
+	err = r.createLog(ctx, tx, &entities.AssetLog{
 		UserId:        to,
 		Symbol:        symbol,
 		BeforeBalance: toUser.TotalBalance.Sub(amount),
@@ -190,7 +190,7 @@ func (r *gormAssetsRepo) transfer(ctx context.Context, symbol, from, to string, 
 	return nil
 }
 
-func (r *gormAssetsRepo) createLog(ctx context.Context, db *sql.Tx, log *entities.AssetsLog) error {
+func (r *gormAssetRepo) createLog(ctx context.Context, db *sql.Tx, log *entities.AssetLog) error {
 	stmt, err := db.Prepare("insert into assets_logs (id, user_id, symbol, before_balance, amount, after_balance, trans_id, change_type, info, created_at, updated_at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)")
 	if err != nil {
 		return errors.Wrap(err, "prepare insert user")
@@ -204,7 +204,7 @@ func (r *gormAssetsRepo) createLog(ctx context.Context, db *sql.Tx, log *entitie
 	return nil
 }
 
-func (r *gormAssetsRepo) FindOne(ctx context.Context, userId, symbol string) (*entities.Assets, error) {
+func (r *gormAssetRepo) FindOne(ctx context.Context, userId, symbol string) (*entities.Asset, error) {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get gorm db")
@@ -218,7 +218,7 @@ func (r *gormAssetsRepo) FindOne(ctx context.Context, userId, symbol string) (*e
 	return r.queryOne(ctx, rawDb, userId, symbol)
 }
 
-func (r *gormAssetsRepo) FindAssetHistory(ctx context.Context) ([]entities.AssetsLog, error) {
+func (r *gormAssetRepo) FindAssetHistory(ctx context.Context) ([]entities.AssetLog, error) {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get gorm db")
@@ -236,10 +236,10 @@ func (r *gormAssetsRepo) FindAssetHistory(ctx context.Context) ([]entities.Asset
 
 	defer rows.Close()
 
-	var logs []entities.AssetsLog
+	var logs []entities.AssetLog
 
 	for rows.Next() {
-		var log entities.AssetsLog
+		var log entities.AssetLog
 		err := rows.Scan(&log.Id, &log.UserId, &log.Symbol, &log.BeforeBalance, &log.Amount, &log.AfterBalance, &log.TransID, &log.ChangeType, &log.Info, &log.CreatedAt, &log.UpdatedAt)
 		if err != nil {
 			return nil, errors.Wrap(err, "scan assets log")
@@ -250,11 +250,11 @@ func (r *gormAssetsRepo) FindAssetHistory(ctx context.Context) ([]entities.Asset
 	return logs, nil
 }
 
-func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, symbol string) (*entities.Assets, error) {
+func (r *gormAssetRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, symbol string) (*entities.Asset, error) {
 
 	// 查询是否存在指定的资产记录
 	row := rawDb.QueryRowContext(ctx, "SELECT * FROM assets WHERE user_id = $1 AND symbol = $2 LIMIT 1", userId, symbol)
-	var user entities.Assets
+	var user entities.Asset
 	err := row.Scan(&user.Id, &user.UserId, &user.Symbol, &user.TotalBalance, &user.FreezeBalance, &user.AvailBalance, &user.CreatedAt, &user.UpdatedAt)
 
 	// 如果出现数据库查询错误
@@ -263,7 +263,7 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 	}
 
 	if err == sql.ErrNoRows {
-		return &entities.Assets{
+		return &entities.Asset{
 			UserId: userId,
 			Symbol: symbol,
 		}, nil
@@ -272,7 +272,7 @@ func (r *gormAssetsRepo) queryOne(ctx context.Context, rawDb *sql.DB, userId, sy
 	return &user, nil
 }
 
-func (r *gormAssetsRepo) update(ctx context.Context, tx *sql.Tx, user *entities.Assets) error {
+func (r *gormAssetRepo) update(ctx context.Context, tx *sql.Tx, user *entities.Asset) error {
 	// 查询是否存在指定的资产记录
 	row := tx.QueryRowContext(ctx, "SELECT id FROM assets WHERE user_id = $1 AND symbol = $2 LIMIT 1", user.UserId, user.Symbol)
 	var id string

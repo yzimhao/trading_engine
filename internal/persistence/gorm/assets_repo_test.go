@@ -19,7 +19,7 @@ import (
 type assetsRepoTest struct {
 	suite.Suite
 	ctx    context.Context
-	repo   persistence.AssetsRepository
+	repo   persistence.AssetRepository
 	v      *viper.Viper
 	gorm   *_gorm.DB
 	logger *zap.Logger
@@ -33,7 +33,7 @@ func (suite *assetsRepoTest) SetupTest() {
 	suite.logger = zap.NewNop()
 	redis := di.NewRedis(suite.v, suite.logger)
 	cache, _ := di.NewCache(suite.v, redis)
-	suite.repo = gorm.NewAssetsRepo(datasource.NewDataSource(suite.gorm), cache)
+	suite.repo = gorm.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache)
 }
 
 func TestAssetsRepo(t *testing.T) {

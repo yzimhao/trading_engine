@@ -9,7 +9,7 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		datasource.NewDataSource[_gorm.DB],
-		NewAssetsRepo,
+		NewAssetRepo,
 	),
 
 	fx.Invoke(autoMigrate),

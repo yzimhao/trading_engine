@@ -10,9 +10,9 @@ func autoMigrate(db *gorm.DB) error {
 	return nil
 
 	return db.AutoMigrate(
-		&entities.Assets{},
-		&entities.AssetsLog{},
-		&entities.AssetsFreeze{},
+		&entities.Asset{},
+		&entities.AssetLog{},
+		&entities.AssetFreeze{},
 	)
 
 }

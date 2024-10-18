@@ -6,7 +6,7 @@ import (
 )
 
 type UUID struct {
-	Id string `gorm:"primarykey"`
+	Id string `gorm:"primarykey" json:"id"`
 }
 
 func (u *UUID) BeforeCreate(tx *gorm.DB) error {

@@ -1,9 +1,12 @@
-package models
+package asset
 
-import "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+import (
+	"github.com/yzimhao/trading_engine/v2/internal/models"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+)
 
-type AssetsLog struct {
-	Base
+type AssetLog struct {
+	models.Base
 	UserId        string                   `json:"user_id"`
 	Symbol        string                   `json:"symbol"`
 	BeforeBalance string                   `json:"before_balance"` // 变动前
@@ -14,7 +17,7 @@ type AssetsLog struct {
 	Info          string                   `json:"info"`
 }
 
-type CreateAssetsLog struct {
+type CreateAssetLog struct {
 	UserId        string                   `json:"user_id"`
 	Symbol        string                   `json:"symbol"`
 	BeforeBalance string                   `json:"before_balance"` // 变动前
@@ -25,7 +28,7 @@ type CreateAssetsLog struct {
 	Info          string                   `json:"info"`
 }
 
-type UpdateAssetsLog struct {
+type UpdateAssetLog struct {
 	ID            int64   `json:"id"`
 	UserId        *string `json:"user_id"`
 	Symbol        *string `json:"symbol"`

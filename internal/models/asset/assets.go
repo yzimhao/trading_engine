@@ -1,12 +1,13 @@
-package models
+package asset
 
 import (
+	"github.com/yzimhao/trading_engine/v2/internal/models"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 )
 
-type Assets struct {
-	UUID
-	Base
+type Asset struct {
+	models.UUID
+	models.Base
 	UserId        string       `json:"user_id,omitempty"`
 	Symbol        string       `json:"symbol,omitempty"`
 	TotalBalance  types.Amount `json:"total_balance,omitempty"`
@@ -14,7 +15,7 @@ type Assets struct {
 	AvailBalance  types.Amount `json:"avail_balance,omitempty"`
 }
 
-type CreateAssets struct {
+type CreateAsset struct {
 	UserId        string        `json:"user_id,omitempty"`
 	Symbol        string        `json:"symbol,omitempty"`
 	TotalBalance  *types.Amount `json:"total_balance,omitempty"`
@@ -22,8 +23,8 @@ type CreateAssets struct {
 	AvailBalance  *types.Amount `json:"avail_balance,omitempty"`
 }
 
-type UpdateAssets struct {
-	UUID
+type UpdateAsset struct {
+	models.UUID
 	UserId        *string       `json:"user_id,omitempty"`
 	Symbol        *string       `json:"symbol,omitempty"`
 	TotalBalance  *types.Amount `json:"total_balance,omitempty"`

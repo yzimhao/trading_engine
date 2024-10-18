@@ -2,7 +2,7 @@ package entities
 
 import "github.com/yzimhao/trading_engine/v2/internal/models/types"
 
-type AssetsLog struct {
+type AssetLog struct {
 	UUID
 	Base
 	UserId        string          `gorm:"type:varchar(30);not null;index" json:"user_id"`

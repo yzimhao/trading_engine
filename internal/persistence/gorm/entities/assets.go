@@ -19,7 +19,7 @@ const (
 	SYSTEM_USER_ID = "system"
 )
 
-type Assets struct {
+type Asset struct {
 	UUID
 	Base
 	UserId        string       `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`

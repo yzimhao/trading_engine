@@ -2,7 +2,7 @@ package entities
 
 import "github.com/yzimhao/trading_engine/v2/internal/models/types"
 
-type AssetsFreeze struct {
+type AssetFreeze struct {
 	UUID
 	Base
 	UserId       string       `gorm:"type:varchar(30);index;not null" json:"user_id"`
