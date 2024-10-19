@@ -28,9 +28,14 @@ func NewMatchingSubscriber(in inContext) *MatchingSubscriber {
 }
 
 func (s *MatchingSubscriber) Subscribe() {
-	s.broker.Subscribe(types.TOPIC_ORDER_NEW, s.On)
+	s.broker.Subscribe(types.TOPIC_ORDER_NEW, s.OnNewOrder)
+	s.broker.Subscribe(types.TOPIC_ORDER_CANCEL, s.OnCancelOrder)
 }
 
-func (s *MatchingSubscriber) On(ctx context.Context, event broker.Event) error {
+func (s *MatchingSubscriber) OnNewOrder(ctx context.Context, event broker.Event) error {
+	return nil
+}
+
+func (s *MatchingSubscriber) OnCancelOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }
