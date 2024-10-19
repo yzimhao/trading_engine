@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package base;
+option go_package = "github.com/yzimhao/trading_engine/v2/protoc-gen/base;base";
+
+
+service VarietyService {
+    rpc GetVariety(GetVarietyRequest) returns (GetVarietyResponse) {}
+}
+
+message GetVarietyRequest {
+    string symbol = 1;
+}
+
+message GetVarietyResponse {
+    //TODO
+}   

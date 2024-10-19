@@ -3,6 +3,10 @@ install:
 	go install github.com/rubenv/sql-migrate/...@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/swaggo/swag/cmd/swag@v1.8.12
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go install github.com/envoyproxy/protoc-gen-validate@latest
+	
 
 
 .PHONY: migrate-up
