@@ -43,8 +43,10 @@
 ```
 
 
+ 
+  #### 交流
+<img src="https://github.com/yzimhao/trading_engine/blob/main/documents/images/wechat.jpg?raw=true" width = "150"/>
 
-
-  ## Star History
+  #### Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yzimhao/trading_engine&type=Date)](https://star-history.com/#yzimhao/trading_engine&Date)
