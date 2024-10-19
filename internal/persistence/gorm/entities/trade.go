@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"fmt"
+
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
 
@@ -21,4 +23,8 @@ type TradeLog struct {
 	AskFee     string                 `gorm:"type:decimal(40,20);not null;default:0" json:"ask_fee"`
 	BidFeeRate string                 `gorm:"type:decimal(40,20);not null;default:0" json:"bid_fee_rate"`
 	BidFee     string                 `gorm:"type:decimal(40,20);not null;default:0" json:"bid_fee"`
+}
+
+func (t *TradeLog) TableName() string {
+	return fmt.Sprintf("trade_log_%s", t.Symbol)
 }

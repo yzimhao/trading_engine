@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"fmt"
+
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
@@ -27,6 +29,14 @@ type Order struct {
 	NanoTime       int64                    `gorm:"type:bigint(20);not null;default:0" json:"nano_time"`
 }
 
+func (o *Order) TableName() string {
+	return fmt.Sprintf("order_%s", o.Symbol)
+}
+
 type UnfinishedOrder struct {
 	Order
+}
+
+func (o *UnfinishedOrder) TableName() string {
+	return "unfinished_order"
 }
