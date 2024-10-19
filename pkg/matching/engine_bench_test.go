@@ -17,12 +17,12 @@ func BenchmarkMatchingEngine(b *testing.B) {
 
 	initialOrders := 10000
 	for i := 0; i < initialOrders; i++ {
-		order := matching.NewAskLimitItem(fmt.Sprintf("%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
+		order := matching.NewAskLimitItem(fmt.Sprintf("ask%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
 		engine.AddItem(order)
 	}
 
 	engine.OnTradeResult(func(result types.TradeResult) {
-		b.Logf("trade result: %v", result)
+		b.Logf("trade result: %#v", result)
 	})
 
 	b.ResetTimer()
@@ -32,7 +32,7 @@ func BenchmarkMatchingEngine(b *testing.B) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			order := matching.NewBidLimitItem(fmt.Sprintf("%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
+			order := matching.NewBidLimitItem(fmt.Sprintf("bid%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
 			engine.AddItem(order)
 		}(i)
 	}
