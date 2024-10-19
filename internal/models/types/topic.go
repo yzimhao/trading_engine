@@ -1,6 +1,8 @@
 package types
 
-import matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+import (
+	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+)
 
 const (
 	TOPIC_ORDER_NEW    = "order_new" // %s 表示交易对symbol
@@ -9,7 +11,8 @@ const (
 	TOPIC_ORDER_SETTLE = "order_settle"
 )
 
-type EventOrderNew struct{}
+type EventOrderNew struct {
+}
 
 type EventOrderCancel struct{}
 
