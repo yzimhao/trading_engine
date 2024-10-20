@@ -15,27 +15,31 @@ type inContext struct {
 	Logger *zap.Logger
 }
 
-type MatchingSubscriber struct {
+type Matching struct {
 	broker broker.Broker
 	logger *zap.Logger
 }
 
-func NewMatchingSubscriber(in inContext) *MatchingSubscriber {
-	return &MatchingSubscriber{
+func NewMatching(in inContext) *Matching {
+	return &Matching{
 		broker: in.Broker,
 		logger: in.Logger,
 	}
 }
 
-func (s *MatchingSubscriber) Subscribe() {
+func (s *Matching) InitEngine() {
+
+}
+
+func (s *Matching) Subscribe() {
 	s.broker.Subscribe(types.TOPIC_ORDER_NEW, s.OnNewOrder)
 	s.broker.Subscribe(types.TOPIC_ORDER_CANCEL, s.OnCancelOrder)
 }
 
-func (s *MatchingSubscriber) OnNewOrder(ctx context.Context, event broker.Event) error {
+func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }
 
-func (s *MatchingSubscriber) OnCancelOrder(ctx context.Context, event broker.Event) error {
+func (s *Matching) OnCancelOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }

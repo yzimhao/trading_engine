@@ -3,10 +3,12 @@ package matching
 import "go.uber.org/fx"
 
 var Module = fx.Options(
-	fx.Provide(NewMatchingSubscriber),
-	fx.Invoke(startupSubscriber),
+	fx.Provide(NewMatching),
+	fx.Invoke(startupMatching),
 )
 
-func startupSubscriber(subscriber *MatchingSubscriber) {
-	subscriber.Subscribe()
+func startupMatching(matching *Matching) {
+	//TODO init engine
+	matching.InitEngine()
+	matching.Subscribe()
 }

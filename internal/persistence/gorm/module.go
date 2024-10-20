@@ -10,6 +10,8 @@ var Module = fx.Options(
 	fx.Provide(
 		datasource.NewDataSource[_gorm.DB],
 		NewAssetRepo,
+		NewVarietyRepo,
+		NewTradeVarietyRepo,
 	),
 
 	fx.Invoke(autoMigrate),
