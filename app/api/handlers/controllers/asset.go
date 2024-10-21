@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 )
@@ -39,22 +39,18 @@ func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 	var req DespoitRequest
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
 	ctx := context.Background()
 	order_id, err := ctrl.repo.Despoit(ctx, req.UserId, req.Symbol, req.Amount)
 	if err != nil {
-		ctrl.logger.Error("Despoit", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"ok":   true,
-		"data": order_id,
-	})
+	common.ResponseOK(c, order_id)
 
 }
 
@@ -77,22 +73,18 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 	var req WithdrawRequest
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
 	ctx := context.Background()
 	order_id, err := ctrl.repo.Withdraw(ctx, req.UserId, req.Symbol, req.Amount)
 	if err != nil {
-		ctrl.logger.Error("Withdraw", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"ok":   true,
-		"data": order_id,
-	})
+	common.ResponseOK(c, order_id)
 }
 
 // @Summary get wallet asset
@@ -115,13 +107,11 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 	ctx := context.Background()
 	asset, err := ctrl.repo.FindOne(ctx, userId, symbol)
 	if err != nil {
-		ctrl.logger.Error("Query", zap.Error(err))
+		common.ResponseError(c, err)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": asset,
-		"ok":   true,
-	})
+	common.ResponseOK(c, asset)
 }
 
 type TransferRequest struct {
@@ -145,21 +135,18 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 	var req TransferRequest
 	err := c.BindJSON(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
 	ctx := context.Background()
 	err = ctrl.repo.Transfer(ctx, req.From, req.To, req.Symbol, req.Amount)
 	if err != nil {
-		ctrl.logger.Error("Query", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		common.ResponseError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"ok": true,
-	})
+	common.ResponseOK(c, nil)
 }
 
 // @Summary get asset history
@@ -179,10 +166,8 @@ func (ctrl *UserAssetsController) QueryAssetHistory(c *gin.Context) {
 	ctx := context.Background()
 	assetLogs, err := ctrl.repo.FindAssetHistory(ctx)
 	if err != nil {
-		ctrl.logger.Error("Query", zap.Error(err))
+		common.ResponseError(c, err)
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"data": assetLogs,
-		"ok":   true,
-	})
+	common.ResponseOK(c, assetLogs)
 }

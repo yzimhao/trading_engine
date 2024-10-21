@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -35,7 +36,7 @@ func (ctrl *BaseController) Ping(c *gin.Context) {
 }
 
 func (ctrl *BaseController) Time(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
+	common.ResponseOK(c, gin.H{
 		"time": time.Now().Nanosecond(),
 	})
 }

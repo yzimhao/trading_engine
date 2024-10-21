@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -34,7 +33,7 @@ func NewMarketController(in inMarketContext) *MarketController {
 // @Success 200 {string} any
 // @Router /api/v1/market/depth [get]
 func (ctrl *MarketController) Depth(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	common.ResponseOK(c, gin.H{})
 }
 
 // @Summary trades
@@ -48,7 +47,7 @@ func (ctrl *MarketController) Depth(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/market/trades [get]
 func (ctrl *MarketController) Trades(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	common.ResponseOK(c, gin.H{})
 }
 
 // @Summary klines
@@ -62,5 +61,5 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/market/klines [get]
 func (ctrl *MarketController) Klines(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	common.ResponseOK(c, gin.H{})
 }

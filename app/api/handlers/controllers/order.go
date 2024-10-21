@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"go.uber.org/fx"
 )
 
@@ -19,14 +18,12 @@ func NewOrderController(in inOrderContext) *OrderController {
 
 // TODO implement
 func (ctrl *OrderController) Create(c *gin.Context) {
-	c.JSON(http.StatusOK, "ok")
+	common.ResponseOK(c, "ok")
 }
 
 // TODO implement
 func (ctrl *OrderController) HistoryList(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"data": "test",
-	})
+	common.ResponseOK(c, "test")
 }
 
 // TODO implement
