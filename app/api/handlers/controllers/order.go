@@ -16,18 +16,50 @@ func NewOrderController(in inOrderContext) *OrderController {
 	return &OrderController{}
 }
 
-// TODO implement
+// @Summary create order
+// @Description create order
+// @ID v1.order.create
+// @Tags order
+// @Accept json
+// @Produce json
+// @Success 200 {string} any
+// @Router /api/v1/order/create [post]
 func (ctrl *OrderController) Create(c *gin.Context) {
 	common.ResponseOK(c, "ok")
 }
 
-// TODO implement
+// @Summary history list
+// @Description history list
+// @ID v1.order.history
+// @Tags order
+// @Accept json
+// @Produce json
+// @Success 200 {string} any
+// @Router /api/v1/order/history [get]
 func (ctrl *OrderController) HistoryList(c *gin.Context) {
 	common.ResponseOK(c, "test")
 }
 
-// TODO implement
-func (ctrl *OrderController) UnfinishedList(c *gin.Context) {}
+// @Summary unfinished list
+// @Description unfinished list
+// @ID v1.order.unfinished
+// @Tags order
+// @Accept json
+// @Produce json
+// @Success 200 {string} any
+// @Router /api/v1/order/unfinished [get]
+func (ctrl *OrderController) UnfinishedList(c *gin.Context) {
+	common.ResponseOK(c, "test")
+}
 
-// TODO implement
-func (ctrl *OrderController) TradeHistoryList(c *gin.Context) {}
+// @Summary trade history list
+// @Description trade history list
+// @ID v1.order.trade_history
+// @Tags order
+// @Accept json
+// @Produce json
+// @Success 200 {string} any
+// @Router /api/v1/order/trade/history [get]
+func (ctrl *OrderController) TradeHistoryList(c *gin.Context) {
+	common.ResponseOK(c, "test")
+}
