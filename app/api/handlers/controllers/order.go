@@ -1,19 +1,35 @@
 package controllers
 
 import (
+	"context"
+	"encoding/json"
+	"time"
+
+	"github.com/duolacloud/broker-core"
+	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
-type OrderController struct{}
+type OrderController struct {
+	broker broker.Broker
+	logger *zap.Logger
+}
 
 type inOrderContext struct {
 	fx.In
+	Logger *zap.Logger
+	Broker broker.Broker
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
-	return &OrderController{}
+	return &OrderController{
+		broker: in.Broker,
+		logger: in.Logger,
+	}
 }
 
 // @Summary create order
@@ -25,6 +41,31 @@ func NewOrderController(in inOrderContext) *OrderController {
 // @Success 200 {string} any
 // @Router /api/v1/order/create [post]
 func (ctrl *OrderController) Create(c *gin.Context) {
+	//TODO
+
+	event := models_types.EventOrderNew{
+		Symbol: "BTCUSDT",
+		At:     time.Now().Unix(),
+		// ...
+	}
+
+	body, err := json.Marshal(event)
+	if err != nil {
+		ctrl.logger.Error("marshal order created event error", zap.Error(err))
+		common.ResponseError(c, err)
+		return
+	}
+
+	err = ctrl.broker.Publish(context.Background(), models_types.TOPIC_ORDER_NEW, &broker.Message{
+		Body: body,
+	}, rocketmq.WithShardingKey(event.Symbol))
+
+	if err != nil {
+		ctrl.logger.Error("publish order created event error", zap.Error(err))
+		common.ResponseError(c, err)
+		return
+	}
+
 	common.ResponseOK(c, "ok")
 }
 

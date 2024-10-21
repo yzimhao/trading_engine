@@ -37,6 +37,8 @@ func (s *Matching) Subscribe() {
 }
 
 func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
+	s.logger.Sugar().Debugf("on new order: %v", event)
+	// return errors.New("not implemented")
 	return nil
 }
 

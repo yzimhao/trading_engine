@@ -7,6 +7,7 @@ import (
 )
 
 func NewBroker(v *viper.Viper) (broker.Broker, error) {
+	v.SetDefault("broker.addrs", "127.0.0.1:9876")
 	v.SetDefault("rocketmq.concurrency", 10)
 	v.SetDefault("rocketmq.retry", 10)
 	v.SetDefault("rocketmq.groupname", "default")

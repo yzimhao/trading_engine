@@ -46,6 +46,7 @@ services:
       - KAFKA_CLUSTERS_0_READONLY=false
     depends_on:
       - kafka
+
   rocketmq-broker:
     image: apache/rocketmq:5.3.1
     user: root
@@ -55,8 +56,8 @@ services:
       # 映射本地目录权限一定要设置为 777 权限，否则启动不成功
       - rocketmq_broker_logs:/home/rocketmq/logs
       - rocketmq_broker_data:/home/rocketmq/store
-      # - ./conf/broker.conf:/home/rocketmq-${ROCKETMQ_VERSION}/conf/broker.conf
-      - ./conf:/home/rocketmq-5.3.1/conf
+      - ./conf/broker.conf:/home/rocketmq-5.3.1/conf/broker.conf
+      # - ./conf:/home/rocketmq-5.3.1/conf
     environment:
       - NAMESRV_ADDR=rocketmq-namesrv:9876
       # - JAVA_OPTS:=-Duser.home=/opt
@@ -68,6 +69,7 @@ services:
       - 10911:10911
       - 10912:10912
     command: sh mqbroker -c /home/rocketmq-5.3.1/conf/broker.conf
+
   rocketmq-namesrv:
     image: apache/rocketmq:5.3.1
     restart: always

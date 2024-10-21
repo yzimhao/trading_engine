@@ -12,6 +12,9 @@ const (
 )
 
 type EventOrderNew struct {
+	Symbol string `json:"symbol"`
+	At     int64  `json:"at"`
+	// ...
 }
 
 type EventOrderCancel struct{}
