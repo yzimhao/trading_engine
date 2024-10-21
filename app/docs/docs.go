@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/wallet/assets/despoit": {
+        "/api/v1/asset/despoit": {
             "post": {
                 "description": "despoit an asset",
                 "consumes": [
@@ -26,10 +26,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wallet"
+                    "asset"
                 ],
                 "summary": "asset despoit",
-                "operationId": "v1.wallet.asset.despoit",
+                "operationId": "v1.asset.despoit",
                 "parameters": [
                     {
                         "description": "despoit request",
@@ -51,7 +51,42 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/wallet/assets/withdraw": {
+        "/api/v1/asset/transfer/{symbol}": {
+            "post": {
+                "description": "transfer an asset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "asset"
+                ],
+                "summary": "asset transfer",
+                "operationId": "v1.asset.transfer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/v1/asset/withdraw": {
             "post": {
                 "description": "withdraw an asset",
                 "consumes": [
@@ -61,10 +96,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wallet"
+                    "asset"
                 ],
                 "summary": "asset withdraw",
-                "operationId": "v1.wallet.asset.withdraw",
+                "operationId": "v1.asset.withdraw",
                 "parameters": [
                     {
                         "description": "withdraw request",
@@ -86,7 +121,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/wallet/assets/{symbol}": {
+        "/api/v1/asset/{symbol}": {
             "get": {
                 "description": "get an asset balance",
                 "consumes": [
@@ -96,10 +131,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wallet"
+                    "asset"
                 ],
                 "summary": "get wallet asset",
-                "operationId": "v1.wallet.asset.query",
+                "operationId": "v1.asset.query",
                 "parameters": [
                     {
                         "type": "string",
@@ -113,13 +148,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets"
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset"
                         }
                     }
                 }
             }
         },
-        "/api/v1/wallet/assets/{symbol}/history": {
+        "/api/v1/asset/{symbol}/history": {
             "get": {
                 "description": "get an asset history",
                 "consumes": [
@@ -129,10 +164,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wallet"
+                    "asset"
                 ],
-                "summary": "get wallet asset history",
-                "operationId": "v1.wallet.asset.history",
+                "summary": "get asset history",
+                "operationId": "v1.asset.history",
                 "parameters": [
                     {
                         "type": "string",
@@ -148,16 +183,16 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets"
+                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset"
                             }
                         }
                     }
                 }
             }
         },
-        "/api/v1/wallet/transfer/{symbol}": {
-            "post": {
-                "description": "transfer an asset",
+        "/api/v1/base/exchange_info": {
+            "get": {
+                "description": "get exchange info",
                 "consumes": [
                     "application/json"
                 ],
@@ -165,29 +200,159 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "wallet"
+                    "base"
                 ],
-                "summary": "asset transfer",
-                "operationId": "v1.wallet.asset.transfer",
+                "summary": "exchange info",
+                "operationId": "v1.base.exchange_info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/market/depth": {
+            "get": {
+                "description": "get depth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "market"
+                ],
+                "summary": "depth",
+                "operationId": "v1.market.depth",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "symbol",
                         "name": "symbol",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
-                        "description": "transfer request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/app_api_handlers_controllers.TransferRequest"
-                        }
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/market/klines": {
+            "get": {
+                "description": "获取K线数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "market"
+                ],
+                "summary": "klines",
+                "operationId": "v1.market.klines",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/market/trades": {
+            "get": {
+                "description": "获取近期成交记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "market"
+                ],
+                "summary": "trades",
+                "operationId": "v1.market.trades",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ping": {
+            "get": {
+                "description": "test if the server is running",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "base"
+                ],
+                "summary": "ping",
+                "operationId": "v1.ping",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         }
     },
@@ -237,7 +402,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets": {
+        "github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset": {
             "type": "object",
             "properties": {
                 "UUID": {

@@ -7,7 +7,10 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
+		controllers.NewBaseController,
 		controllers.NewUserAssetsController,
+		controllers.NewOrderController,
+		controllers.NewMarketController,
 	),
-	fx.Invoke(NewRoutesContext),
+	fx.Invoke(NewRoutes),
 )

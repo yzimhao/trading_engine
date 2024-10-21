@@ -28,13 +28,13 @@ type DespoitRequest struct {
 
 // @Summary asset despoit
 // @Description despoit an asset
-// @ID v1.wallet.asset.despoit
-// @Tags wallet
+// @ID v1.asset.despoit
+// @Tags asset
 // @Accept json
 // @Produce json
 // @Param body body DespoitRequest true "despoit request"
 // @Success 200 {string} order_id
-// @Router /api/v1/wallet/assets/despoit [post]
+// @Router /api/v1/asset/despoit [post]
 func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 	var req DespoitRequest
 	err := c.BindJSON(&req)
@@ -66,13 +66,13 @@ type WithdrawRequest struct {
 
 // @Summary asset withdraw
 // @Description withdraw an asset
-// @ID v1.wallet.asset.withdraw
-// @Tags wallet
+// @ID v1.asset.withdraw
+// @Tags asset
 // @Accept json
 // @Produce json
 // @Param body body WithdrawRequest true "withdraw request"
 // @Success 200 {string} order_id
-// @Router /api/v1/wallet/assets/withdraw [post]
+// @Router /api/v1/asset/withdraw [post]
 func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 	var req WithdrawRequest
 	err := c.BindJSON(&req)
@@ -97,14 +97,14 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 
 // @Summary get wallet asset
 // @Description get an asset balance
-// @ID v1.wallet.asset.query
-// @Tags wallet
+// @ID v1.asset.query
+// @Tags asset
 // @Accept json
 // @Produce json
 // @Param symbol path string true "symbol"
 // @Query userId query string true "userId测试用参数"
-// @Success 200 {object} entities.Assets
-// @Router /api/v1/wallet/assets/{symbol} [get]
+// @Success 200 {object} entities.Asset
+// @Router /api/v1/asset/{symbol} [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
 	symbol := c.Param("symbol")
@@ -133,13 +133,13 @@ type TransferRequest struct {
 
 // @Summary asset transfer
 // @Description transfer an asset
-// @ID v1.wallet.asset.transfer
-// @Tags wallet
+// @ID v1.asset.transfer
+// @Tags asset
 // @Accept json
 // @Produce json
 // @Param symbol path string true "symbol"
 // @Param body body TransferRequest true "transfer request"
-// @Router /api/v1/wallet/transfer/{symbol} [post]
+// @Router /api/v1/asset/transfer/{symbol} [post]
 func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 
 	var req TransferRequest
@@ -162,15 +162,15 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 	})
 }
 
-// @Summary get wallet asset history
+// @Summary get asset history
 // @Description get an asset history
-// @ID v1.wallet.asset.history
-// @Tags wallet
+// @ID v1.asset.history
+// @Tags asset
 // @Accept json
 // @Produce json
 // @Param symbol path string true "symbol"
-// @Success 200 {object} []entities.Assets
-// @Router /api/v1/wallet/assets/{symbol}/history [get]
+// @Success 200 {object} []entities.Asset
+// @Router /api/v1/asset/{symbol}/history [get]
 func (ctrl *UserAssetsController) QueryAssetHistory(c *gin.Context) {
 	// symbol := c.Param("symbol")
 	//测试不处理userid

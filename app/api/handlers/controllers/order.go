@@ -4,11 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 )
 
 type OrderController struct{}
 
-func NewOrderController() *OrderController {
+type inOrderContext struct {
+	fx.In
+}
+
+func NewOrderController(in inOrderContext) *OrderController {
 	return &OrderController{}
 }
 
@@ -18,14 +23,14 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 }
 
 // TODO implement
-func (ctrl *OrderController) List(c *gin.Context) {
+func (ctrl *OrderController) HistoryList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": "test",
 	})
 }
 
 // TODO implement
-func (ctrl *OrderController) Update(c *gin.Context) {}
+func (ctrl *OrderController) UnfinishedList(c *gin.Context) {}
 
 // TODO implement
-func (ctrl *OrderController) Delete(c *gin.Context) {}
+func (ctrl *OrderController) TradeHistoryList(c *gin.Context) {}

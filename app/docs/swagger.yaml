@@ -28,7 +28,7 @@ definitions:
       user_id:
         type: string
     type: object
-  github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets:
+  github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset:
     properties:
       UUID:
         type: string
@@ -50,12 +50,12 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/wallet/assets/{symbol}:
+  /api/v1/asset/{symbol}:
     get:
       consumes:
       - application/json
       description: get an asset balance
-      operationId: v1.wallet.asset.query
+      operationId: v1.asset.query
       parameters:
       - description: symbol
         in: path
@@ -68,16 +68,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets'
+            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset'
       summary: get wallet asset
       tags:
-      - wallet
-  /api/v1/wallet/assets/{symbol}/history:
+      - asset
+  /api/v1/asset/{symbol}/history:
     get:
       consumes:
       - application/json
       description: get an asset history
-      operationId: v1.wallet.asset.history
+      operationId: v1.asset.history
       parameters:
       - description: symbol
         in: path
@@ -91,17 +91,17 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Assets'
+              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset'
             type: array
-      summary: get wallet asset history
+      summary: get asset history
       tags:
-      - wallet
-  /api/v1/wallet/assets/despoit:
+      - asset
+  /api/v1/asset/despoit:
     post:
       consumes:
       - application/json
       description: despoit an asset
-      operationId: v1.wallet.asset.despoit
+      operationId: v1.asset.despoit
       parameters:
       - description: despoit request
         in: body
@@ -118,36 +118,13 @@ paths:
             type: string
       summary: asset despoit
       tags:
-      - wallet
-  /api/v1/wallet/assets/withdraw:
-    post:
-      consumes:
-      - application/json
-      description: withdraw an asset
-      operationId: v1.wallet.asset.withdraw
-      parameters:
-      - description: withdraw request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/app_api_handlers_controllers.WithdrawRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: asset withdraw
-      tags:
-      - wallet
-  /api/v1/wallet/transfer/{symbol}:
+      - asset
+  /api/v1/asset/transfer/{symbol}:
     post:
       consumes:
       - application/json
       description: transfer an asset
-      operationId: v1.wallet.asset.transfer
+      operationId: v1.asset.transfer
       parameters:
       - description: symbol
         in: path
@@ -165,5 +142,138 @@ paths:
       responses: {}
       summary: asset transfer
       tags:
-      - wallet
+      - asset
+  /api/v1/asset/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: withdraw an asset
+      operationId: v1.asset.withdraw
+      parameters:
+      - description: withdraw request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.WithdrawRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: asset withdraw
+      tags:
+      - asset
+  /api/v1/base/exchange_info:
+    get:
+      consumes:
+      - application/json
+      description: get exchange info
+      operationId: v1.base.exchange_info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: exchange info
+      tags:
+      - base
+  /api/v1/market/depth:
+    get:
+      consumes:
+      - application/json
+      description: get depth
+      operationId: v1.market.depth
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: depth
+      tags:
+      - market
+  /api/v1/market/klines:
+    get:
+      consumes:
+      - application/json
+      description: 获取K线数据
+      operationId: v1.market.klines
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: klines
+      tags:
+      - market
+  /api/v1/market/trades:
+    get:
+      consumes:
+      - application/json
+      description: 获取近期成交记录
+      operationId: v1.market.trades
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: trades
+      tags:
+      - market
+  /api/v1/ping:
+    get:
+      consumes:
+      - application/json
+      description: test if the server is running
+      operationId: v1.ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: ping
+      tags:
+      - base
 swagger: "2.0"

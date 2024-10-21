@@ -1,51 +1,73 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
 	_ "github.com/yzimhao/trading_engine/v2/app/docs"
+	"go.uber.org/fx"
 )
 
-type RoutesContext struct {
+type Routes struct {
 	engine *gin.Engine
 	//middleware
 	//controllers
+	baseController       *controllers.BaseController
 	userAssetsController *controllers.UserAssetsController
+	orderController      *controllers.OrderController
+	marketController     *controllers.MarketController
 }
 
-func NewRoutesContext(
-	engine *gin.Engine,
-	userAssetsController *controllers.UserAssetsController,
-) *RoutesContext {
-	r := &RoutesContext{
-		engine:               engine,
-		userAssetsController: userAssetsController,
+type inContext struct {
+	fx.In
+	Engine               *gin.Engine
+	BaseController       *controllers.BaseController
+	UserAssetsController *controllers.UserAssetsController
+	OrderController      *controllers.OrderController
+	MarketController     *controllers.MarketController
+}
+
+func NewRoutes(in inContext) *Routes {
+	r := &Routes{
+		engine:               in.Engine,
+		baseController:       in.BaseController,
+		userAssetsController: in.UserAssetsController,
+		orderController:      in.OrderController,
+		marketController:     in.MarketController,
 	}
 
 	r.registerRoutes()
 	return r
 }
 
-func (ctx *RoutesContext) registerRoutes() {
-	ctx.engine.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "pong"})
-	})
+func (ctx *Routes) registerRoutes() {
 
 	ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
+	v1Group.GET("/ping", ctx.baseController.Ping)
+	v1Group.GET("/time", ctx.baseController.Time)
 
-	//for test
-	wallet := v1Group.Group("wallet")
-	wallet.POST("/assets/despoit", ctx.userAssetsController.Despoit)
-	wallet.POST("/assets/withdraw", ctx.userAssetsController.Withdraw)
-	wallet.GET("/assets/:symbol", ctx.userAssetsController.Query)
-	wallet.GET("/assets/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
-	wallet.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
+	base := v1Group.Group("base")
+	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)
 
+	asset := v1Group.Group("asset")
+	asset.POST("/despoit", ctx.userAssetsController.Despoit)
+	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
+	asset.GET("/:symbol", ctx.userAssetsController.Query)
+	asset.GET("/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
+	asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
+
+	order := v1Group.Group("order")
+	order.POST("/create", ctx.orderController.Create)
+	order.GET("/history", ctx.orderController.HistoryList)
+	order.GET("/unfinished", ctx.orderController.UnfinishedList)
+	order.GET("/trade/history", ctx.orderController.TradeHistoryList)
+
+	market := v1Group.Group("market")
+	market.GET("/depth", ctx.marketController.Depth)
+	market.GET("/trades", ctx.marketController.Trades)
+	market.GET("/klines", ctx.marketController.Klines)
 }
