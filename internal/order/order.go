@@ -24,7 +24,7 @@ type orderService struct {
 	logger *zap.Logger
 }
 
-var _ OrderService = &orderService{}
+var _ OrderService = (*orderService)(nil)
 
 func NewOrderService(in InContext) OrderService {
 	return &orderService{

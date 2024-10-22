@@ -30,7 +30,7 @@ type kLine struct {
 	logger *zap.Logger
 }
 
-var _ KLinePeriod = &kLine{}
+var _ KLinePeriod = (*kLine)(nil)
 
 func NewKLine(cli *redis.Client, logger *zap.Logger, symbol string) KLinePeriod {
 	return &kLine{
