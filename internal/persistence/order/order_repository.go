@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type OrderService interface {
+type OrderRepository interface {
 	CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error)
 	CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error)
 	CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error)
@@ -21,9 +21,9 @@ type orderService struct {
 	logger *zap.Logger
 }
 
-var _ OrderService = (*orderService)(nil)
+var _ OrderRepository = (*orderService)(nil)
 
-func NewOrderService(db *gorm.DB, logger *zap.Logger) OrderService {
+func NewOrderService(db *gorm.DB, logger *zap.Logger) OrderRepository {
 	return &orderService{
 		db:     db,
 		logger: logger,

@@ -9,9 +9,9 @@ import (
 	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
-	"github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	persistence_order "github.com/yzimhao/trading_engine/v2/internal/persistence/order"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,7 +21,7 @@ import (
 type OrderController struct {
 	broker       broker.Broker
 	logger       *zap.Logger
-	orderService order.OrderService
+	orderService persistence_order.OrderRepository
 }
 
 type inOrderContext struct {
@@ -32,7 +32,7 @@ type inOrderContext struct {
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
-	service := order.NewOrderService(in.DB, in.Logger)
+	service := persistence_order.NewOrderService(in.DB, in.Logger)
 	return &OrderController{
 		broker:       in.Broker,
 		logger:       in.Logger,
