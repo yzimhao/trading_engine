@@ -23,8 +23,7 @@ func (e *Executor) Execute(task func() any) {
 }
 
 func (e *Executor) Run() []any {
-	taskCh := make(chan int)
-	workerCh := make(chan struct{}, e.workersNum)
+	taskCh := make(chan func() any)
 	resultCh := make(chan any, len(e.tasks))
 
 	// 启动所有 worker
@@ -32,19 +31,15 @@ func (e *Executor) Run() []any {
 		e.wg.Add(1)
 		go func() {
 			defer e.wg.Done()
-			for taskIdx := range taskCh {
-				task := e.tasks[taskIdx]
-
+			for task := range taskCh {
 				resultCh <- task()
-				<-workerCh
 			}
 		}()
 	}
 
 	// 分发任务给 worker
-	for i := 0; i < len(e.tasks); i++ {
-		workerCh <- struct{}{}
-		taskCh <- i
+	for _, task := range e.tasks {
+		taskCh <- task
 	}
 
 	close(taskCh)
@@ -53,7 +48,7 @@ func (e *Executor) Run() []any {
 	close(resultCh)
 
 	// 汇总结果
-	e.results = make([]any, 0)
+	e.results = make([]any, 0, len(e.tasks))
 	for result := range resultCh {
 		e.results = append(e.results, result)
 	}

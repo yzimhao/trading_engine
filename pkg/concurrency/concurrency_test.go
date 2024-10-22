@@ -25,3 +25,15 @@ func TestExecutor(t *testing.T) {
 		fmt.Println(result)
 	}
 }
+
+func BenchmarkExecutor(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		executor := concurrency.NewExecutor(5)
+		for j := 0; j < 1000; j++ {
+			executor.Execute(func() any {
+				return nil
+			})
+		}
+		executor.Run()
+	}
+}
