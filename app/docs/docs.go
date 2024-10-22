@@ -345,6 +345,17 @@ const docTemplate = `{
                 ],
                 "summary": "create order",
                 "operationId": "v1.order.create",
+                "parameters": [
+                    {
+                        "description": "args",
+                        "name": "args",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.OrderCreateRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -467,6 +478,37 @@ const docTemplate = `{
                 }
             }
         },
+        "app_api_handlers_controllers.OrderCreateRequest": {
+            "type": "object",
+            "required": [
+                "order_type",
+                "side",
+                "symbol"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "100.00"
+                },
+                "order_type": {
+                    "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType"
+                },
+                "price": {
+                    "type": "string",
+                    "example": "1.00"
+                },
+                "qty": {
+                    "type": "string",
+                    "example": "12"
+                },
+                "side": {
+                    "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide"
+                },
+                "symbol": {
+                    "type": "string"
+                }
+            }
+        },
         "app_api_handlers_controllers.TransferRequest": {
             "type": "object",
             "properties": {
@@ -526,6 +568,32 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide": {
+            "type": "string",
+            "enum": [
+                "BID",
+                "ASK"
+            ],
+            "x-enum-varnames": [
+                "OrderSideBuy",
+                "OrderSideSell"
+            ]
+        },
+        "github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType": {
+            "type": "string",
+            "enum": [
+                "limit",
+                "market",
+                "market_qty",
+                "market_amount"
+            ],
+            "x-enum-varnames": [
+                "OrderTypeLimit",
+                "OrderTypeMarket",
+                "OrderTypeMarketQuantity",
+                "OrderTypeMarketAmount"
+            ]
         }
     }
 }`

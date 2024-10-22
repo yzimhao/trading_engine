@@ -12,9 +12,14 @@ const (
 )
 
 type EventOrderNew struct {
-	Symbol string `json:"symbol"`
-	At     int64  `json:"at"`
-	// ...
+	Symbol    string                   `json:"symbol"`
+	OrderId   string                   `json:"order_id"`
+	OrderSide matching_types.OrderSide `json:"order_side"`
+	OrderType matching_types.OrderType `json:"order_type"`
+	Price     *string                  `json:"price"`
+	Quantity  *string                  `json:"quantity"`
+	Amount    *string                  `json:"amount"`
+	NanoTime  int64                    `json:"nano_time"`
 }
 
 type EventOrderCancel struct{}

@@ -8,6 +8,28 @@ definitions:
       user_id:
         type: string
     type: object
+  app_api_handlers_controllers.OrderCreateRequest:
+    properties:
+      amount:
+        example: "100.00"
+        type: string
+      order_type:
+        $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType'
+      price:
+        example: "1.00"
+        type: string
+      qty:
+        example: "12"
+        type: string
+      side:
+        $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide'
+      symbol:
+        type: string
+    required:
+    - order_type
+    - side
+    - symbol
+    type: object
   app_api_handlers_controllers.TransferRequest:
     properties:
       amount:
@@ -47,6 +69,26 @@ definitions:
       user_id:
         type: string
     type: object
+  github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide:
+    enum:
+    - BID
+    - ASK
+    type: string
+    x-enum-varnames:
+    - OrderSideBuy
+    - OrderSideSell
+  github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType:
+    enum:
+    - limit
+    - market
+    - market_qty
+    - market_amount
+    type: string
+    x-enum-varnames:
+    - OrderTypeLimit
+    - OrderTypeMarket
+    - OrderTypeMarketQuantity
+    - OrderTypeMarketAmount
 info:
   contact: {}
 paths:
@@ -266,6 +308,13 @@ paths:
       - application/json
       description: create order
       operationId: v1.order.create
+      parameters:
+      - description: args
+        in: body
+        name: args
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.OrderCreateRequest'
       produces:
       - application/json
       responses:
