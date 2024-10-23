@@ -50,3 +50,5 @@
   #### Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yzimhao/trading_engine&type=Date)](https://star-history.com/#yzimhao/trading_engine&Date)
+
+![Visitor's Count](https://profile-counter.glitch.me/yzimhao_trading_engine/count.svg)
