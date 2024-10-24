@@ -10,8 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
-	persistence_order "github.com/yzimhao/trading_engine/v2/internal/persistence/order"
+	gorm_order "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/order"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -19,9 +20,9 @@ import (
 )
 
 type OrderController struct {
-	broker       broker.Broker
-	logger       *zap.Logger
-	orderService persistence_order.OrderRepository
+	broker broker.Broker
+	logger *zap.Logger
+	repo   persistence.OrderRepository
 }
 
 type inOrderContext struct {
@@ -32,11 +33,11 @@ type inOrderContext struct {
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
-	service := persistence_order.NewOrderService(in.DB, in.Logger)
+	repo := gorm_order.NewOrderRepo(in.DB, in.Logger)
 	return &OrderController{
-		broker:       in.Broker,
-		logger:       in.Logger,
-		orderService: service,
+		broker: in.Broker,
+		logger: in.Logger,
+		repo:   repo,
 	}
 }
 
@@ -75,7 +76,7 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 			common.ResponseError(c, errors.New("price and quantity are required"))
 			return
 		}
-		order, err = ctrl.orderService.CreateLimit(context.Background(), userId, req.Symbol, req.Side, *req.Price, *req.Quantity)
+		order, err = ctrl.repo.CreateLimit(context.Background(), userId, req.Symbol, req.Side, *req.Price, *req.Quantity)
 	} else {
 		if req.Amount == nil && req.Quantity == nil {
 			common.ResponseError(c, errors.New("amount or quantity is required"))
@@ -83,9 +84,9 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 		}
 
 		if req.Amount != nil && models_types.Amount(*req.Amount).Cmp(models_types.Amount("0")) > 0 {
-			order, err = ctrl.orderService.CreateMarketByAmount(context.Background(), userId, req.Symbol, req.Side, *req.Amount)
+			order, err = ctrl.repo.CreateMarketByAmount(context.Background(), userId, req.Symbol, req.Side, *req.Amount)
 		} else {
-			order, err = ctrl.orderService.CreateMarketByQty(context.Background(), userId, req.Symbol, req.Side, *req.Quantity)
+			order, err = ctrl.repo.CreateMarketByQty(context.Background(), userId, req.Symbol, req.Side, *req.Quantity)
 		}
 	}
 	if err != nil {
