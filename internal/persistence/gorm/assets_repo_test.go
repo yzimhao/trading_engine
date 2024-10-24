@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/duolacloud/crud-core/datasource"
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
@@ -33,7 +34,8 @@ func (suite *assetsRepoTest) SetupTest() {
 	suite.logger = zap.NewNop()
 	redis := di.NewRedis(suite.v, suite.logger)
 	cache, _ := di.NewCache(suite.v, redis)
-	suite.repo = gorm.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache)
+	logger := zap.NewNop()
+	suite.repo = gorm.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache, logger)
 }
 
 func TestAssetsRepo(t *testing.T) {
@@ -48,10 +50,17 @@ func (suite *assetsRepoTest) TestDespoit() {
 	migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 	defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-	_, err := suite.repo.Despoit(suite.ctx, "user1", "BTC", "1")
+	err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "1")
 	suite.NoError(err)
 
-	asset, err := suite.repo.FindOne(suite.ctx, "user1", "BTC")
+	asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": "user1",
+		},
+	})
 	suite.NoError(err)
 	suite.Equal(asset.UserId, "user1")
 	suite.Equal(asset.Symbol, "BTC")
@@ -74,7 +83,7 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				_, err := suite.repo.Withdraw(suite.ctx, "user1", "BTC", "1000")
+				err := suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
 				suite.Equal(err.Error(), "insufficient balance")
 			},
 		},
@@ -84,10 +93,10 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				_, err := suite.repo.Despoit(suite.ctx, "user1", "BTC", "1")
+				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "1")
 				suite.NoError(err)
 
-				_, err = suite.repo.Withdraw(suite.ctx, "user1", "BTC", "1000")
+				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
 				suite.Equal(err.Error(), "insufficient balance")
 			},
 		},
@@ -97,13 +106,20 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				_, err := suite.repo.Despoit(suite.ctx, "user1", "BTC", "2000")
+				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "2000")
 				suite.NoError(err)
 
-				_, err = suite.repo.Withdraw(suite.ctx, "user1", "BTC", "1000")
+				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
 				suite.NoError(err)
 
-				asset, err := suite.repo.FindOne(suite.ctx, "user1", "BTC")
+				asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
+					"symbol": map[string]any{
+						"eq": "BTC",
+					},
+					"user_id": map[string]any{
+						"eq": "user1",
+					},
+				})
 				suite.NoError(err)
 				suite.Equal(asset.UserId, "user1")
 				suite.Equal(asset.Symbol, "BTC")

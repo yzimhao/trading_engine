@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	models_asset "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 )
 
 type UserAssetsController struct {
@@ -44,13 +45,13 @@ func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	order_id, err := ctrl.repo.Despoit(ctx, req.UserId, req.Symbol, req.Amount)
-	if err != nil {
+	transId := uuid.New().String()
+	if err := ctrl.repo.Despoit(ctx, transId, req.UserId, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
 
-	common.ResponseOK(c, order_id)
+	common.ResponseOK(c, transId)
 
 }
 
@@ -78,13 +79,13 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	order_id, err := ctrl.repo.Withdraw(ctx, req.UserId, req.Symbol, req.Amount)
-	if err != nil {
+	transId := uuid.New().String()
+	if err := ctrl.repo.Withdraw(ctx, transId, req.UserId, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
 
-	common.ResponseOK(c, order_id)
+	common.ResponseOK(c, transId)
 }
 
 // @Summary get wallet asset
@@ -102,10 +103,17 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 	symbol := c.Param("symbol")
 	userId := c.Query("userId")
 
-	var asset *entities.Asset
+	var asset *models_asset.Asset
 
 	ctx := context.Background()
-	asset, err := ctrl.repo.FindOne(ctx, userId, symbol)
+	asset, err := ctrl.repo.QueryOne(ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": symbol,
+		},
+		"user_id": map[string]any{
+			"eq": userId,
+		},
+	})
 	if err != nil {
 		common.ResponseError(c, err)
 		return
@@ -140,13 +148,13 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	err = ctrl.repo.Transfer(ctx, req.From, req.To, req.Symbol, req.Amount)
-	if err != nil {
+	transId := uuid.New().String()
+	if err := ctrl.repo.Transfer(ctx, transId, req.From, req.To, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
 
-	common.ResponseOK(c, nil)
+	common.ResponseOK(c, transId)
 }
 
 // @Summary get asset history
@@ -163,11 +171,11 @@ func (ctrl *UserAssetsController) QueryAssetHistory(c *gin.Context) {
 	//测试不处理userid
 	// userId := c.Query("userId")
 
-	ctx := context.Background()
-	assetLogs, err := ctrl.repo.FindAssetHistory(ctx)
-	if err != nil {
-		common.ResponseError(c, err)
-		return
-	}
-	common.ResponseOK(c, assetLogs)
+	// ctx := context.Background()
+	// assetLogs, err := ctrl.repo.FindAssetHistory(ctx)
+	// if err != nil {
+	// 	common.ResponseError(c, err)
+	// 	return
+	// }
+	// common.ResponseOK(c, assetLogs)
 }
