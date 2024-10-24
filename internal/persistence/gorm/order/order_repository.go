@@ -16,36 +16,36 @@ type OrderRepository interface {
 	Cancel(ctx context.Context, order_id string, user_id *string) error
 }
 
-type orderService struct {
+type orderRepository struct {
 	db     *gorm.DB
 	logger *zap.Logger
 }
 
-var _ OrderRepository = (*orderService)(nil)
+var _ OrderRepository = (*orderRepository)(nil)
 
-func NewOrderService(db *gorm.DB, logger *zap.Logger) OrderRepository {
-	return &orderService{
+func NewOrderRepo(db *gorm.DB, logger *zap.Logger) OrderRepository {
+	return &orderRepository{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func (o *orderService) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
 	//TODO implement me
 	return nil, nil
 }
 
-func (o *orderService) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error) {
 	//TODO implement me
 	return nil, nil
 }
 
-func (o *orderService) CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error) {
 	//TODO implement me
 	return nil, nil
 }
 
-func (o *orderService) Cancel(ctx context.Context, order_id string, user_id *string) error {
+func (o *orderRepository) Cancel(ctx context.Context, order_id string, user_id *string) error {
 	//TODO implement me
 	return nil
 }
