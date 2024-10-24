@@ -8,10 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"github.com/subosito/gotenv"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	"github.com/yzimhao/trading_engine/v2/migrations"
 	"go.uber.org/zap"
 	_gorm "gorm.io/gorm"
@@ -27,6 +29,8 @@ type assetsRepoTest struct {
 }
 
 func (suite *assetsRepoTest) SetupTest() {
+	_ = gotenv.Load("../../../.env")
+
 	suite.ctx = context.Background()
 
 	suite.v = di.NewViper()
@@ -68,6 +72,20 @@ func (suite *assetsRepoTest) TestDespoit() {
 	suite.Equal(asset.AvailBalance.Cmp(types.Amount("1")), 0)
 	suite.Equal(asset.FreezeBalance.Cmp(types.Amount("0")), 0)
 
+	systemAsset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": entities.SYSTEM_USER_ID,
+		},
+	})
+	suite.NoError(err)
+	suite.Equal(systemAsset.UserId, entities.SYSTEM_USER_ID)
+	suite.Equal(systemAsset.Symbol, "BTC")
+	suite.Equal(systemAsset.TotalBalance.Cmp(types.Amount("-1")), 0)
+	suite.Equal(systemAsset.AvailBalance.Cmp(types.Amount("-1")), 0)
+	suite.Equal(systemAsset.FreezeBalance.Cmp(types.Amount("0")), 0)
 	//TODO test aseets_log
 }
 
@@ -120,6 +138,7 @@ func (suite *assetsRepoTest) TestWithdraw() {
 						"eq": "user1",
 					},
 				})
+				// fmt.Printf("asset: %+v\n", asset)
 				suite.NoError(err)
 				suite.Equal(asset.UserId, "user1")
 				suite.Equal(asset.Symbol, "BTC")

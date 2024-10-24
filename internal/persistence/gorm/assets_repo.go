@@ -15,6 +15,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type gormAssetRepo struct {
@@ -129,17 +130,6 @@ func (r *gormAssetRepo) UnFreeze(ctx context.Context, transId, userId, symbol st
 	return nil
 }
 
-// func (r *gormAssetRepo) Query(ctx context.Context, userId, symbol string) (*models.Asset, error) {
-// 	return r.QueryOne(ctx, map[string]any{
-// 		"symbol": map[string]any{
-// 			"eq": symbol,
-// 		},
-// 		"user_id": map[string]any{
-// 			"eq": userId,
-// 		},
-// 	})
-// }
-
 func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Amount, transId string) error {
 
 	if amount.Cmp(types.Amount("0")) <= 0 {
@@ -148,34 +138,15 @@ func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from,
 
 	//TODO transId去重
 
-	var fromAsset entities.Asset
+	fromAsset := entities.Asset{UserId: from, Symbol: symbol}
 	//TODO tx.Clauses(clause.Locking{Strength: "FOR UPDATE"})
-	if err := tx.First(&fromAsset, "user_id = ? AND symbol = ?", from, symbol).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			return err
-		} else {
-			//根账号自动创建,只有系统账号资产为负数
-			if from == entities.SYSTEM_USER_ID {
-				fromAsset = entities.Asset{
-					UserId: from,
-					Symbol: symbol,
-				}
-			} else {
-				return err
-			}
-		}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ?", from, symbol).FirstOrCreate(&fromAsset).Error; err != nil {
+		return err
 	}
 
-	var toAsset entities.Asset
-	if err := tx.First(&toAsset, "user_id = ? AND symbol = ?", to, symbol).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			return err
-		} else {
-			toAsset = entities.Asset{
-				UserId: to,
-				Symbol: symbol,
-			}
-		}
+	toAsset := entities.Asset{UserId: to, Symbol: symbol}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ?", to, symbol).FirstOrCreate(&toAsset).Error; err != nil {
+		return err
 	}
 
 	fromAsset.TotalBalance = fromAsset.TotalBalance.Sub(amount)
@@ -187,13 +158,13 @@ func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from,
 		}
 	}
 
-	if tx.Where("user_id = ? AND symbol = ?", from, symbol).FirstOrCreate(&fromAsset).Error != nil {
+	if tx.Where("user_id = ? AND symbol = ?", from, symbol).Updates(&fromAsset).Error != nil {
 		return errors.New("update from asset failed")
 	}
 
 	toAsset.TotalBalance = toAsset.TotalBalance.Add(amount)
 	toAsset.AvailBalance = toAsset.AvailBalance.Add(amount)
-	if tx.Where("user_id = ? AND symbol = ?", to, symbol).FirstOrCreate(&toAsset).Error != nil {
+	if tx.Where("user_id = ? AND symbol = ?", to, symbol).Updates(&toAsset).Error != nil {
 		return errors.New("update to asset failed")
 	}
 
