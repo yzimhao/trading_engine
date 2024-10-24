@@ -210,6 +210,9 @@ func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 }
 
 func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Amount, transId string) error {
+	if from == to {
+		return errors.New("from and to cannot be the same")
+	}
 
 	if amount.Cmp(types.Amount("0")) <= 0 {
 		return errors.New("amount must be greater than 0")
