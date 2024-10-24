@@ -87,46 +87,125 @@ func newAssetFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.C
 	}
 }
 
-func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount string) error {
+func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Amount) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, entities.SYSTEM_USER_ID, userId, types.Amount(amount), transId)
+		return r.transfer(ctx, tx, symbol, entities.SYSTEM_USER_ID, userId, amount, transId)
 	})
 }
 
-func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol string, amount string) error {
+func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Amount) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, userId, entities.SYSTEM_USER_ID, types.Amount(amount), transId)
+		return r.transfer(ctx, tx, symbol, userId, entities.SYSTEM_USER_ID, amount, transId)
 	})
 }
 
-func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol, amount string) error {
+// 两个user之间的转账
+func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Amount) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
 	}
 
 	err = db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, from, to, types.Amount(amount), transId)
+		return r.transfer(ctx, tx, symbol, from, to, amount, transId)
 	})
 
 	return err
 }
 
-func (r *gormAssetRepo) Freeze(ctx context.Context, transId, userId, symbol string, amount string) error {
+// 冻结资产
+// 这里使用tx传入，方便在结算的时候事务中使用
+func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
+	if amount.Cmp(types.Amount("0")) < 0 {
+		return errors.New("amount must be >= 0")
+	}
+
+	asset := entities.Asset{UserId: userId, Symbol: symbol}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ?", userId, symbol).FirstOrCreate(&asset).Error; err != nil {
+		return err
+	}
+
+	//冻结金额为0，冻结全部可用
+	if amount.Cmp(types.Amount("0")) == 0 {
+		amount = asset.AvailBalance
+	}
+
+	asset.AvailBalance = asset.AvailBalance.Sub(amount)
+	asset.FreezeBalance = asset.FreezeBalance.Add(amount)
+
+	if asset.AvailBalance.Cmp(types.Amount("0")) < 0 {
+		return errors.New("insufficient balance")
+	}
+
+	if tx.Where("user_id = ? AND symbol = ?", userId, symbol).Updates(&asset).Error != nil {
+		return errors.New("update asset failed")
+	}
+
+	//freeze log
+	freezeLog := &entities.AssetFreeze{
+		UserId:       userId,
+		Symbol:       symbol,
+		Amount:       amount,
+		FreezeAmount: amount,
+		TransId:      transId,
+		// FreezeType: entities.FreezeType,
+	}
+	if tx.Create(&freezeLog).Error != nil {
+		return errors.New("create freeze log failed")
+	}
+
 	return nil
 }
 
-func (r *gormAssetRepo) UnFreeze(ctx context.Context, transId, userId, symbol string, amount string) error {
+// 解冻资产
+func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
+	if amount.Cmp(types.Amount("0")) <= 0 {
+		return errors.New("amount must be >= 0")
+	}
+
+	freeze := entities.AssetFreeze{UserId: userId, Symbol: symbol, TransId: transId}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ? AND trans_id = ?", userId, symbol, transId).First(&freeze).Error; err != nil {
+		return err
+	}
+
+	if freeze.Status == entities.FreezeStatusDone {
+		return errors.New("freeze already done")
+	}
+
+	//解冻金额为0，则全部金额解冻
+	if amount.Cmp(types.Amount("0")) == 0 {
+		amount = freeze.FreezeAmount
+	}
+
+	freeze.FreezeAmount = freeze.FreezeAmount.Sub(amount)
+	if freeze.FreezeAmount.Cmp(types.Amount("0")) == 0 {
+		freeze.Status = entities.FreezeStatusDone
+	}
+
+	if tx.Where("user_id = ? AND symbol = ? AND trans_id = ?", userId, symbol, transId).Updates(&freeze).Error != nil {
+		return errors.New("update freeze failed")
+	}
+	// 冻结资产变可用资产
+	asset := entities.Asset{UserId: userId, Symbol: symbol}
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ?", userId, symbol).FirstOrCreate(&asset).Error; err != nil {
+		return err
+	}
+	asset.FreezeBalance = asset.FreezeBalance.Sub(amount)
+	asset.AvailBalance = asset.AvailBalance.Add(amount)
+	if tx.Where("user_id = ? AND symbol = ?", userId, symbol).Updates(&asset).Error != nil {
+		return errors.New("update asset failed")
+	}
+
 	return nil
 }
 
