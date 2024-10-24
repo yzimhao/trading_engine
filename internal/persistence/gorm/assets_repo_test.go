@@ -47,14 +47,14 @@ func TestAssetsRepo(t *testing.T) {
 }
 
 func (suite *assetsRepoTest) TearDownTest() {
-	migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
+	// migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 }
 
 func (suite *assetsRepoTest) TestDespoit() {
 	migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 	defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-	err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "1")
+	err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1"))
 	suite.NoError(err)
 
 	asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
@@ -101,7 +101,7 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				err := suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
+				err := suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
 				suite.Equal(err.Error(), "insufficient balance")
 			},
 		},
@@ -111,10 +111,10 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "1")
+				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1"))
 				suite.NoError(err)
 
-				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
+				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
 				suite.Equal(err.Error(), "insufficient balance")
 			},
 		},
@@ -124,10 +124,10 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
 				defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
 
-				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", "2000")
+				err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("2000"))
 				suite.NoError(err)
 
-				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", "1000")
+				err = suite.repo.Withdraw(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
 				suite.NoError(err)
 
 				asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
@@ -154,4 +154,89 @@ func (suite *assetsRepoTest) TestWithdraw() {
 			tc.setup()
 		})
 	}
+}
+
+func (suite *assetsRepoTest) TestFreeze() {
+	migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
+	defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
+
+	err := suite.repo.Freeze(suite.ctx, suite.gorm, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
+	suite.Equal(err.Error(), "insufficient balance")
+
+	err = suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
+	suite.NoError(err)
+
+	err = suite.repo.Freeze(suite.ctx, suite.gorm, uuid.New().String(), "user1", "BTC", types.Amount("1"))
+	suite.NoError(err)
+
+	asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": "user1",
+		},
+	})
+	suite.NoError(err)
+	suite.Equal(asset.FreezeBalance.Cmp(types.Amount("1")), 0)
+	suite.Equal(asset.AvailBalance.Cmp(types.Amount("999")), 0)
+
+	// 冻结全部
+	err = suite.repo.Freeze(suite.ctx, suite.gorm, uuid.New().String(), "user1", "BTC", types.Amount("0"))
+	suite.NoError(err)
+
+	asset, err = suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": "user1",
+		},
+	})
+	suite.NoError(err)
+	suite.Equal(asset.FreezeBalance.Cmp(types.Amount("1000")), 0)
+	suite.Equal(asset.AvailBalance.Cmp(types.Amount("0")), 0)
+}
+
+func (suite *assetsRepoTest) TestTransfer() {
+	migrations.MigrateUp(suite.gorm, suite.v, suite.logger)
+	defer migrations.MigrateDown(suite.gorm, suite.v, suite.logger)
+
+	err := suite.repo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", types.Amount("1000"))
+	suite.NoError(err)
+
+	transId := uuid.New().String()
+	err = suite.repo.Freeze(suite.ctx, suite.gorm, transId, "user1", "BTC", types.Amount("900"))
+	suite.NoError(err)
+
+	err = suite.repo.UnFreeze(suite.ctx, suite.gorm, transId, "user1", "BTC", types.Amount("1"))
+	suite.NoError(err)
+
+	asset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": "user1",
+		},
+	})
+	suite.NoError(err)
+	suite.Equal(asset.FreezeBalance.Cmp(types.Amount("899")), 0)
+	suite.Equal(asset.AvailBalance.Cmp(types.Amount("101")), 0)
+
+	//解冻全部
+	err = suite.repo.UnFreeze(suite.ctx, suite.gorm, transId, "user1", "BTC", types.Amount("0"))
+	suite.NoError(err)
+
+	asset, err = suite.repo.QueryOne(suite.ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": "BTC",
+		},
+		"user_id": map[string]any{
+			"eq": "user1",
+		},
+	})
+	suite.NoError(err)
+	suite.Equal(asset.FreezeBalance.Cmp(types.Amount("0")), 0)
+	suite.Equal(asset.AvailBalance.Cmp(types.Amount("1000")), 0)
 }

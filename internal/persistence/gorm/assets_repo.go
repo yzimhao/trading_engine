@@ -158,7 +158,7 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 		Amount:       amount,
 		FreezeAmount: amount,
 		TransId:      transId,
-		// FreezeType: entities.FreezeType,
+		// FreezeType:   entities.FreezeTypeTrade, //TODO 冻结类型
 	}
 	if tx.Create(&freezeLog).Error != nil {
 		return errors.New("create freeze log failed")
@@ -169,8 +169,8 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 
 // 解冻资产
 func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
-	if amount.Cmp(types.Amount("0")) <= 0 {
-		return errors.New("amount must be >= 0")
+	if amount.Cmp(types.Amount("0")) < 0 {
+		return errors.New("amount must be > 0")
 	}
 
 	freeze := entities.AssetFreeze{UserId: userId, Symbol: symbol, TransId: transId}
@@ -179,7 +179,7 @@ func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 	}
 
 	if freeze.Status == entities.FreezeStatusDone {
-		return errors.New("freeze already done")
+		return errors.New("unfreeze already done")
 	}
 
 	//解冻金额为0，则全部金额解冻

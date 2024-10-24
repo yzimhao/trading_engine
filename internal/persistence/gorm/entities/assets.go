@@ -6,7 +6,7 @@ import (
 
 type FreezeStatus int
 type AssetChangeType string
-type FreezeType AssetChangeType
+type FreezeType string
 
 const (
 	FreezeStatusNew         FreezeStatus    = 0
@@ -15,6 +15,9 @@ const (
 	AssetChangeTypeRecharge AssetChangeType = "deposit"
 	AssetChangeTypeWithdraw AssetChangeType = "withdraw"
 	AssetChangeTypeTransfer AssetChangeType = "transfer"
+	FreezeTypeWithdraw      FreezeType      = "withdraw"
+	FreezeTypeTransfer      FreezeType      = "transfer"
+	FreezeTypeTrade         FreezeType      = "trade"
 
 	SYSTEM_USER_ID = "system"
 )
