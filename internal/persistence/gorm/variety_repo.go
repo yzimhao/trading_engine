@@ -1,6 +1,8 @@
 package gorm
 
 import (
+	"context"
+
 	k_repo "github.com/duolacloud/crud-core-gorm/repositories"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/duolacloud/crud-core/datasource"
@@ -50,4 +52,13 @@ func NewTradeVarietyRepo(datasource datasource.DataSource[gorm.DB], cache cache.
 	return &gormTradeVarietyRepo{
 		MapperRepository: mapperRepo,
 	}
+}
+
+func (v *gormTradeVarietyRepo) FindBySymbol(ctx context.Context, symbol string) (tradeVariety *models_variety.TradeVariety, err error) {
+	tradeVariety, err = v.QueryOne(ctx, map[string]any{
+		"symbol": map[string]any{
+			"eq": symbol,
+		},
+	})
+	return
 }

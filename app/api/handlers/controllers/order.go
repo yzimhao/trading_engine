@@ -27,13 +27,14 @@ type OrderController struct {
 
 type inOrderContext struct {
 	fx.In
-	Logger *zap.Logger
-	Broker broker.Broker
-	DB     *gorm.DB
+	Logger           *zap.Logger
+	Broker           broker.Broker
+	DB               *gorm.DB
+	TradeVarietyRepo persistence.TradeVarietyRepository
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
-	repo := gorm_order.NewOrderRepo(in.DB, in.Logger)
+	repo := gorm_order.NewOrderRepo(in.DB, in.Logger, in.TradeVarietyRepo)
 	return &OrderController{
 		broker: in.Broker,
 		logger: in.Logger,

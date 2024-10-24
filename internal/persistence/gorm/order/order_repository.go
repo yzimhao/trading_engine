@@ -13,20 +13,28 @@ import (
 )
 
 type orderRepository struct {
-	db     *gorm.DB
-	logger *zap.Logger
+	db               *gorm.DB
+	logger           *zap.Logger
+	tradeVarietyRepo persistence.TradeVarietyRepository
 }
 
 var _ persistence.OrderRepository = (*orderRepository)(nil)
 
-func NewOrderRepo(db *gorm.DB, logger *zap.Logger) persistence.OrderRepository {
+func NewOrderRepo(db *gorm.DB, logger *zap.Logger, tradeVarietyRepo persistence.TradeVarietyRepository) persistence.OrderRepository {
 	return &orderRepository{
-		db:     db,
-		logger: logger,
+		db:               db,
+		logger:           logger,
+		tradeVarietyRepo: tradeVarietyRepo,
 	}
 }
 
 func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
+	// 查询交易对配置
+	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
+	if err != nil {
+		return nil, err
+	}
+
 	data := entities.Order{
 		UserId:    user_id,
 		Symbol:    symbol,
@@ -35,7 +43,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		Price:     price,
 		Quantity:  qty,
 		NanoTime:  time.Now().UnixNano(),
-		FeeRate:   "0", //TODO
+		FeeRate:   tradeInfo.FeeRate,
 		Status:    models_types.OrderStatusNew,
 	}
 	unfinished := entities.UnfinishedOrder{
@@ -43,7 +51,19 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	}
 
 	//auto create tables
-	o.db.AutoMigrate(&unfinished, &data)
+	if err := o.db.AutoMigrate(&unfinished, &data); err != nil {
+		return nil, err
+	}
+
+	// 开启事务
+	err = o.db.Transaction(func(tx *gorm.DB) error {
+		//冻结资产
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }
