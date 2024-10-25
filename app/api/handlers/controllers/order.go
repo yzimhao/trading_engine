@@ -12,7 +12,6 @@ import (
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
-	gorm_order "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/order"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -31,14 +30,14 @@ type inOrderContext struct {
 	Broker           broker.Broker
 	DB               *gorm.DB
 	TradeVarietyRepo persistence.TradeVarietyRepository
+	Repo             persistence.OrderRepository
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
-	repo := gorm_order.NewOrderRepo(in.DB, in.Logger, in.TradeVarietyRepo)
 	return &OrderController{
 		broker: in.Broker,
 		logger: in.Logger,
-		repo:   repo,
+		repo:   in.Repo,
 	}
 }
 

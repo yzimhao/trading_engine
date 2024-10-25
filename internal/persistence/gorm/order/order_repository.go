@@ -16,15 +16,22 @@ type orderRepository struct {
 	db               *gorm.DB
 	logger           *zap.Logger
 	tradeVarietyRepo persistence.TradeVarietyRepository
+	assetRepo        persistence.AssetRepository
 }
 
 var _ persistence.OrderRepository = (*orderRepository)(nil)
 
-func NewOrderRepo(db *gorm.DB, logger *zap.Logger, tradeVarietyRepo persistence.TradeVarietyRepository) persistence.OrderRepository {
+func NewOrderRepo(
+	db *gorm.DB,
+	logger *zap.Logger,
+	tradeVarietyRepo persistence.TradeVarietyRepository,
+	assetRepo persistence.AssetRepository,
+) persistence.OrderRepository {
 	return &orderRepository{
 		db:               db,
 		logger:           logger,
 		tradeVarietyRepo: tradeVarietyRepo,
+		assetRepo:        assetRepo,
 	}
 }
 
