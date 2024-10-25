@@ -8,13 +8,14 @@
 </p>
 
 
-
+#### 贡献代码
+  全新重构，希望更多开源爱好者能加入共同开发练手，共同进步，请联系下方wx
 
 #### 撮合
 ```
     go get github.com/yzimhao/trading_engine/v2/pkg/matching
 ```
-#### example
+#### pkg example
 ```go
     ctx := context.Background()
     opts := []matching.Option{
