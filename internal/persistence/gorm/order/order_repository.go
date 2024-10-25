@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
+	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -46,6 +46,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	}
 
 	data := entities.Order{
+		OrderId:   models_order.GenerateOrderId(side),
 		UserId:    user_id,
 		Symbol:    symbol,
 		OrderSide: side,
@@ -56,7 +57,6 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		FeeRate:   tradeInfo.FeeRate,
 		Status:    models_types.OrderStatusNew,
 	}
-	data.GenerateOrderId()
 
 	unfinished := entities.UnfinishedOrder{
 		Order: data,
@@ -83,8 +83,8 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 			data.FreezeQty = data.Quantity
 			err = o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
 		} else {
-			amount := types.Amount(data.Price).Mul(types.Amount(data.Quantity))
-			fee := amount.Mul(types.Amount(data.FeeRate))
+			amount := models_types.Amount(data.Price).Mul(models_types.Amount(data.Quantity))
+			fee := amount.Mul(models_types.Amount(data.FeeRate))
 			data.FreezeAmount = amount.Add(fee).String()
 			err = o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.FreezeAmount))
 		}

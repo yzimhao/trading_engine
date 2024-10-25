@@ -3,11 +3,9 @@ package entities
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
-	"golang.org/x/exp/rand"
 )
 
 type Order struct {
@@ -42,19 +40,4 @@ type UnfinishedOrder struct {
 
 func (o *UnfinishedOrder) TableName() string {
 	return "unfinished_order"
-}
-
-func (o *Order) GenerateOrderId() {
-	if o.OrderSide == matching_types.OrderSideBuy {
-		o.OrderId = generateOrderId("B")
-	} else {
-		o.OrderId = generateOrderId("A")
-	}
-}
-
-func generateOrderId(prefix string) string {
-	prefix = strings.ToUpper(prefix)
-	t := time.Now().Format("060102150405")
-	rn := rand.Intn(9999)
-	return fmt.Sprintf("%s%s%04d", prefix, t, rn)
 }

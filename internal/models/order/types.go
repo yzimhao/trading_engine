@@ -1,8 +1,13 @@
 package order
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+	"golang.org/x/exp/rand"
 )
 
 type CreateOrder struct {
@@ -19,4 +24,19 @@ type CreateOrder struct {
 	FreezeAmount string                   `json:"freeze_amount"`
 	Status       models_types.OrderStatus `json:"status"`
 	NanoTime     int64                    `json:"nano_time"`
+}
+
+func GenerateOrderId(side matching_types.OrderSide) string {
+	if side == matching_types.OrderSideBuy {
+		return generateOrderId("B")
+	} else {
+		return generateOrderId("A")
+	}
+}
+
+func generateOrderId(prefix string) string {
+	prefix = strings.ToUpper(prefix)
+	t := time.Now().Format("060102150405")
+	rn := rand.Intn(9999)
+	return fmt.Sprintf("%s%s%04d", prefix, t, rn)
 }
