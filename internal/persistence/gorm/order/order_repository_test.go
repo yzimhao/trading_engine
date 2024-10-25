@@ -44,7 +44,7 @@ func (suite *orderRepoTest) SetupTest() {
 	suite.repo = gorm_order.NewOrderRepo(suite.gorm, logger, mockTradeVarietyRepo, assetRepo)
 }
 
-func TestAssetsRepo(t *testing.T) {
+func TestOrderRepo(t *testing.T) {
 	suite.Run(t, new(orderRepoTest))
 }
 
