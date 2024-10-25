@@ -126,14 +126,14 @@ func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol 
 
 // 冻结资产
 // 这里使用tx传入，方便在结算的时候事务中使用
-func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
+func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) (*entities.AssetFreeze, error) {
 	if amount.Cmp(types.Amount("0")) < 0 {
-		return errors.New("amount must be >= 0")
+		return nil, errors.New("amount must be >= 0")
 	}
 
 	asset := entities.Asset{UserId: userId, Symbol: symbol}
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND symbol = ?", userId, symbol).FirstOrCreate(&asset).Error; err != nil {
-		return err
+		return nil, err
 	}
 
 	//冻结金额为0，冻结全部可用
@@ -145,11 +145,11 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 	asset.FreezeBalance = asset.FreezeBalance.Add(amount)
 
 	if asset.AvailBalance.Cmp(types.Amount("0")) < 0 {
-		return errors.New("insufficient balance")
+		return nil, errors.New("insufficient balance")
 	}
 
 	if tx.Where("user_id = ? AND symbol = ?", userId, symbol).Updates(&asset).Error != nil {
-		return errors.New("update asset failed")
+		return nil, errors.New("update asset failed")
 	}
 
 	//freeze log
@@ -162,10 +162,10 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 		// FreezeType:   entities.FreezeTypeTrade, //TODO 冻结类型
 	}
 	if tx.Create(&freezeLog).Error != nil {
-		return errors.New("create freeze log failed")
+		return nil, errors.New("create freeze log failed")
 	}
 
-	return nil
+	return freezeLog, nil
 }
 
 // 解冻资产

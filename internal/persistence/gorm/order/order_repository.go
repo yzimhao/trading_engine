@@ -62,7 +62,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		Order: data,
 	}
 
-	if err := o.validateOrder(ctx, tradeInfo, &data); err != nil {
+	if err := o.validateOrderLimit(ctx, tradeInfo, &data); err != nil {
 		return nil, errors.Wrap(err, "validate order failed")
 	}
 
@@ -81,15 +81,18 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		//冻结资产
 		if data.OrderSide == matching_types.OrderSideSell {
 			data.FreezeQty = data.Quantity
-			err = o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
+			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
+			if err != nil {
+				return err
+			}
 		} else {
 			amount := models_types.Amount(data.Price).Mul(models_types.Amount(data.Quantity))
 			fee := amount.Mul(models_types.Amount(data.FeeRate))
 			data.FreezeAmount = amount.Add(fee).String()
-			err = o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.FreezeAmount))
-		}
-		if err != nil {
-			return err
+			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.FreezeAmount))
+			if err != nil {
+				return err
+			}
 		}
 
 		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
@@ -112,12 +115,111 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 
 func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error) {
 	//TODO implement me
-	return nil, nil
+	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
+	if err != nil {
+		return nil, err
+	}
+
+	data := entities.Order{
+		OrderId:      models_order.GenerateOrderId(side),
+		UserId:       user_id,
+		Symbol:       symbol,
+		OrderSide:    side,
+		OrderType:    matching_types.OrderTypeMarket,
+		FeeRate:      tradeInfo.FeeRate,
+		FreezeAmount: amount,
+		Status:       models_types.OrderStatusNew,
+	}
+
+	if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
+		return nil, errors.Wrap(err, "auto migrate order table failed")
+	}
+
+	if err := o.validateOrderMarketAmount(ctx, tradeInfo, &data); err != nil {
+		return nil, errors.Wrap(err, "validate order failed")
+	}
+
+	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
+		if data.OrderSide == matching_types.OrderSideSell {
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount("0"))
+			if err != nil {
+				return err
+			}
+			data.FreezeQty = f.FreezeAmount.String()
+		} else {
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.Amount))
+			if err != nil {
+				return err
+			}
+			data.FreezeAmount = f.FreezeAmount.String()
+			fee := models_types.Amount(data.FreezeAmount).Mul(models_types.Amount(data.FeeRate))
+			data.Amount = models_types.Amount(data.FreezeAmount).Sub(fee).String()
+		}
+
+		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
 }
 
 func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error) {
-	//TODO implement me
-	return nil, nil
+	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
+	if err != nil {
+		return nil, err
+	}
+
+	data := entities.Order{
+		OrderId:   models_order.GenerateOrderId(side),
+		UserId:    user_id,
+		Symbol:    symbol,
+		OrderSide: side,
+		OrderType: matching_types.OrderTypeMarket,
+		FeeRate:   tradeInfo.FeeRate,
+		Quantity:  qty,
+		Status:    models_types.OrderStatusNew,
+	}
+
+	if err := o.validateOrderMarketQty(ctx, tradeInfo, &data); err != nil {
+		return nil, errors.Wrap(err, "validate order failed")
+	}
+
+	if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
+		return nil, errors.Wrap(err, "auto migrate order table failed")
+	}
+
+	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
+		if data.OrderSide == matching_types.OrderSideSell {
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
+			if err != nil {
+				return err
+			}
+			data.FreezeQty = f.FreezeAmount.String()
+		} else {
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount("0"))
+			if err != nil {
+				return err
+			}
+			data.FreezeAmount = f.FreezeAmount.String()
+		}
+
+		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
 }
 
 func (o *orderRepository) Cancel(ctx context.Context, order_id string, user_id *string) error {
@@ -125,7 +227,7 @@ func (o *orderRepository) Cancel(ctx context.Context, order_id string, user_id *
 	return nil
 }
 
-func (o *orderRepository) validateOrder(ctx context.Context, tradeInfo *variety.TradeVariety, data *entities.Order) (err error) {
+func (o *orderRepository) validateOrderLimit(ctx context.Context, tradeInfo *variety.TradeVariety, data *entities.Order) (err error) {
 
 	//TODO 数量检查
 
@@ -133,5 +235,15 @@ func (o *orderRepository) validateOrder(ctx context.Context, tradeInfo *variety.
 
 	//TODO 对向订单检查，防止自己的买单和卖单成交
 
+	return nil
+}
+
+func (o *orderRepository) validateOrderMarketAmount(ctx context.Context, tradeInfo *variety.TradeVariety, data *entities.Order) (err error) {
+	//TODO implement me
+	return nil
+}
+
+func (o *orderRepository) validateOrderMarketQty(ctx context.Context, tradeInfo *variety.TradeVariety, data *entities.Order) (err error) {
+	//TODO implement me
 	return nil
 }
