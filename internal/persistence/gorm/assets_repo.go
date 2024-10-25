@@ -9,6 +9,7 @@ import (
 	"github.com/duolacloud/crud-core/datasource"
 	b_mappers "github.com/duolacloud/crud-core/mappers"
 	"github.com/duolacloud/crud-core/repositories"
+	datasource_types "github.com/duolacloud/crud-core/types"
 	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -207,6 +208,14 @@ func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 	}
 
 	return nil
+}
+
+func (r *gormAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) (assetFreezes []*models.AssetFreeze, err error) {
+	query := &datasource_types.PageQuery{
+		Filter: filter,
+	}
+	data, err := r.assetFreezeRepo.Query(ctx, query)
+	return data, err
 }
 
 func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Amount, transId string) error {

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	models_variety "github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	gorm_asset "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
@@ -92,4 +93,14 @@ func (suite *orderRepoTest) TestCreateLimitOrder() {
 	order, err := suite.repo.CreateLimit(suite.ctx, "user1", "BTCUSDT", matching_types.OrderSideBuy, "10", "1")
 	suite.Require().NoError(err)
 	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(models_types.Amount("10.1").Cmp(models_types.Amount(assetFreezes[0].FreezeAmount)), 0)
 }

@@ -4,8 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
@@ -60,14 +62,18 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		Order: data,
 	}
 
-	o.logger.Sugar().Errorf("auto create tables: %s, %s", data.TableName(), unfinished.TableName())
+	if err := o.validateOrder(ctx, tradeInfo, &data); err != nil {
+		return nil, errors.Wrap(err, "validate order failed")
+	}
+
+	o.logger.Sugar().Infof("auto create tables: %s, %s", data.TableName(), unfinished.TableName())
 
 	//auto create tables
 	if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "auto migrate order table failed")
 	}
 	if err := o.db.Table(unfinished.TableName()).AutoMigrate(&entities.UnfinishedOrder{}); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "auto migrate unfinished order table failed")
 	}
 
 	// 开启事务
@@ -116,5 +122,16 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 
 func (o *orderRepository) Cancel(ctx context.Context, order_id string, user_id *string) error {
 	//TODO implement me
+	return nil
+}
+
+func (o *orderRepository) validateOrder(ctx context.Context, tradeInfo *variety.TradeVariety, data *entities.Order) (err error) {
+
+	//TODO 数量检查
+
+	//TODO 价格检查
+
+	//TODO 对向订单检查，防止自己的买单和卖单成交
+
 	return nil
 }
