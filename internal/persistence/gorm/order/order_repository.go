@@ -114,7 +114,6 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 }
 
 func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error) {
-	//TODO implement me
 	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
 	if err != nil {
 		return nil, err
@@ -129,6 +128,7 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 		FeeRate:      tradeInfo.FeeRate,
 		FreezeAmount: amount,
 		Status:       models_types.OrderStatusNew,
+		NanoTime:     time.Now().UnixNano(),
 	}
 
 	if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
@@ -184,6 +184,7 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 		FeeRate:   tradeInfo.FeeRate,
 		Quantity:  qty,
 		Status:    models_types.OrderStatusNew,
+		NanoTime:  time.Now().UnixNano(),
 	}
 
 	if err := o.validateOrderMarketQty(ctx, tradeInfo, &data); err != nil {
