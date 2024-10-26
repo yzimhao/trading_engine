@@ -36,6 +36,7 @@ func NewMatching(in inContext) *Matching {
 }
 
 func (s *Matching) InitEngine() {
+	s.logger.Sugar().Infof("init matching engine")
 	// load trade pair
 	var (
 		cursor string
