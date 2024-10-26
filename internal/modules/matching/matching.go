@@ -2,6 +2,7 @@ package matching
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/duolacloud/broker-core"
@@ -9,6 +10,7 @@ import (
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
+	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -80,11 +82,51 @@ func (s *Matching) Subscribe() {
 
 func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 	s.logger.Sugar().Debugf("on new order: %v", event)
-	// return errors.New("not implemented")
 
+	var order models_types.EventOrderNew
+	if err := json.Unmarshal(event.Message().Body, &order); err != nil {
+		s.logger.Sugar().Errorf("matching new order unmarshal error: %v body: %s", err, string(event.Message().Body))
+		return err
+	}
+
+	var item matching.QueueItem
+	if order.OrderType == matching_types.OrderTypeLimit {
+		if order.OrderSide == matching_types.OrderSideSell {
+			item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity)
+		} else {
+			item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity)
+		}
+	} else if order.OrderType == matching_types.OrderTypeMarket {
+		// 按成交金额
+		if order.Amount != nil {
+			if order.OrderSide == matching_types.OrderSideSell {
+				item = matching.NewAskMarketAmountItem(order.OrderId, order.Amount, order.MaxAmount, order.NanoTime)
+			} else {
+				item = matching.NewBidMarketAmountItem(order.OrderId, order.Amount, order.NanoTime)
+			}
+		} else {
+			// 按成交量
+			if order.OrderSide == matching_types.OrderSideSell {
+				item = matching.NewAskMarketQtyItem(order.OrderId, order.MaxQty, order.NanoTime)
+			} else {
+				item = matching.NewBidMarketQtyItem(order.OrderId, order.Quantity, order.MaxQty, order.NanoTime)
+			}
+		}
+	}
+
+	if engine := s.engine(order.Symbol); engine != nil {
+		engine.AddItem(item)
+	}
 	return nil
 }
 
 func (s *Matching) OnNotifyCancelOrder(ctx context.Context, event broker.Event) error {
+	return nil
+}
+
+func (s *Matching) engine(symbol string) *matching.Engine {
+	if engine, ok := s.tradePairs.Load(symbol); ok {
+		return engine.(*matching.Engine)
+	}
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 	"golang.org/x/exp/rand"
 )
 
-type CreateOrder struct {
+type Order struct {
 	Symbol       string                   `json:"symbol"`
 	OrderId      string                   `json:"order_id"`
 	OrderSide    matching_types.OrderSide `json:"order_side"`

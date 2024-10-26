@@ -20,6 +20,8 @@ type EventOrderNew struct {
 	Price     *string                  `json:"price"`
 	Quantity  *string                  `json:"quantity"`
 	Amount    *string                  `json:"amount"`
+	MaxAmount *string                  `json:"max_amount"`
+	MaxQty    *string                  `json:"max_qty"`
 	NanoTime  int64                    `json:"nano_time"`
 }
 
