@@ -13,3 +13,14 @@ const (
 	OrderStatusPartialCancel                        //部分取消   在部分成交后，交易者可能取消尚未执行的部分订单
 	OrderStatusCanceled                             //已取消  交易者或系统取消了订单，订单不再有效
 )
+
+type CancelType int
+
+const (
+	CancelTypeUser    CancelType = iota + 1 //用户主动取消
+	CancelTypeSystem                        //系统取消
+	CancelTypeExpired                       //超时取消
+	CancelTypeMarket                        //市场取消
+	CancelTypeForce                         //强平取消
+	CancelTypeOther                         //其他
+)

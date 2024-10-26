@@ -169,6 +169,7 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 }
 
 // 解冻资产
+// amount为0，则解冻这条记录的全部剩余
 func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
 	if amount.Cmp(types.Amount("0")) < 0 {
 		return errors.New("amount must be > 0")

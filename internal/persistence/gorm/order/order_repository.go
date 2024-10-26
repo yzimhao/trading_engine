@@ -223,8 +223,57 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 	return &data, nil
 }
 
-func (o *orderRepository) Cancel(ctx context.Context, order_id string, user_id *string) error {
-	//TODO implement me
+func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, cancelType models_types.CancelType) error {
+	o.logger.Sugar().Infof("cancel order: %s, %s, %s, %d", symbol, order_id, cancelType)
+
+	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
+	if err != nil {
+		return err
+	}
+
+	order := &entities.Order{
+		Symbol:  symbol,
+		OrderId: order_id,
+	}
+	unfinished := &entities.UnfinishedOrder{
+		Order: *order,
+	}
+	//TODO检查是否有结算锁
+
+	if err := o.db.Table(order.TableName()).Where("order_id=?", order_id).First(order).Error; err != nil {
+		o.logger.Sugar().Errorf("order query error: %v, symbol: %s, order_id: %s", err, symbol, order_id)
+		return err
+	}
+
+	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
+		//解冻资产
+		if order.OrderSide == matching_types.OrderSideSell {
+			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount("0"))
+			if err != nil {
+				return err
+			}
+		} else {
+			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount("0"))
+			if err != nil {
+				return err
+			}
+		}
+
+		//更新订单状态
+		if err := tx.Table(order.TableName()).Where("order_id=?", order_id).Update("status", models_types.OrderStatusCanceled).Error; err != nil {
+			return err
+		}
+
+		//删除未完成订单
+		if err := tx.Table(unfinished.TableName()).Where("order_id=?", order_id).Delete(unfinished).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
