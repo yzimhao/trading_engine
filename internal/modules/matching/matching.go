@@ -33,7 +33,7 @@ func (s *Matching) InitEngine() {
 
 func (s *Matching) Subscribe() {
 	s.broker.Subscribe(types.TOPIC_ORDER_NEW, s.OnNewOrder)
-	s.broker.Subscribe(types.TOPIC_ORDER_CANCEL, s.OnCancelOrder)
+	s.broker.Subscribe(types.TOPIC_NOTIFY_ORDER_CANCEL, s.OnNotifyCancelOrder)
 }
 
 func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
@@ -42,6 +42,6 @@ func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }
 
-func (s *Matching) OnCancelOrder(ctx context.Context, event broker.Event) error {
+func (s *Matching) OnNotifyCancelOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }

@@ -5,25 +5,29 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 type inCancelOrderContext struct {
 	fx.In
-	Broker broker.Broker
-	Logger *zap.Logger
+	Broker    broker.Broker
+	Logger    *zap.Logger
+	OrderRepo persistence.OrderRepository
 }
 
 type CancelOrderSubscriber struct {
-	broker broker.Broker
-	logger *zap.Logger
+	broker    broker.Broker
+	logger    *zap.Logger
+	orderRepo persistence.OrderRepository
 }
 
 func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 	return &CancelOrderSubscriber{
-		broker: in.Broker,
-		logger: in.Logger,
+		broker:    in.Broker,
+		logger:    in.Logger,
+		orderRepo: in.OrderRepo,
 	}
 }
 
