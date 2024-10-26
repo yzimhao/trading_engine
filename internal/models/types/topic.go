@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/shopspring/decimal"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
 
@@ -17,11 +18,11 @@ type EventOrderNew struct {
 	OrderId   string                   `json:"order_id"`
 	OrderSide matching_types.OrderSide `json:"order_side"`
 	OrderType matching_types.OrderType `json:"order_type"`
-	Price     *string                  `json:"price"`
-	Quantity  *string                  `json:"quantity"`
-	Amount    *string                  `json:"amount"`
-	MaxAmount *string                  `json:"max_amount"`
-	MaxQty    *string                  `json:"max_qty"`
+	Price     *decimal.Decimal         `json:"price"`
+	Quantity  *decimal.Decimal         `json:"quantity"`
+	Amount    *decimal.Decimal         `json:"amount"`
+	MaxAmount *decimal.Decimal         `json:"max_amount"`
+	MaxQty    *decimal.Decimal         `json:"max_qty"`
 	NanoTime  int64                    `json:"nano_time"`
 }
 

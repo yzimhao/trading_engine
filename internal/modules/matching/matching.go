@@ -92,24 +92,24 @@ func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 	var item matching.QueueItem
 	if order.OrderType == matching_types.OrderTypeLimit {
 		if order.OrderSide == matching_types.OrderSideSell {
-			item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity)
+			item = matching.NewAskLimitItem(order.OrderId, *order.Price, *order.Quantity, order.NanoTime)
 		} else {
-			item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity)
+			item = matching.NewBidLimitItem(order.OrderId, *order.Price, *order.Quantity, order.NanoTime)
 		}
 	} else if order.OrderType == matching_types.OrderTypeMarket {
 		// 按成交金额
 		if order.Amount != nil {
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskMarketAmountItem(order.OrderId, order.Amount, order.MaxAmount, order.NanoTime)
+				item = matching.NewAskMarketAmountItem(order.OrderId, *order.Amount, *order.MaxAmount, order.NanoTime)
 			} else {
-				item = matching.NewBidMarketAmountItem(order.OrderId, order.Amount, order.NanoTime)
+				item = matching.NewBidMarketAmountItem(order.OrderId, *order.Amount, order.NanoTime)
 			}
 		} else {
 			// 按成交量
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskMarketQtyItem(order.OrderId, order.MaxQty, order.NanoTime)
+				item = matching.NewAskMarketQtyItem(order.OrderId, *order.MaxQty, order.NanoTime)
 			} else {
-				item = matching.NewBidMarketQtyItem(order.OrderId, order.Quantity, order.MaxQty, order.NanoTime)
+				item = matching.NewBidMarketQtyItem(order.OrderId, *order.Quantity, *order.MaxQty, order.NanoTime)
 			}
 		}
 	}
