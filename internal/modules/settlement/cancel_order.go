@@ -28,7 +28,7 @@ func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 }
 
 func (s *CancelOrderSubscriber) Subscribe() {
-	s.broker.Subscribe(types.TOPIC_ORDER_CANCEL, s.On)
+	s.broker.Subscribe(types.TOPIC_PROCESS_ORDER_CANCEL, s.On)
 }
 
 func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) error {

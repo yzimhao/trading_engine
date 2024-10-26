@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	TOPIC_ORDER_NEW    = "order_new" // %s 表示交易对symbol
-	TOPIC_ORDER_CANCEL = "order_cancel"
-	TOPIC_ORDER_TRADE  = "order_trade"
-	TOPIC_ORDER_SETTLE = "order_settle"
+	TOPIC_ORDER_NEW            = "order_new" // %s 表示交易对symbol
+	TOPIC_ORDER_CANCEL         = "order_cancel"
+	TOPIC_PROCESS_ORDER_CANCEL = "process_order_cancel"
+	TOPIC_ORDER_TRADE          = "order_trade"
+	TOPIC_ORDER_SETTLE         = "order_settle"
 )
 
 type EventOrderNew struct {
