@@ -155,9 +155,29 @@ func (s *Matching) engine(symbol string) *matching.Engine {
 }
 
 func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) {
-
+	body, err := json.Marshal(result)
+	if err != nil {
+		s.logger.Sugar().Errorf("matching process cancel order result marshal error: %v", err)
+		return
+	}
+	err = s.broker.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, &broker.Message{
+		Body: body,
+	})
+	if err != nil {
+		s.logger.Sugar().Errorf("matching process cancel order result publish error: %v", err)
+	}
 }
 
 func (s *Matching) processTradeResult(result matching_types.TradeResult) {
-
+	body, err := result.MarshalBinary()
+	if err != nil {
+		s.logger.Sugar().Errorf("matching process trade result marshal error: %v", err)
+		return
+	}
+	err = s.broker.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, &broker.Message{
+		Body: body,
+	})
+	if err != nil {
+		s.logger.Sugar().Errorf("matching process trade result publish error: %v", err)
+	}
 }
