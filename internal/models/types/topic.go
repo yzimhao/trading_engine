@@ -26,7 +26,11 @@ type EventOrderNew struct {
 	NanoTime  int64                    `json:"nano_time"`
 }
 
-type EventOrderCancel struct{}
+type EventNotifyCancelOrder struct {
+	Symbol    string                   `json:"symbol"`
+	OrderSide matching_types.OrderSide `json:"order_side"`
+	OrderId   string                   `json:"order_id"`
+}
 
 type EventOrderTrade struct {
 	matching_types.TradeResult

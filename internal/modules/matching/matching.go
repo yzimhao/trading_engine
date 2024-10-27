@@ -68,7 +68,18 @@ func (s *Matching) InitEngine() {
 				matching.WithPriceDecimals(int32(tradeVariety.PriceDecimals)),
 				matching.WithQuantityDecimals(int32(tradeVariety.QtyDecimals)),
 			}
-			s.tradePairs.Store(tradeVariety.Symbol, matching.NewEngine(context.Background(), tradeVariety.Symbol, opts...))
+			engine := matching.NewEngine(context.Background(), tradeVariety.Symbol, opts...)
+
+			engine.OnRemoveResult(func(result matching_types.RemoveResult) {
+				s.logger.Sugar().Infof("symbol: %s remove result: %v", result.Symbol, result)
+				s.processCancelOrderResult(result.Symbol, result.UniqueId)
+			})
+			engine.OnTradeResult(func(result matching_types.TradeResult) {
+				s.logger.Sugar().Infof("symbol: %s trade result: %v", result.Symbol, result)
+				s.processTradeResult(result)
+			})
+
+			s.tradePairs.Store(tradeVariety.Symbol, engine)
 			s.logger.Sugar().Infof("init matching engine for symbol: %s", tradeVariety.Symbol)
 		}
 	}
@@ -121,6 +132,18 @@ func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 }
 
 func (s *Matching) OnNotifyCancelOrder(ctx context.Context, event broker.Event) error {
+	var data models_types.EventNotifyCancelOrder
+	if err := json.Unmarshal(event.Message().Body, &data); err != nil {
+		s.logger.Sugar().Errorf("matching notify cancel order unmarshal error: %v body: %s", err, string(event.Message().Body))
+		return err
+	}
+
+	engine := s.engine(data.Symbol)
+	if engine == nil {
+		s.logger.Sugar().Errorf("matching engine not found for symbol: %s", data.Symbol)
+		return nil
+	}
+	engine.RemoveItem(data.OrderSide, data.OrderId)
 	return nil
 }
 
@@ -129,4 +152,12 @@ func (s *Matching) engine(symbol string) *matching.Engine {
 		return engine.(*matching.Engine)
 	}
 	return nil
+}
+
+func (s *Matching) processCancelOrderResult(symbol string, uniqueId string) {
+
+}
+
+func (s *Matching) processTradeResult(result matching_types.TradeResult) {
+
 }
