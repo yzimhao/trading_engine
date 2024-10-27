@@ -72,7 +72,7 @@ func (s *Matching) InitEngine() {
 
 			engine.OnRemoveResult(func(result matching_types.RemoveResult) {
 				s.logger.Sugar().Infof("symbol: %s remove result: %v", result.Symbol, result)
-				s.processCancelOrderResult(result.Symbol, result.UniqueId)
+				s.processCancelOrderResult(result)
 			})
 			engine.OnTradeResult(func(result matching_types.TradeResult) {
 				s.logger.Sugar().Infof("symbol: %s trade result: %v", result.Symbol, result)
@@ -154,7 +154,7 @@ func (s *Matching) engine(symbol string) *matching.Engine {
 	return nil
 }
 
-func (s *Matching) processCancelOrderResult(symbol string, uniqueId string) {
+func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) {
 
 }
 
