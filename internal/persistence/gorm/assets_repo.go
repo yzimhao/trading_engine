@@ -95,7 +95,7 @@ func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol str
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, entities.SYSTEM_USER_ID, userId, amount, transId)
+		return r.transfer(ctx, tx, symbol, entities.SYSTEM_USER_ROOT, userId, amount, transId)
 	})
 }
 
@@ -106,7 +106,7 @@ func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol st
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, userId, entities.SYSTEM_USER_ID, amount, transId)
+		return r.transfer(ctx, tx, symbol, userId, entities.SYSTEM_USER_ROOT, amount, transId)
 	})
 }
 
@@ -244,7 +244,7 @@ func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from,
 	fromAsset.TotalBalance = fromAsset.TotalBalance.Sub(amount)
 	fromAsset.AvailBalance = fromAsset.AvailBalance.Sub(amount)
 
-	if fromAsset.UserId != entities.SYSTEM_USER_ID {
+	if fromAsset.UserId != entities.SYSTEM_USER_ROOT {
 		if fromAsset.AvailBalance.Cmp(types.Amount("0")) < 0 {
 			return errors.New("insufficient balance")
 		}

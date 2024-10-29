@@ -19,7 +19,8 @@ const (
 	FreezeTypeTransfer      FreezeType      = "transfer"
 	FreezeTypeTrade         FreezeType      = "trade"
 
-	SYSTEM_USER_ID = "system"
+	SYSTEM_USER_ROOT = "system"
+	SYSTEM_USER_FEE  = "systemFee"
 )
 
 type Asset struct {

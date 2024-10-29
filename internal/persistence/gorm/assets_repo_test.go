@@ -77,11 +77,11 @@ func (suite *assetsRepoTest) TestDespoit() {
 			"eq": "BTC",
 		},
 		"user_id": map[string]any{
-			"eq": entities.SYSTEM_USER_ID,
+			"eq": entities.SYSTEM_USER_ROOT,
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(systemAsset.UserId, entities.SYSTEM_USER_ID)
+	suite.Equal(systemAsset.UserId, entities.SYSTEM_USER_ROOT)
 	suite.Equal(systemAsset.Symbol, "BTC")
 	suite.Equal(systemAsset.TotalBalance.Cmp(types.Amount("-1")), 0)
 	suite.Equal(systemAsset.AvailBalance.Cmp(types.Amount("-1")), 0)
