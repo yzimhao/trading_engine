@@ -219,6 +219,10 @@ func (r *gormAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) 
 	return data, err
 }
 
+func (r *gormAssetRepo) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Amount) error {
+	return r.transfer(ctx, tx, symbol, from, to, amount, transId)
+}
+
 func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Amount, transId string) error {
 	if from == to {
 		return errors.New("from and to cannot be the same")

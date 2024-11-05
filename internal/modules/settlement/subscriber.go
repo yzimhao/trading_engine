@@ -44,5 +44,5 @@ func (s *SettlementSubscriber) On(ctx context.Context, event broker.Event) error
 		return err
 	}
 
-	return s.settle.Run(tradeResult.TradeResult)
+	return s.settle.Run(ctx, tradeResult.TradeResult)
 }

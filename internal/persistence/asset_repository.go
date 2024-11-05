@@ -15,6 +15,7 @@ type AssetRepository interface {
 	Despoit(ctx context.Context, transId, userId, symbol string, amount types.Amount) error
 	Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Amount) error
 	Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Amount) error
+	TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Amount) error
 	Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) (*entities.AssetFreeze, error)
 	UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error
 	QueryFreeze(ctx context.Context, filter map[string]any) (assetFreezes []*models.AssetFreeze, err error)
