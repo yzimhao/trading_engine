@@ -8,6 +8,7 @@ var Module = fx.Options(
 	fx.Provide(
 		NewSettlementSubscriber,
 		NewCancelOrderSubscriber,
+		NewSettleProcessor,
 	),
 	fx.Invoke(startupSubscriber),
 )

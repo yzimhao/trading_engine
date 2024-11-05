@@ -57,6 +57,12 @@ func (d1 Amount) Div(d2 Amount) Amount {
 	return Amount(aa.Div(bb).String())
 }
 
+func (d1 Amount) Equal(d2 Amount) bool {
+	aa, _ := decimal.NewFromString(string(d1))
+	bb, _ := decimal.NewFromString(string(d2))
+	return aa.Equal(bb)
+}
+
 // Neg returns -d
 func (d Amount) Neg() Amount {
 	aa, _ := decimal.NewFromString(string(d))

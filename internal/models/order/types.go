@@ -1,6 +1,7 @@
 package order
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"strings"
 	"time"
@@ -32,6 +33,16 @@ func GenerateOrderId(side matching_types.OrderSide) string {
 	} else {
 		return generateOrderId("A")
 	}
+}
+
+func GenerateTradeId(ask, bid string) string {
+	date := time.Now().Format("060102")
+	raw := fmt.Sprintf("%s%s", ask, bid)
+
+	hash := sha256.New()
+	hash.Write([]byte(fmt.Sprintf("%v", raw)))
+	hashed := fmt.Sprintf("%x", hash.Sum(nil))
+	return fmt.Sprintf("T%s%s", date, hashed[0:17])
 }
 
 func generateOrderId(prefix string) string {
