@@ -5,6 +5,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/middlewares"
 	_ "github.com/yzimhao/trading_engine/v2/app/docs"
 	"go.uber.org/fx"
 )
@@ -17,6 +18,7 @@ type Routes struct {
 	userAssetsController *controllers.UserAssetsController
 	orderController      *controllers.OrderController
 	marketController     *controllers.MarketController
+	middleware           *middlewares.Middleware
 }
 
 type inContext struct {
@@ -26,6 +28,7 @@ type inContext struct {
 	UserAssetsController *controllers.UserAssetsController
 	OrderController      *controllers.OrderController
 	MarketController     *controllers.MarketController
+	Middleware           *middlewares.Middleware
 }
 
 func NewRoutes(in inContext) *Routes {
@@ -35,6 +38,7 @@ func NewRoutes(in inContext) *Routes {
 		userAssetsController: in.UserAssetsController,
 		orderController:      in.OrderController,
 		marketController:     in.MarketController,
+		middleware:           in.Middleware,
 	}
 
 	r.registerRoutes()
@@ -54,6 +58,7 @@ func (ctx *Routes) registerRoutes() {
 	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)
 
 	asset := v1Group.Group("asset")
+	asset.Use(ctx.middleware.Auth())
 	asset.POST("/despoit", ctx.userAssetsController.Despoit)
 	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
 	asset.GET("/:symbol", ctx.userAssetsController.Query)
@@ -61,6 +66,7 @@ func (ctx *Routes) registerRoutes() {
 	asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
 
 	order := v1Group.Group("order")
+	order.Use(ctx.middleware.Auth())
 	order.POST("/create", ctx.orderController.Create)
 	order.GET("/history", ctx.orderController.HistoryList)
 	order.GET("/unfinished", ctx.orderController.UnfinishedList)

@@ -76,13 +76,6 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 		event models_types.EventOrderNew
 	)
 
-	event = models_types.EventOrderNew{
-		Symbol:    order.Symbol,
-		OrderId:   order.OrderId,
-		OrderSide: order.OrderSide,
-		OrderType: order.OrderType,
-	}
-
 	if req.OrderType == matching_types.OrderTypeLimit {
 		if req.Price == nil || req.Quantity == nil {
 			common.ResponseError(c, errors.New("price and quantity are required"))
@@ -146,8 +139,12 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 		}
 	}
 
+	event.Symbol = order.Symbol
 	event.OrderId = order.OrderId
+	event.OrderSide = order.OrderSide
+	event.OrderType = order.OrderType
 	event.NanoTime = order.NanoTime
+
 	body, err := json.Marshal(event)
 	if err != nil {
 		ctrl.logger.Error("marshal order created event error", zap.Error(err), zap.Any("event", event))
