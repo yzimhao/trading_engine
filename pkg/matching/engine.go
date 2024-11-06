@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+	"go.uber.org/zap"
 )
 
 type Option func(opts *options)
@@ -19,6 +21,7 @@ type options struct {
 	pauseMatching    bool
 	minTradeQuantity decimal.Decimal
 	orderBookMaxLen  int
+	logger           *zap.Logger
 }
 
 func defaultOptions() *options {
@@ -29,6 +32,7 @@ func defaultOptions() *options {
 		pauseAcceptItem:  false,
 		pauseMatching:    false,
 		orderBookMaxLen:  50,
+		logger:           zap.NewExample(),
 	}
 }
 
@@ -56,6 +60,12 @@ func WithDebug(debug bool) Option {
 	}
 }
 
+func WithLogger(logger *zap.Logger) Option {
+	return func(opts *options) {
+		opts.logger = logger
+	}
+}
+
 type Engine struct {
 	ctx          context.Context
 	symbol       string
@@ -65,6 +75,7 @@ type Engine struct {
 	bids         *OrderQueue
 	resultNotify chan types.TradeResult
 	removeNotify chan types.RemoveResult
+	logger       *zap.Logger
 
 	onTradeResult  func(result types.TradeResult)
 	onRemoveResult func(result types.RemoveResult)
@@ -82,8 +93,11 @@ func NewEngine(ctx context.Context, symbol string, opts ...Option) *Engine {
 		bids:         NewQueue(),
 		resultNotify: make(chan types.TradeResult, 1),
 		removeNotify: make(chan types.RemoveResult, 1),
+		logger:       o.logger,
 	}
 	go e.matching()
+
+	time.Sleep(time.Millisecond * 10) //???
 	go e.orderBookTicker(e.asks)
 	go e.orderBookTicker(e.bids)
 	return e
@@ -113,6 +127,8 @@ func (e *Engine) AddItem(item QueueItem) error {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 
+	e.logger.Sugar().Debugf("[matching] AddItem %v", item)
+
 	if e.opts.pauseAcceptItem {
 		return errors.New("engine is paused")
 	}
@@ -125,9 +141,9 @@ func (e *Engine) AddItem(item QueueItem) error {
 		}
 	} else {
 		if item.GetOrderSide() == types.OrderSideSell {
-			e.processMarketSell(item)
+			go e.processMarketSell(item)
 		} else {
-			e.processMarketBuy(item)
+			go e.processMarketBuy(item)
 		}
 	}
 
@@ -174,27 +190,30 @@ func (e *Engine) BidQueue() *OrderQueue {
 
 func (e *Engine) Clean() {
 	if e.opts.debug {
-		e.mx.Lock()
-		defer e.mx.Unlock()
 		e.asks.clean()
 		e.bids.clean()
 	}
 }
 
 func (e *Engine) matching() {
+	e.logger.Debug("[matching] start...")
 	for {
+		e.logger.Debug("[matching] loop ...")
 		select {
 		case <-e.ctx.Done():
 			return
 		case result := <-e.resultNotify:
+			e.logger.Debug("[matching] result", zap.Any("result", result))
 			if e.onTradeResult != nil {
 				e.onTradeResult(result)
 			}
 		case result := <-e.removeNotify:
+			e.logger.Debug("[matching] remove", zap.Any("result", result))
 			if e.onRemoveResult != nil {
 				e.onRemoveResult(result)
 			}
 		default:
+			e.logger.Debug("[matching] processLimitOrder")
 			e.processLimitOrder()
 		}
 	}
@@ -206,8 +225,8 @@ func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal
 		Symbol:                 e.symbol,
 		AskOrderId:             ask.GetUniqueId(),
 		BidOrderId:             bid.GetUniqueId(),
-		TradeQuantity:          tradeQty.String(),
-		TradePrice:             price.String(),
+		TradeQuantity:          tradeQty,
+		TradePrice:             price,
 		TradeTime:              tradeAt,
 		RemainderMarketOrderId: remainder,
 	}

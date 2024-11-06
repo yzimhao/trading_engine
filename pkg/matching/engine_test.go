@@ -292,7 +292,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.AskOrderId, ShouldEqual, "id110")
 			So(trade.BidOrderId, ShouldEqual, "id210")
 			So(trade.TradePrice, ShouldEqual, d(100))
-			So(trade.TradeQuantity, ShouldEqual, d(1))
+			So(trade.TradeQuantity.String(), ShouldEqual, d(1).String())
 
 			So(trade.RemainderMarketOrderId, ShouldEqual, "id210")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
@@ -318,7 +318,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.AskOrderId, ShouldEqual, "id111")
 			So(trade.BidOrderId, ShouldEqual, "id211")
 			So(trade.TradePrice, ShouldEqual, d(10.00))
-			So(trade.TradeQuantity, ShouldEqual, d(5))
+			So(trade.TradeQuantity.String(), ShouldEqual, d(5).String())
 
 			So(trade.RemainderMarketOrderId, ShouldEqual, "id211")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
@@ -426,7 +426,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.AskOrderId, ShouldEqual, "id215")
 			So(trade.BidOrderId, ShouldEqual, "id115")
 			So(trade.TradePrice, ShouldEqual, d(10.00))
-			So(trade.TradeQuantity, ShouldEqual, d(600))
+			So(trade.TradeQuantity.String(), ShouldEqual, d(600).String())
 
 			So(trade.RemainderMarketOrderId, ShouldEqual, "id215")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
@@ -468,7 +468,9 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 		btcusdt.Clean()
 
 		tradeCh := make(chan types.TradeResult)
+		results := make([]types.TradeResult, 0)
 		btcusdt.OnTradeResult(func(result types.TradeResult) {
+			results = append(results, result)
 			tradeCh <- result
 		})
 
@@ -477,6 +479,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 
 		select {
 		case trade := <-tradeCh:
+
 			So(trade.AskOrderId, ShouldEqual, "id217")
 			So(trade.BidOrderId, ShouldEqual, "id117")
 			So(trade.TradePrice, ShouldEqual, d(100))

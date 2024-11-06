@@ -43,14 +43,14 @@ func (ot OrderType) String() string {
 }
 
 type TradeResult struct {
-	Symbol                 string  `json:"symbol"`
-	AskOrderId             string  `json:"ask"`
-	BidOrderId             string  `json:"bid"`
-	TradeQuantity          string  `json:"trade_quantity"`
-	TradePrice             string  `json:"trade_price"`
-	TradeBy                TradeBy `json:"trade_by"`
-	TradeTime              int64   `json:"trade_time"`                //纳秒级
-	RemainderMarketOrderId string  `json:"remainder_market_order_id"` //市价订单标记，用于结算时取消市价单剩余未成交的部分
+	Symbol                 string          `json:"symbol"`
+	AskOrderId             string          `json:"ask"`
+	BidOrderId             string          `json:"bid"`
+	TradeQuantity          decimal.Decimal `json:"trade_quantity"`
+	TradePrice             decimal.Decimal `json:"trade_price"`
+	TradeBy                TradeBy         `json:"trade_by"`
+	TradeTime              int64           `json:"trade_time"`                //纳秒级
+	RemainderMarketOrderId string          `json:"remainder_market_order_id"` //市价订单标记，用于结算时取消市价单剩余未成交的部分
 }
 
 func (t *TradeResult) MarshalBinary() (data []byte, err error) {

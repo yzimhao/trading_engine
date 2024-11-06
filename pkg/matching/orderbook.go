@@ -31,8 +31,8 @@ func (e *Engine) orderBookTicker(que *OrderQueue) {
 			return
 		case <-ticker.C:
 			func() {
-				e.mx.Lock()
-				defer e.mx.Unlock()
+				// e.mx.Lock()
+				// defer e.mx.Unlock()
 
 				que.Lock()
 				defer que.Unlock()
@@ -57,6 +57,7 @@ func (e *Engine) orderBookTicker(que *OrderQueue) {
 							bookMap[price] = types.Number(item.GetQuantity()).String(e.opts.quantityDecimals)
 						} else {
 							old_qunantity, _ := decimal.NewFromString(bookMap[price])
+							//TODO process error
 							bookMap[price] = types.Number(old_qunantity.Add(item.GetQuantity())).String(e.opts.quantityDecimals)
 						}
 					}

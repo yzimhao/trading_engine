@@ -5,9 +5,13 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+	"go.uber.org/zap"
 )
 
 func (e *Engine) processMarketBuy(item QueueItem) {
+	e.mx.Lock()
+	defer e.mx.Unlock()
+
 	trade_cnt := 0
 	for {
 		ok := func() bool {
@@ -17,12 +21,14 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 			}
 
 			ask := e.asks.Top()
+
 			if item.GetOrderType() == types.OrderTypeMarketQuantity {
 				maxQty := func(remainAmount, marketPrice, needQty decimal.Decimal) decimal.Decimal {
 					qty := remainAmount.Div(marketPrice)
 					return decimal.Min(qty, needQty).Truncate(e.opts.quantityDecimals)
 				}
 				maxTradeQty := maxQty(item.GetAmount(), ask.GetPrice(), item.GetQuantity())
+
 				curTradeQty := decimal.Zero
 
 				//市价按买入数量
@@ -30,12 +36,21 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 					return false
 				}
 
+				e.logger.Debug("[matching] processMarketBuy", zap.String("maxTradeQty", maxTradeQty.String()),
+					zap.String("ask.GetQuantity()", ask.GetQuantity().String()),
+					zap.Int("trade_cnt", trade_cnt),
+				)
+
 				if ask.GetQuantity().Cmp(maxTradeQty) <= 0 {
 					curTradeQty = ask.GetQuantity()
 					e.asks.Remove(ask.GetUniqueId())
 				} else {
 					curTradeQty = maxTradeQty
 					e.asks.SetQuantity(ask, ask.GetQuantity().Sub(curTradeQty))
+				}
+
+				if curTradeQty.Equal(decimal.Zero) {
+					return false
 				}
 
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
@@ -48,11 +63,9 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// b.已经达到了用户需要的数量
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
-					maxQty(item.GetAmount(), e.asks.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) < 0 {
-					// go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
+					maxQty(item.GetAmount(), e.asks.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					// go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 
@@ -83,6 +96,10 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 					e.asks.SetQuantity(ask, ask.GetQuantity().Sub(curTradeQty))
 				}
 
+				if curTradeQty.Equal(decimal.Zero) {
+					return false
+				}
+
 				//部分成交了，需要更新这个单的剩余可成交金额，用于下一轮重新计算最大成交量
 				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
 				item.SetQuantity(item.GetQuantity().Add(curTradeQty))
@@ -93,11 +110,9 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// b.已经达到了用户需要的数量
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
-					maxQty(item.GetAmount(), e.asks.Top().GetPrice()).Cmp(e.opts.minTradeQuantity) < 0 {
-					// go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
+					maxQty(item.GetAmount(), e.asks.Top().GetPrice()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					// go t.sendTradeResultNotify(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 				return true
@@ -125,6 +140,9 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 	}
 }
 func (e *Engine) processMarketSell(item QueueItem) {
+	e.mx.Lock()
+	defer e.mx.Unlock()
+
 	trade_cnt := 0
 	for {
 		ok := func() bool {
@@ -156,10 +174,8 @@ func (e *Engine) processMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.市价订单完全成交了
 				if e.bids.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
-					// go e.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					// go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 				}
 				return true
@@ -188,6 +204,10 @@ func (e *Engine) processMarketSell(item QueueItem) {
 					e.bids.SetQuantity(bid, bid.GetQuantity().Sub(curTradeQty))
 				}
 
+				if curTradeQty.Equal(decimal.Zero) {
+					return false
+				}
+
 				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(bid.GetPrice())))
 				//市价 按成交额卖出时，需要用户持有的资产数量来进行限制
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
@@ -196,11 +216,10 @@ func (e *Engine) processMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.金额完全成交
 				// c.剩余资金不满足最小成交量
-				if e.bids.Len() == 0 || maxQty(item.GetAmount(), e.bids.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) < 0 {
-					// go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
+				if e.bids.Len() == 0 ||
+					maxQty(item.GetAmount(), e.bids.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
-					// go t.sendTradeResultNotify(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
 				}
 
