@@ -8,8 +8,8 @@ import (
 )
 
 func (e *Engine) orderBook(queue *OrderQueue, size int) [][2]string {
-	queue.Lock()
-	defer queue.Unlock()
+	queue.mx.Lock()
+	defer queue.mx.Unlock()
 
 	max := len(queue.orderBook)
 	if size <= 0 || size > max {
@@ -31,11 +31,11 @@ func (e *Engine) orderBookTicker(que *OrderQueue) {
 			return
 		case <-ticker.C:
 			func() {
-				// e.mx.Lock()
-				// defer e.mx.Unlock()
+				e.mx.Lock()
+				defer e.mx.Unlock()
 
-				que.Lock()
-				defer que.Unlock()
+				que.mx.Lock()
+				defer que.mx.Unlock()
 
 				que.orderBook = [][2]string{}
 
@@ -51,14 +51,16 @@ func (e *Engine) orderBookTicker(que *OrderQueue) {
 
 						item := (*que.pq)[i]
 
-						price := types.Number(item.GetPrice()).String(e.opts.priceDecimals)
-
+						price := item.GetPrice().StringFixedBank(e.opts.priceDecimals)
 						if _, ok := bookMap[price]; !ok {
-							bookMap[price] = types.Number(item.GetQuantity()).String(e.opts.quantityDecimals)
+							bookMap[price] = item.GetQuantity().StringFixedBank(e.opts.quantityDecimals)
 						} else {
-							old_qunantity, _ := decimal.NewFromString(bookMap[price])
-							//TODO process error
-							bookMap[price] = types.Number(old_qunantity.Add(item.GetQuantity())).String(e.opts.quantityDecimals)
+							old_qunantity, err := decimal.NewFromString(bookMap[price])
+							if err != nil {
+								e.logger.Sugar().Errorf("[matching] orderbook parse error: %v value: %v", err, bookMap[price])
+								continue
+							}
+							bookMap[price] = old_qunantity.Add(item.GetQuantity()).StringFixedBank(e.opts.quantityDecimals)
 						}
 					}
 

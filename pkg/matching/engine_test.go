@@ -105,7 +105,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(1.1))
 			So(trade.TradeQuantity, ShouldEqual, d(1.2))
 			//ask提供流动性，bid主动成交 trade_by=buyer
-			So(trade.TradeBy, ShouldEqual, types.ByBuyer)
+			So(trade.TradeBy, ShouldEqual, types.TradeByBuyer)
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}
@@ -133,7 +133,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			//bid提供流动性，ask主动成交 trade_by=seller
-			So(trade.TradeBy, ShouldEqual, types.BySeller)
+			So(trade.TradeBy, ShouldEqual, types.TradeBySeller)
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}

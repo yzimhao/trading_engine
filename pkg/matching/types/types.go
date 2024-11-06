@@ -9,7 +9,6 @@ import (
 type OrderType string
 type OrderSide string
 type TradeBy int
-type Number decimal.Decimal
 
 const (
 	OrderTypeLimit          OrderType = "limit"
@@ -18,8 +17,8 @@ const (
 	OrderTypeMarketAmount   OrderType = "market_amount"
 	OrderSideBuy            OrderSide = "BID"
 	OrderSideSell           OrderSide = "ASK"
-	BySeller                TradeBy   = 1
-	ByBuyer                 TradeBy   = 2
+	TradeBySeller           TradeBy   = 1
+	TradeByBuyer            TradeBy   = 2
 )
 
 func (os OrderSide) String() string {
@@ -66,23 +65,4 @@ type RemoveResult struct {
 	Symbol   string     `json:"symbol"`
 	UniqueId string     `json:"unique_id"`
 	Type     RemoveType `json:"type"`
-}
-
-func NewNumberFromstr(d string) (Number, error) {
-	num, err := decimal.NewFromString(d)
-	if err != nil {
-		return Number{}, err
-	}
-	return Number(num), nil
-}
-
-func (n Number) String(places int32) string {
-	if places < 0 {
-		return decimal.Decimal(n).String()
-	}
-	if places > 0 {
-		d := decimal.Decimal(n).Truncate(places)
-		return d.StringFixed(places)
-	}
-	return decimal.Decimal(n).String()
 }

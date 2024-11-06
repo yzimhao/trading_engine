@@ -64,12 +64,10 @@ func NewQueue() *OrderQueue {
 }
 
 type OrderQueue struct {
-	pq *PriorityQueue
-	m  map[string]*QueueItem
-	sync.Mutex
-
-	orderBook [][2]string
-
+	pq            *PriorityQueue
+	m             map[string]*QueueItem
+	mx            sync.Mutex
+	orderBook     [][2]string
 	onEventUpdate func(QueueItem)
 	onEventRemove func(QueueItem)
 }
@@ -79,8 +77,8 @@ func (o *OrderQueue) Len() int {
 }
 
 func (o *OrderQueue) Push(item QueueItem) (exist bool) {
-	o.Lock()
-	defer o.Unlock()
+	o.mx.Lock()
+	defer o.mx.Unlock()
 
 	id := item.GetUniqueId()
 	if _, ok := o.m[id]; ok {
@@ -110,8 +108,8 @@ func (o *OrderQueue) Top() QueueItem {
 }
 
 func (o *OrderQueue) Remove(uniqId string) QueueItem {
-	o.Lock()
-	defer o.Unlock()
+	o.mx.Lock()
+	defer o.mx.Unlock()
 
 	old, ok := o.m[uniqId]
 	if !ok {
@@ -137,8 +135,8 @@ func (o *OrderQueue) SetQuantity(obj QueueItem, qty decimal.Decimal) QueueItem {
 }
 
 func (o *OrderQueue) clean() {
-	o.Lock()
-	defer o.Unlock()
+	o.mx.Lock()
+	defer o.mx.Unlock()
 
 	pq := make(PriorityQueue, 0)
 	heap.Init(&pq)

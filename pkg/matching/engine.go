@@ -192,6 +192,9 @@ func (e *Engine) BidQueue() *OrderQueue {
 
 func (e *Engine) Clean() {
 	if e.opts.debug {
+		e.mx.Lock()
+		defer e.mx.Unlock()
+
 		e.asks.clean()
 		e.bids.clean()
 	}
@@ -234,9 +237,9 @@ func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal
 	}
 
 	if ask.GetCreateTime() < bid.GetCreateTime() {
-		tradeResult.TradeBy = types.ByBuyer
+		tradeResult.TradeBy = types.TradeByBuyer
 	} else {
-		tradeResult.TradeBy = types.BySeller
+		tradeResult.TradeBy = types.TradeBySeller
 	}
 
 	// if tradeAt > e.latestPriceAt {
