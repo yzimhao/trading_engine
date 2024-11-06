@@ -67,6 +67,7 @@ func (s *Matching) InitEngine() {
 			opts := []matching.Option{
 				matching.WithPriceDecimals(int32(tradeVariety.PriceDecimals)),
 				matching.WithQuantityDecimals(int32(tradeVariety.QtyDecimals)),
+				// matching.WithLogger(s.logger),
 			}
 			engine := matching.NewEngine(context.Background(), tradeVariety.Symbol, opts...)
 
@@ -143,7 +144,7 @@ func (s *Matching) OnNotifyCancelOrder(ctx context.Context, event broker.Event) 
 		s.logger.Sugar().Errorf("matching engine not found for symbol: %s", data.Symbol)
 		return nil
 	}
-	engine.RemoveItem(data.OrderSide, data.OrderId)
+	engine.RemoveItem(data.OrderSide, data.OrderId, matching_types.RemoveTypeByUser)
 	return nil
 }
 

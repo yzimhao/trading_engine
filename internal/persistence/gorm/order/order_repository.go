@@ -81,15 +81,15 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		//冻结资产
 		if data.OrderSide == matching_types.OrderSideSell {
 			data.FreezeQty = data.Quantity
-			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
+			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Numeric(data.Quantity))
 			if err != nil {
 				return err
 			}
 		} else {
-			amount := models_types.Amount(data.Price).Mul(models_types.Amount(data.Quantity))
-			fee := amount.Mul(models_types.Amount(data.FeeRate))
+			amount := models_types.Numeric(data.Price).Mul(models_types.Numeric(data.Quantity))
+			fee := amount.Mul(models_types.Numeric(data.FeeRate))
 			data.FreezeAmount = amount.Add(fee).String()
-			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.FreezeAmount))
+			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Numeric(data.FreezeAmount))
 			if err != nil {
 				return err
 			}
@@ -141,19 +141,19 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		if data.OrderSide == matching_types.OrderSideSell {
-			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount("0"))
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.NumericZero)
 			if err != nil {
 				return err
 			}
 			data.FreezeQty = f.FreezeAmount.String()
 		} else {
-			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount(data.Amount))
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Numeric(data.Amount))
 			if err != nil {
 				return err
 			}
 			data.FreezeAmount = f.FreezeAmount.String()
-			fee := models_types.Amount(data.FreezeAmount).Mul(models_types.Amount(data.FeeRate))
-			data.Amount = models_types.Amount(data.FreezeAmount).Sub(fee).String()
+			fee := models_types.Numeric(data.FreezeAmount).Mul(models_types.Numeric(data.FeeRate))
+			data.Amount = models_types.Numeric(data.FreezeAmount).Sub(fee).String()
 		}
 
 		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
@@ -197,13 +197,13 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		if data.OrderSide == matching_types.OrderSideSell {
-			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount(data.Quantity))
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Numeric(data.Quantity))
 			if err != nil {
 				return err
 			}
 			data.FreezeQty = f.FreezeAmount.String()
 		} else {
-			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount("0"))
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.NumericZero)
 			if err != nil {
 				return err
 			}
@@ -248,12 +248,12 @@ func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, c
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		//解冻资产
 		if order.OrderSide == matching_types.OrderSideSell {
-			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.TargetVariety.Symbol, models_types.Amount("0"))
+			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.TargetVariety.Symbol, models_types.NumericZero)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.BaseVariety.Symbol, models_types.Amount("0"))
+			err := o.assetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, tradeInfo.BaseVariety.Symbol, models_types.NumericZero)
 			if err != nil {
 				return err
 			}

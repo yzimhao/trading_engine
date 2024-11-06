@@ -26,9 +26,9 @@ const (
 type Asset struct {
 	UUID
 	Base
-	UserId        string       `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`
-	Symbol        string       `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"symbol"`
-	TotalBalance  types.Amount `gorm:"type:decimal(40,20);default:0;not null" json:"total_balance"`
-	FreezeBalance types.Amount `gorm:"type:decimal(40,20);default:0;not null" json:"freeze_balance"`
-	AvailBalance  types.Amount `gorm:"type:decimal(40,20);default:0;not null" json:"avail_balance"`
+	UserId        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`
+	Symbol        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"symbol"`
+	TotalBalance  types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"total_balance"`
+	FreezeBalance types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"freeze_balance"`
+	AvailBalance  types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"avail_balance"`
 }

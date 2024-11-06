@@ -8,6 +8,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -69,46 +70,87 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 		return
 	}
 
-	var order *entities.Order
-	var err error
+	var (
+		order *entities.Order
+		err   error
+		event models_types.EventOrderNew
+	)
+
+	event = models_types.EventOrderNew{
+		Symbol:    order.Symbol,
+		OrderId:   order.OrderId,
+		OrderSide: order.OrderSide,
+		OrderType: order.OrderType,
+	}
+
 	if req.OrderType == matching_types.OrderTypeLimit {
 		if req.Price == nil || req.Quantity == nil {
 			common.ResponseError(c, errors.New("price and quantity are required"))
 			return
 		}
 		order, err = ctrl.repo.CreateLimit(context.Background(), userId, req.Symbol, req.Side, *req.Price, *req.Quantity)
+		if err != nil {
+			ctrl.logger.Error("create limit order error", zap.Error(err), zap.Any("req", req))
+			common.ResponseError(c, err)
+			return
+		}
+
+		event.Price = func() *decimal.Decimal {
+			p := models_types.Numeric(order.Price).Decimal()
+			return &p
+		}()
+
+		event.Quantity = func() *decimal.Decimal {
+			q := models_types.Numeric(order.Quantity).Decimal()
+			return &q
+		}()
+
 	} else {
 		if req.Amount == nil && req.Quantity == nil {
 			common.ResponseError(c, errors.New("amount or quantity is required"))
 			return
 		}
 
-		if req.Amount != nil && models_types.Amount(*req.Amount).Cmp(models_types.Amount("0")) > 0 {
+		if req.Amount != nil && models_types.Numeric(*req.Amount).Cmp(models_types.NumericZero) > 0 {
 			order, err = ctrl.repo.CreateMarketByAmount(context.Background(), userId, req.Symbol, req.Side, *req.Amount)
+			if err != nil {
+				ctrl.logger.Error("create market by amount order error", zap.Error(err), zap.Any("req", req))
+				common.ResponseError(c, err)
+				return
+			}
+
+			event.Amount = func() *decimal.Decimal {
+				a := models_types.Numeric(order.Amount).Decimal()
+				return &a
+			}()
+			event.MaxAmount = func() *decimal.Decimal {
+				a := models_types.Numeric(order.FreezeAmount).Decimal()
+				return &a
+			}()
 		} else {
 			order, err = ctrl.repo.CreateMarketByQty(context.Background(), userId, req.Symbol, req.Side, *req.Quantity)
+			if err != nil {
+				ctrl.logger.Error("create market by qty order error", zap.Error(err), zap.Any("req", req))
+				common.ResponseError(c, err)
+				return
+			}
+
+			event.Quantity = func() *decimal.Decimal {
+				q := models_types.Numeric(order.Quantity).Decimal()
+				return &q
+			}()
+			event.MaxQty = func() *decimal.Decimal {
+				q := models_types.Numeric(order.FreezeQty).Decimal()
+				return &q
+			}()
 		}
 	}
-	if err != nil {
-		ctrl.logger.Error("create order error", zap.Error(err))
-		common.ResponseError(c, err)
-		return
-	}
 
-	event := models_types.EventOrderNew{
-		Symbol:    order.Symbol,
-		OrderId:   order.OrderId,
-		OrderSide: order.OrderSide,
-		OrderType: order.OrderType,
-		Price:     &order.Price,
-		Quantity:  &order.Quantity,
-		Amount:    &order.Amount,
-		NanoTime:  order.NanoTime,
-	}
-
+	event.OrderId = order.OrderId
+	event.NanoTime = order.NanoTime
 	body, err := json.Marshal(event)
 	if err != nil {
-		ctrl.logger.Error("marshal order created event error", zap.Error(err))
+		ctrl.logger.Error("marshal order created event error", zap.Error(err), zap.Any("event", event))
 		common.ResponseError(c, err)
 		return
 	}

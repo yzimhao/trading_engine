@@ -128,14 +128,15 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 }
 
 func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
+	price := tradeResult.TradePrice.String()
 
 	if cacheData.Data.Open == nil {
-		cacheData.Data.Open = &tradeResult.TradePrice
+		cacheData.Data.Open = &price
 		cacheData.OpenLastTime = tradeResult.TradeTime
 	} else {
 
 		if tradeResult.TradeTime < cacheData.OpenLastTime {
-			cacheData.Data.Open = &tradeResult.TradePrice
+			cacheData.Data.Open = &price
 			cacheData.OpenLastTime = tradeResult.TradeTime
 		}
 	}
@@ -144,12 +145,13 @@ func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResul
 }
 
 func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	if cacheData.Data.High == nil {
-		cacheData.Data.High = &tradeResult.TradePrice
-	} else {
+	price := tradeResult.TradePrice.String()
 
-		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.Data.High)) > 0 {
-			cacheData.Data.High = &tradeResult.TradePrice
+	if cacheData.Data.High == nil {
+		cacheData.Data.High = &price
+	} else {
+		if tradeResult.TradePrice.Cmp(k.formatD(*cacheData.Data.High)) > 0 {
+			cacheData.Data.High = &price
 		}
 	}
 
@@ -157,12 +159,14 @@ func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResul
 }
 
 func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
+	price := tradeResult.TradePrice.String()
+
 	if cacheData.Data.Low == nil {
-		cacheData.Data.Low = &tradeResult.TradePrice
+		cacheData.Data.Low = &price
 	} else {
 
-		if k.formatD(tradeResult.TradePrice).Cmp(k.formatD(*cacheData.Data.Low)) < 0 {
-			cacheData.Data.Low = &tradeResult.TradePrice
+		if tradeResult.TradePrice.Cmp(k.formatD(*cacheData.Data.Low)) < 0 {
+			cacheData.Data.Low = &price
 		}
 	}
 
@@ -170,13 +174,15 @@ func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult
 }
 
 func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
+	price := tradeResult.TradePrice.String()
+
 	if cacheData.Data.Close == nil {
-		cacheData.Data.Close = &tradeResult.TradePrice
+		cacheData.Data.Close = &price
 		cacheData.CloseLastTime = tradeResult.TradeTime
 	} else {
 
 		if tradeResult.TradeTime > cacheData.CloseLastTime {
-			cacheData.Data.Close = &tradeResult.TradePrice
+			cacheData.Data.Close = &price
 			cacheData.CloseLastTime = tradeResult.TradeTime
 		}
 	}
@@ -184,17 +190,19 @@ func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResu
 }
 
 func (k *kLine) getVolume(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
+	quantity := tradeResult.TradeQuantity.String()
+
 	if cacheData.Data.Volume == nil {
-		cacheData.Data.Volume = &tradeResult.TradeQuantity
+		cacheData.Data.Volume = &quantity
 	} else {
-		volume := k.formatD(*cacheData.Data.Volume).Add(k.formatD(tradeResult.TradeQuantity)).String()
+		volume := k.formatD(*cacheData.Data.Volume).Add(tradeResult.TradeQuantity).String()
 		cacheData.Data.Volume = &volume
 	}
 	return cacheData.Data.Volume
 }
 
 func (k *kLine) getAmount(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	amount := k.formatD(tradeResult.TradePrice).Mul(k.formatD(tradeResult.TradeQuantity)).String()
+	amount := tradeResult.TradePrice.Mul(tradeResult.TradeQuantity).String()
 
 	if cacheData.Data.Amount == nil {
 		cacheData.Data.Amount = &amount

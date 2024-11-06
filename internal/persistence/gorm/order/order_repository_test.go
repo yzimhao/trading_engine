@@ -102,5 +102,5 @@ func (suite *orderRepoTest) TestCreateLimitOrder() {
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(assetFreezes))
-	suite.Require().Equal(models_types.Amount("10.1").Cmp(models_types.Amount(assetFreezes[0].FreezeAmount)), 0)
+	suite.Require().Equal(models_types.Numeric("10.1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
 }

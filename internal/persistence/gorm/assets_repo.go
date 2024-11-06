@@ -88,7 +88,7 @@ func newAssetFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.C
 	}
 }
 
-func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Amount) error {
+func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol str
 	})
 }
 
-func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Amount) error {
+func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
@@ -111,7 +111,7 @@ func (r *gormAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol st
 }
 
 // 两个user之间的转账
-func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Amount) error {
+func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Numeric) error {
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err
@@ -126,8 +126,8 @@ func (r *gormAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol 
 
 // 冻结资产
 // 这里使用tx传入，方便在结算的时候事务中使用
-func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) (*entities.AssetFreeze, error) {
-	if amount.Cmp(types.Amount("0")) < 0 {
+func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Numeric) (*entities.AssetFreeze, error) {
+	if amount.Cmp(types.NumericZero) < 0 {
 		return nil, errors.New("amount must be >= 0")
 	}
 
@@ -137,14 +137,14 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 	}
 
 	//冻结金额为0，冻结全部可用
-	if amount.Cmp(types.Amount("0")) == 0 {
+	if amount.Cmp(types.NumericZero) == 0 {
 		amount = asset.AvailBalance
 	}
 
 	asset.AvailBalance = asset.AvailBalance.Sub(amount)
 	asset.FreezeBalance = asset.FreezeBalance.Add(amount)
 
-	if asset.AvailBalance.Cmp(types.Amount("0")) < 0 {
+	if asset.AvailBalance.Cmp(types.NumericZero) < 0 {
 		return nil, errors.New("insufficient balance")
 	}
 
@@ -170,8 +170,8 @@ func (r *gormAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 
 // 解冻资产
 // amount为0，则解冻这条记录的全部剩余
-func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Amount) error {
-	if amount.Cmp(types.Amount("0")) < 0 {
+func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Numeric) error {
+	if amount.Cmp(types.NumericZero) < 0 {
 		return errors.New("amount must be > 0")
 	}
 
@@ -185,12 +185,12 @@ func (r *gormAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 	}
 
 	//解冻金额为0，则全部金额解冻
-	if amount.Cmp(types.Amount("0")) == 0 {
+	if amount.Cmp(types.NumericZero) == 0 {
 		amount = freeze.FreezeAmount
 	}
 
 	freeze.FreezeAmount = freeze.FreezeAmount.Sub(amount)
-	if freeze.FreezeAmount.Cmp(types.Amount("0")) == 0 {
+	if freeze.FreezeAmount.Cmp(types.NumericZero) == 0 {
 		freeze.Status = entities.FreezeStatusDone
 	}
 
@@ -219,16 +219,16 @@ func (r *gormAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) 
 	return data, err
 }
 
-func (r *gormAssetRepo) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Amount) error {
+func (r *gormAssetRepo) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Numeric) error {
 	return r.transfer(ctx, tx, symbol, from, to, amount, transId)
 }
 
-func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Amount, transId string) error {
+func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Numeric, transId string) error {
 	if from == to {
 		return errors.New("from and to cannot be the same")
 	}
 
-	if amount.Cmp(types.Amount("0")) <= 0 {
+	if amount.Cmp(types.NumericZero) <= 0 {
 		return errors.New("amount must be greater than 0")
 	}
 
@@ -249,7 +249,7 @@ func (r *gormAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from,
 	fromAsset.AvailBalance = fromAsset.AvailBalance.Sub(amount)
 
 	if fromAsset.UserId != entities.SYSTEM_USER_ROOT {
-		if fromAsset.AvailBalance.Cmp(types.Amount("0")) < 0 {
+		if fromAsset.AvailBalance.Cmp(types.NumericZero) < 0 {
 			return errors.New("insufficient balance")
 		}
 	}

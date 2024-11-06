@@ -11,6 +11,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -23,7 +24,8 @@ type SettleProcessor struct {
 	assetRepo        persistence.AssetRepository
 }
 
-type inContext struct {
+type inSettleContext struct {
+	fx.In
 	DB               *gorm.DB
 	Logger           *zap.Logger
 	Cache            cache.Cache
@@ -31,7 +33,7 @@ type inContext struct {
 	AssetRepo        persistence.AssetRepository
 }
 
-func NewSettleProcessor(in inContext) *SettleProcessor {
+func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 	return &SettleProcessor{
 		db:               in.DB,
 		logger:           in.Logger,
@@ -120,7 +122,7 @@ func (s *SettleProcessor) checkOrder(tx *gorm.DB, tradeResult matching_types.Tra
 
 func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.TradeResult, askOrder, bidOrder *entities.Order) (*entities.TradeLog, error) {
 
-	amount := models_types.Amount(tradeResult.TradeQuantity).Mul(models_types.Amount(tradeResult.TradePrice))
+	amount := models_types.Numeric(tradeResult.TradeQuantity.Mul(tradeResult.TradePrice).String())
 
 	tradeLog := entities.TradeLog{
 		Symbol:     tradeResult.Symbol,
@@ -130,13 +132,13 @@ func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.
 		TradeBy:    tradeResult.TradeBy,
 		AskUid:     askOrder.UserId,
 		BidUid:     askOrder.UserId,
-		Price:      tradeResult.TradePrice,
-		Quantity:   tradeResult.TradeQuantity,
+		Price:      tradeResult.TradePrice.String(),
+		Quantity:   tradeResult.TradeQuantity.String(),
 		Amount:     amount.String(),
 		AskFeeRate: askOrder.FeeRate,
-		AskFee:     amount.Mul(models_types.Amount(askOrder.FeeRate)).String(),
+		AskFee:     amount.Mul(models_types.Numeric(askOrder.FeeRate)).String(),
 		BidFeeRate: bidOrder.FeeRate,
-		BidFee:     amount.Mul(models_types.Amount(bidOrder.FeeRate)).String(),
+		BidFee:     amount.Mul(models_types.Numeric(bidOrder.FeeRate)).String(),
 	}
 
 	if err := tx.Table(tradeLog.TableName()).Create(&tradeLog).Error; err != nil {
@@ -147,19 +149,19 @@ func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.
 
 func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.TradeLog, askOrder *entities.Order, remainderMarketOrderId string) error {
 
-	askOrder.Fee = models_types.Amount(askOrder.Fee).Add(models_types.Amount(tradeLog.AskFee)).String()
-	askOrder.FinishedQty = models_types.Amount(askOrder.FinishedQty).Add(models_types.Amount(tradeLog.Quantity)).String()
-	askOrder.FinishedAmount = models_types.Amount(askOrder.FinishedAmount).Add(models_types.Amount(tradeLog.Amount)).String()
-	askOrder.AvgPrice = models_types.Amount(askOrder.FinishedAmount).Div(models_types.Amount(askOrder.FinishedQty)).String()
+	askOrder.Fee = models_types.Numeric(askOrder.Fee).Add(models_types.Numeric(tradeLog.AskFee)).String()
+	askOrder.FinishedQty = models_types.Numeric(askOrder.FinishedQty).Add(models_types.Numeric(tradeLog.Quantity)).String()
+	askOrder.FinishedAmount = models_types.Numeric(askOrder.FinishedAmount).Add(models_types.Numeric(tradeLog.Amount)).String()
+	askOrder.AvgPrice = models_types.Numeric(askOrder.FinishedAmount).Div(models_types.Numeric(askOrder.FinishedQty)).String()
 	//初始状态为部分成交
 	askOrder.Status = models_types.OrderStatusPartialFill
 
 	if askOrder.OrderType == matching_types.OrderTypeLimit {
-		be := models_types.Amount(askOrder.FinishedQty).Cmp(models_types.Amount(askOrder.Quantity))
-		if be > 0 {
+		cmp := models_types.Numeric(askOrder.FinishedQty).Cmp(models_types.Numeric(askOrder.Quantity))
+		if cmp > 0 {
 			return fmt.Errorf("invalid ask order finished qty")
 		}
-		if be == 0 {
+		if cmp == 0 {
 			askOrder.Status = models_types.OrderStatusFilled
 		}
 
@@ -180,7 +182,7 @@ func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 		}
 	} else {
 		//市价单结算
-		if models_types.Amount(askOrder.Quantity).Equal(models_types.Amount(askOrder.FinishedQty)) || models_types.Amount(askOrder.Amount).Equal(models_types.Amount(askOrder.FinishedAmount)) {
+		if models_types.Numeric(askOrder.Quantity).Equal(models_types.Numeric(askOrder.FinishedQty)) || models_types.Numeric(askOrder.Amount).Equal(models_types.Numeric(askOrder.FinishedAmount)) {
 			askOrder.Status = models_types.OrderStatusFilled
 		}
 
@@ -198,19 +200,19 @@ func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 
 func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.TradeLog, bidOrder *entities.Order, remainderMarketOrderId string) error {
 
-	bidOrder.Fee = models_types.Amount(bidOrder.Fee).Add(models_types.Amount(tradeLog.BidFee)).String()
-	bidOrder.FinishedQty = models_types.Amount(bidOrder.FinishedQty).Add(models_types.Amount(tradeLog.Quantity)).String()
-	bidOrder.FinishedAmount = models_types.Amount(bidOrder.FinishedAmount).Add(models_types.Amount(tradeLog.Amount)).String()
-	bidOrder.AvgPrice = models_types.Amount(bidOrder.FinishedAmount).Div(models_types.Amount(bidOrder.FinishedQty)).String()
+	bidOrder.Fee = models_types.Numeric(bidOrder.Fee).Add(models_types.Numeric(tradeLog.BidFee)).String()
+	bidOrder.FinishedQty = models_types.Numeric(bidOrder.FinishedQty).Add(models_types.Numeric(tradeLog.Quantity)).String()
+	bidOrder.FinishedAmount = models_types.Numeric(bidOrder.FinishedAmount).Add(models_types.Numeric(tradeLog.Amount)).String()
+	bidOrder.AvgPrice = models_types.Numeric(bidOrder.FinishedAmount).Div(models_types.Numeric(bidOrder.FinishedQty)).String()
 	//初始状态为部分成交
 	bidOrder.Status = models_types.OrderStatusPartialFill
 
 	if bidOrder.OrderType == matching_types.OrderTypeLimit {
-		be := models_types.Amount(bidOrder.FinishedQty).Cmp(models_types.Amount(bidOrder.Quantity))
-		if be > 0 {
+		cmp := models_types.Numeric(bidOrder.FinishedQty).Cmp(models_types.Numeric(bidOrder.Quantity))
+		if cmp > 0 {
 			return fmt.Errorf("invalid bid order finished qty")
 		}
-		if be == 0 {
+		if cmp == 0 {
 			bidOrder.Status = models_types.OrderStatusFilled
 		}
 
@@ -232,7 +234,7 @@ func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 		}
 	} else {
 		//市价单结算
-		if models_types.Amount(bidOrder.Quantity).Equal(models_types.Amount(bidOrder.FinishedQty)) || models_types.Amount(bidOrder.Amount).Equal(models_types.Amount(bidOrder.FinishedAmount)) {
+		if models_types.Numeric(bidOrder.Quantity).Equal(models_types.Numeric(bidOrder.FinishedQty)) || models_types.Numeric(bidOrder.Amount).Equal(models_types.Numeric(bidOrder.FinishedAmount)) {
 			bidOrder.Status = models_types.OrderStatusFilled
 		}
 
@@ -259,13 +261,13 @@ func (s *SettleProcessor) orderDelivery(
 	// 1.解冻卖家的冻结数量
 	// 2.将解冻的数量转移给买家
 	err := s.assetRepo.UnFreeze(ctx, tx, tradeLog.TradeId, ask.UserId,
-		tradePairInfo.TargetVariety.Symbol, models_types.Amount(tradeLog.Quantity))
+		tradePairInfo.TargetVariety.Symbol, models_types.Numeric(tradeLog.Quantity))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery target variety unFreeze: %v %s", tradeLog, err.Error())
 		return err
 	}
 	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, bid.UserId,
-		tradePairInfo.TargetVariety.Symbol, models_types.Amount(tradeLog.Quantity))
+		tradePairInfo.TargetVariety.Symbol, models_types.Numeric(tradeLog.Quantity))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery target variety transfer: %v %s", tradeLog, err.Error())
 		return err
@@ -274,17 +276,17 @@ func (s *SettleProcessor) orderDelivery(
 	//卖家结算本位币
 	// 1.解冻买家冻结的金额
 	// 2.将解冻的金额扣除双方手续费后，转入卖家账户
-	amount := models_types.Amount(tradeLog.Amount)
+	amount := models_types.Numeric(tradeLog.Amount)
 	err = s.assetRepo.UnFreeze(ctx, tx,
 		tradeLog.TradeId, bid.UserId, tradePairInfo.BaseVariety.Symbol,
-		amount.Add(models_types.Amount(tradeLog.AskFee).Add(models_types.Amount(tradeLog.BidFee))))
+		amount.Add(models_types.Numeric(tradeLog.AskFee).Add(models_types.Numeric(tradeLog.BidFee))))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety unFreeze: %v %s", tradeLog, err.Error())
 		return err
 	}
 
 	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, ask.UserId,
-		tradePairInfo.BaseVariety.Symbol, amount.Sub(models_types.Amount(tradeLog.AskFee)))
+		tradePairInfo.BaseVariety.Symbol, amount.Sub(models_types.Numeric(tradeLog.AskFee)))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety transfer: %v %s", tradeLog, err.Error())
 		return err
@@ -292,7 +294,7 @@ func (s *SettleProcessor) orderDelivery(
 
 	//ask手续费收入到系统账号里
 	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, entities.SYSTEM_USER_FEE,
-		tradePairInfo.BaseVariety.Symbol, models_types.Amount(tradeLog.AskFee))
+		tradePairInfo.BaseVariety.Symbol, models_types.Numeric(tradeLog.AskFee))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery ask fee transfer: %v %s", tradeLog, err.Error())
 		return err
@@ -300,7 +302,7 @@ func (s *SettleProcessor) orderDelivery(
 
 	//bid的手续费收入到系统账号里
 	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, entities.SYSTEM_USER_FEE,
-		tradePairInfo.BaseVariety.Symbol, models_types.Amount(tradeLog.BidFee))
+		tradePairInfo.BaseVariety.Symbol, models_types.Numeric(tradeLog.BidFee))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery bid fee transfer: %v %s", tradeLog, err.Error())
 		return err

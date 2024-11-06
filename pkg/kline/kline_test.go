@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
@@ -55,8 +56,8 @@ func (suite *klineTest) Test_GetKLine() {
 					Symbol:        suite.symbol,
 					AskOrderId:    "ask1",
 					BidOrderId:    "bid1",
-					TradePrice:    "1.00",
-					TradeQuantity: "10",
+					TradePrice:    decimal.NewFromFloat(1.00),
+					TradeQuantity: decimal.NewFromFloat(10),
 					TradeTime:     tradeTime.UnixNano(),
 				}
 				kline, err := suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult)
@@ -81,8 +82,8 @@ func (suite *klineTest) Test_GetKLine() {
 					Symbol:        suite.symbol,
 					AskOrderId:    "ask1",
 					BidOrderId:    "bid1",
-					TradePrice:    "1.00",
-					TradeQuantity: "10",
+					TradePrice:    decimal.NewFromFloat(1.00),
+					TradeQuantity: decimal.NewFromFloat(10),
 					TradeTime:     tradeTime.UnixNano(),
 				}
 
@@ -92,8 +93,8 @@ func (suite *klineTest) Test_GetKLine() {
 					Symbol:        suite.symbol,
 					AskOrderId:    "ask1",
 					BidOrderId:    "bid1",
-					TradePrice:    "2.00",
-					TradeQuantity: "10",
+					TradePrice:    decimal.NewFromFloat(2.00),
+					TradeQuantity: decimal.NewFromFloat(10),
 					TradeTime:     tradeTime1.UnixNano(),
 				}
 
@@ -103,8 +104,8 @@ func (suite *klineTest) Test_GetKLine() {
 					Symbol:        suite.symbol,
 					AskOrderId:    "ask1",
 					BidOrderId:    "bid1",
-					TradePrice:    "0.95",
-					TradeQuantity: "10",
+					TradePrice:    decimal.NewFromFloat(0.95),
+					TradeQuantity: decimal.NewFromFloat(10),
 					TradeTime:     tradeTime2.UnixNano(),
 				}
 

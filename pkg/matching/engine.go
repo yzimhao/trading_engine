@@ -32,7 +32,7 @@ func defaultOptions() *options {
 		pauseAcceptItem:  false,
 		pauseMatching:    false,
 		orderBookMaxLen:  50,
-		logger:           zap.NewExample(),
+		logger:           zap.NewNop(),
 	}
 }
 

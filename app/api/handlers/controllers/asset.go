@@ -47,7 +47,7 @@ func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 
 	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Despoit(ctx, transId, req.UserId, req.Symbol, types.Amount(req.Amount)); err != nil {
+	if err := ctrl.repo.Despoit(ctx, transId, req.UserId, req.Symbol, types.Numeric(req.Amount)); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
@@ -81,7 +81,7 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 
 	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Withdraw(ctx, transId, req.UserId, req.Symbol, types.Amount(req.Amount)); err != nil {
+	if err := ctrl.repo.Withdraw(ctx, transId, req.UserId, req.Symbol, types.Numeric(req.Amount)); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
@@ -150,7 +150,7 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 
 	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Transfer(ctx, transId, req.From, req.To, req.Symbol, types.Amount(req.Amount)); err != nil {
+	if err := ctrl.repo.Transfer(ctx, transId, req.From, req.To, req.Symbol, types.Numeric(req.Amount)); err != nil {
 		common.ResponseError(c, err)
 		return
 	}

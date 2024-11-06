@@ -16,6 +16,7 @@ import (
 	types "github.com/duolacloud/crud-core/types"
 	asset "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	types0 "github.com/yzimhao/trading_engine/v2/internal/models/types"
+	entities "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 )
@@ -150,7 +151,7 @@ func (mr *MockAssetRepositoryMockRecorder) Delete(c, id any, opts ...any) *gomoc
 }
 
 // Despoit mocks base method.
-func (m *MockAssetRepository) Despoit(ctx context.Context, transId, userId, symbol string, amount types0.Amount) error {
+func (m *MockAssetRepository) Despoit(ctx context.Context, transId, userId, symbol string, amount types0.Numeric) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Despoit", ctx, transId, userId, symbol, amount)
 	ret0, _ := ret[0].(error)
@@ -164,11 +165,12 @@ func (mr *MockAssetRepositoryMockRecorder) Despoit(ctx, transId, userId, symbol,
 }
 
 // Freeze mocks base method.
-func (m *MockAssetRepository) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types0.Amount) error {
+func (m *MockAssetRepository) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types0.Numeric) (*entities.AssetFreeze, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Freeze", ctx, tx, transId, userId, symbol, amount)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(*entities.AssetFreeze)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Freeze indicates an expected call of Freeze.
@@ -212,6 +214,21 @@ func (mr *MockAssetRepositoryMockRecorder) Query(c, query any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockAssetRepository)(nil).Query), c, query)
 }
 
+// QueryFreeze mocks base method.
+func (m *MockAssetRepository) QueryFreeze(ctx context.Context, filter map[string]any) ([]*asset.AssetFreeze, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueryFreeze", ctx, filter)
+	ret0, _ := ret[0].([]*asset.AssetFreeze)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryFreeze indicates an expected call of QueryFreeze.
+func (mr *MockAssetRepositoryMockRecorder) QueryFreeze(ctx, filter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryFreeze", reflect.TypeOf((*MockAssetRepository)(nil).QueryFreeze), ctx, filter)
+}
+
 // QueryOne mocks base method.
 func (m *MockAssetRepository) QueryOne(c context.Context, filter map[string]any) (*asset.Asset, error) {
 	m.ctrl.T.Helper()
@@ -228,7 +245,7 @@ func (mr *MockAssetRepositoryMockRecorder) QueryOne(c, filter any) *gomock.Call 
 }
 
 // Transfer mocks base method.
-func (m *MockAssetRepository) Transfer(ctx context.Context, transId, from, to, symbol string, amount types0.Amount) error {
+func (m *MockAssetRepository) Transfer(ctx context.Context, transId, from, to, symbol string, amount types0.Numeric) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Transfer", ctx, transId, from, to, symbol, amount)
 	ret0, _ := ret[0].(error)
@@ -241,8 +258,22 @@ func (mr *MockAssetRepositoryMockRecorder) Transfer(ctx, transId, from, to, symb
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transfer", reflect.TypeOf((*MockAssetRepository)(nil).Transfer), ctx, transId, from, to, symbol, amount)
 }
 
+// TransferWithTx mocks base method.
+func (m *MockAssetRepository) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types0.Numeric) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransferWithTx", ctx, tx, transId, from, to, symbol, amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransferWithTx indicates an expected call of TransferWithTx.
+func (mr *MockAssetRepositoryMockRecorder) TransferWithTx(ctx, tx, transId, from, to, symbol, amount any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferWithTx", reflect.TypeOf((*MockAssetRepository)(nil).TransferWithTx), ctx, tx, transId, from, to, symbol, amount)
+}
+
 // UnFreeze mocks base method.
-func (m *MockAssetRepository) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types0.Amount) error {
+func (m *MockAssetRepository) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types0.Numeric) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnFreeze", ctx, tx, transId, userId, symbol, amount)
 	ret0, _ := ret[0].(error)
@@ -276,7 +307,7 @@ func (mr *MockAssetRepositoryMockRecorder) Update(c, id, updateDTO any, opts ...
 }
 
 // Withdraw mocks base method.
-func (m *MockAssetRepository) Withdraw(ctx context.Context, transId, userId, symbol string, amount types0.Amount) error {
+func (m *MockAssetRepository) Withdraw(ctx context.Context, transId, userId, symbol string, amount types0.Numeric) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Withdraw", ctx, transId, userId, symbol, amount)
 	ret0, _ := ret[0].(error)
