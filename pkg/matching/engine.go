@@ -149,7 +149,7 @@ func (e *Engine) AddItem(item QueueItem) error {
 
 	return nil
 }
-func (e *Engine) RemoveItem(side types.OrderSide, unique string) {
+func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType types.RemoveType) {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 
@@ -160,7 +160,9 @@ func (e *Engine) RemoveItem(side types.OrderSide, unique string) {
 	}
 
 	e.removeNotify <- types.RemoveResult{
+		Symbol:   e.symbol,
 		UniqueId: unique,
+		Type:     removeType,
 	}
 }
 

@@ -122,16 +122,11 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 		}()
 
 		if !ok {
-			// t.ChCancelResult <- CancelBody{
-			// 	OrderId: item.GetUniqueId(),
-			// 	Reason: func() CancelType {
-			// 		if trade_cnt > 0 {
-			// 			return CancelTypeByPartial
-			// 		}
-			// 		//一个都没有成交则系统自动取消
-			// 		return CancelTypeBySystem
-			// 	}(),
-			// }
+			e.removeNotify <- types.RemoveResult{
+				Symbol:   e.symbol,
+				UniqueId: item.GetUniqueId(),
+				Type:     types.RemoveTypeBySystem,
+			}
 			break
 		} else {
 			trade_cnt++
@@ -231,16 +226,11 @@ func (e *Engine) processMarketSell(item QueueItem) {
 
 		if !ok {
 			//市价单都需要触发一个成交后取消剩余部分的信号
-			// t.ChCancelResult <- CancelBody{
-			// 	OrderId: item.GetUniqueId(),
-			// 	Reason: func() CancelType {
-			// 		if trade_cnt > 0 {
-			// 			return CancelTypeByPartial
-			// 		}
-			// 		//一个都没有成交则系统自动取消
-			// 		return CancelTypeBySystem
-			// 	}(),
-			// }
+			e.removeNotify <- types.RemoveResult{
+				Symbol:   e.symbol,
+				UniqueId: item.GetUniqueId(),
+				Type:     types.RemoveTypeBySystem,
+			}
 			break
 		} else {
 			trade_cnt++

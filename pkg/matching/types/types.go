@@ -63,8 +63,9 @@ func (t *TradeResult) UnmarshalBinary(data []byte) error {
 }
 
 type RemoveResult struct {
-	Symbol   string `json:"symbol"`
-	UniqueId string `json:"unique_id"`
+	Symbol   string     `json:"symbol"`
+	UniqueId string     `json:"unique_id"`
+	Type     RemoveType `json:"type"`
 }
 
 func NewNumberFromstr(d string) (Number, error) {
