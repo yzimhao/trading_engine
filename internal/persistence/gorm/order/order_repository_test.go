@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/duolacloud/crud-core/datasource"
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
@@ -13,6 +14,7 @@ import (
 	models_variety "github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	gorm_asset "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 	gorm_order "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/order"
 	mock_asset "github.com/yzimhao/trading_engine/v2/mocks/persistence/asset"
 	mock_trade_variety "github.com/yzimhao/trading_engine/v2/mocks/persistence/trade_variety"
@@ -20,6 +22,14 @@ import (
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
 	_gorm "gorm.io/gorm"
+)
+
+var (
+	testUser         = "1"
+	testSymbol       = "BTCUSDT"
+	testBaseSymbol   = "USDT"
+	testTargetSymbol = "BTC"
+	initBalance      = models_types.Numeric("10000")
 )
 
 type orderRepoTest struct {
@@ -42,7 +52,7 @@ func (suite *orderRepoTest) SetupTest() {
 	suite.ctrl = gomock.NewController(suite.T())
 	suite.v = di.NewViper()
 	suite.gorm = di.NewGorm(suite.v)
-	suite.logger = zap.NewNop()
+	suite.logger = zap.NewExample()
 	redis := di.NewRedis(suite.v, suite.logger)
 	cache, _ := di.NewCache(suite.v, redis)
 	logger := zap.NewNop()
@@ -64,6 +74,17 @@ func (suite *orderRepoTest) TearDownTest() {
 }
 
 func (suite *orderRepoTest) initMockData() {
+	tables := []any{
+		&entities.Asset{},
+		&entities.AssetFreeze{},
+		&entities.AssetLog{},
+	}
+
+	for _, table := range tables {
+		err := suite.gorm.Migrator().CreateTable(table)
+		suite.Require().NoError(err)
+	}
+
 	suite.mockTradeVarietyRepo.EXPECT().FindBySymbol(suite.ctx, "BTCUSDT").Return(&models_variety.TradeVariety{
 		ID:            1,
 		Symbol:        "BTCUSDT",
@@ -83,14 +104,38 @@ func (suite *orderRepoTest) initMockData() {
 		},
 	}, nil).AnyTimes()
 
-	// suite.assetRepo.Despoit(suite.ctx, uuid.New().String(), "user1", "BTC", models_types.Amount("10000"))
-	// suite.assetRepo.Despoit(suite.ctx, uuid.New().String(), "user1", "USDT", models_types.Amount("10000"))
+	suite.assetRepo.Despoit(suite.ctx, uuid.New().String(), testUser, testTargetSymbol, initBalance)
+	suite.assetRepo.Despoit(suite.ctx, uuid.New().String(), testUser, testBaseSymbol, initBalance)
 
 }
 
-func (suite *orderRepoTest) TestCreateLimitOrder() {
+func (suite *orderRepoTest) cleanMockData() {
+
+	tables := []any{
+		&entities.Asset{},
+		&entities.AssetFreeze{},
+		&entities.AssetLog{},
+		&entities.Order{Symbol: testSymbol},
+		&entities.UnfinishedOrder{},
+	}
+
+	for _, table := range tables {
+		indexes, err := suite.gorm.Migrator().GetIndexes(table)
+		suite.Require().NoError(err)
+		for _, index := range indexes {
+			err := suite.gorm.Migrator().DropIndex(table, index.Name())
+			suite.Require().NoError(err)
+		}
+		err = suite.gorm.Migrator().DropTable(table)
+		suite.Require().NoError(err)
+	}
+}
+
+func (suite *orderRepoTest) TestCreateLimitOrderSideBuy() {
+	suite.cleanMockData()
 	suite.initMockData()
-	order, err := suite.repo.CreateLimit(suite.ctx, "user1", "BTCUSDT", matching_types.OrderSideBuy, "10", "1")
+
+	order, err := suite.repo.CreateLimit(suite.ctx, testUser, testSymbol, matching_types.OrderSideBuy, "10", "1")
 	suite.Require().NoError(err)
 	suite.Require().NotNil(order)
 
@@ -104,3 +149,66 @@ func (suite *orderRepoTest) TestCreateLimitOrder() {
 	suite.Require().Equal(1, len(assetFreezes))
 	suite.Require().Equal(models_types.Numeric("10.1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
 }
+
+func (suite *orderRepoTest) TestCreateLimitOrderSideSell() {
+	suite.cleanMockData()
+	suite.initMockData()
+
+	order, err := suite.repo.CreateLimit(suite.ctx, testUser, testSymbol, matching_types.OrderSideSell, "10", "1")
+	suite.Require().NoError(err)
+	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(models_types.Numeric("1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
+}
+
+func (suite *orderRepoTest) TestCreateMarketOrderSideBuy_Qty() {
+	suite.cleanMockData()
+	suite.initMockData()
+
+	order, err := suite.repo.CreateMarketByQty(suite.ctx, testUser, testSymbol, matching_types.OrderSideBuy, "1")
+	suite.Require().NoError(err)
+	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(initBalance.Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
+	suite.Require().Equal(assetFreezes[0].FreezeAmount, order.FreezeAmount)
+}
+
+func (suite *orderRepoTest) TestCreateMarketOrderSideBuy_Amount() {
+	suite.cleanMockData()
+	suite.initMockData()
+
+	order, err := suite.repo.CreateMarketByAmount(suite.ctx, testUser, testSymbol, matching_types.OrderSideBuy, "1000")
+	suite.Require().NoError(err)
+	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(models_types.Numeric("1000").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
+	suite.Require().Equal(assetFreezes[0].FreezeAmount, order.FreezeAmount)
+}
+
+func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Qty() {}
+
+func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Amount() {}

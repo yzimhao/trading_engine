@@ -43,12 +43,12 @@ func NewOrderController(in inOrderContext) *OrderController {
 }
 
 type OrderCreateRequest struct {
-	Symbol    string                   `json:"symbol" binding:"required"`
-	Side      matching_types.OrderSide `json:"side" binding:"required"`
-	OrderType matching_types.OrderType `json:"order_type" binding:"required"`
+	Symbol    string                   `json:"symbol" binding:"required" example:"btcusdt"`
+	Side      matching_types.OrderSide `json:"side" binding:"required" example:"buy"`
+	OrderType matching_types.OrderType `json:"order_type" binding:"required" example:"limit"`
 	Price     *string                  `json:"price,omitempty" example:"1.00"`
 	Quantity  *string                  `json:"qty,omitempty" example:"12"`
-	Amount    *string                  `json:"amount,omitempty" example:"100.00"`
+	Amount    *string                  `json:"amount,omitempty"`
 }
 
 // @Summary create order
