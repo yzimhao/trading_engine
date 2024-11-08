@@ -1,10 +1,12 @@
 package persistence
 
 import (
-	"github.com/duolacloud/crud-core/repositories"
-	models "github.com/yzimhao/trading_engine/v2/internal/models/kline"
+	"context"
+
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 )
 
 type KlineRepository interface {
-	repositories.CrudRepository[models.Kline, models.CreateKline, models.UpdateKline]
+	// repositories.CrudRepository[models.Kline, models.CreateKline, models.UpdateKline]
+	Save(ctx context.Context, kline *entities.Kline) error
 }
