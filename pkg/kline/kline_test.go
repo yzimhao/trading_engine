@@ -37,7 +37,7 @@ func (suite *klineTest) SetupTest() {
 	logger := zap.NewNop()
 	redis := di.NewRedis(v, logger)
 	suite.symbol = "BTCUSDT"
-	suite.service = kline.NewKLine(redis, logger, suite.symbol)
+	suite.service = kline.NewKLine(redis, suite.symbol)
 }
 
 func (suite *klineTest) TearDownTest() {}
@@ -60,14 +60,14 @@ func (suite *klineTest) Test_GetKLine() {
 					TradeQuantity: decimal.NewFromFloat(10),
 					TradeTime:     tradeTime.UnixNano(),
 				}
-				kline, err := suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult)
+				kline, err := suite.service.GetFormattedData(suite.ctx, types.PERIOD_M1, tradeResult)
 				suite.Require().NoError(err)
-				suite.Equal(*kline.Open, "1.00")
-				suite.Equal(*kline.High, "1.00")
-				suite.Equal(*kline.Low, "1.00")
-				suite.Equal(*kline.Close, "1.00")
-				suite.Equal(*kline.Volume, "10")
-				suite.Equal(*kline.Amount, "10")
+				suite.Equal("1.00", *kline.Open)
+				suite.Equal("1.00", *kline.High)
+				suite.Equal("1.00", *kline.Low)
+				suite.Equal("1.00", *kline.Close)
+				suite.Equal("10.00", *kline.Volume)
+				suite.Equal("10.00", *kline.Amount)
 				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
 
 			},
@@ -109,18 +109,18 @@ func (suite *klineTest) Test_GetKLine() {
 					TradeTime:     tradeTime2.UnixNano(),
 				}
 
-				_, err = suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult)
+				_, err = suite.service.GetFormattedData(suite.ctx, types.PERIOD_M1, tradeResult)
 				suite.Require().NoError(err)
-				_, err = suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult1)
+				_, err = suite.service.GetFormattedData(suite.ctx, types.PERIOD_M1, tradeResult1)
 				suite.Require().NoError(err)
-				kline, err := suite.service.GetData(suite.ctx, types.PERIOD_M1, tradeResult2)
+				kline, err := suite.service.GetFormattedData(suite.ctx, types.PERIOD_M1, tradeResult2)
 				suite.Require().NoError(err)
-				suite.Equal(*kline.Open, "2.00")
-				suite.Equal(*kline.High, "2.00")
-				suite.Equal(*kline.Low, "0.95")
-				suite.Equal(*kline.Close, "0.95")
-				suite.Equal(*kline.Volume, "30")
-				suite.Equal(*kline.Amount, "39.5") //0.95 *10 + 2 *10 + 1* 10
+				suite.Equal("2.00", *kline.Open)
+				suite.Equal("2.00", *kline.High)
+				suite.Equal("0.95", *kline.Low)
+				suite.Equal("0.95", *kline.Close)
+				suite.Equal("30.00", *kline.Volume)
+				suite.Equal("39.50", *kline.Amount) //0.95 *10 + 2 *10 + 1* 10
 				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
 
 			},

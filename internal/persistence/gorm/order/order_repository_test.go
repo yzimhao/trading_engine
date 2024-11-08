@@ -205,8 +205,8 @@ func (suite *orderRepoTest) TestCreateMarketOrderSideBuy_Amount() {
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(assetFreezes))
-	suite.Require().Equal(models_types.Numeric("1000").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
-	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeAmount)), 0)
+	suite.Require().Equal(0, models_types.Numeric("1000").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)))
+	suite.Require().Equal(0, models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeAmount)))
 }
 
 func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Qty() {
@@ -225,8 +225,8 @@ func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Qty() {
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(assetFreezes))
-	suite.Require().Equal(models_types.Numeric("1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
-	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)), 0)
+	suite.Require().Equal(0, models_types.Numeric("1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)))
+	suite.Require().Equal(0, models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)))
 }
 
 func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Amount() {
@@ -245,6 +245,6 @@ func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Amount() {
 	})
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(assetFreezes))
-	suite.Require().Equal(initBalance.Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
-	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)), 0)
+	suite.Require().Equal(0, initBalance.Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)))
+	suite.Require().Equal(0, models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)))
 }

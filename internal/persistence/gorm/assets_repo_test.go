@@ -66,11 +66,11 @@ func (suite *assetsRepoTest) TestDespoit() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(asset.UserId, "user1")
-	suite.Equal(asset.Symbol, "BTC")
-	suite.Equal(asset.TotalBalance.Cmp(types.Numeric("1")), 0)
-	suite.Equal(asset.AvailBalance.Cmp(types.Numeric("1")), 0)
-	suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("0")), 0)
+	suite.Equal("user1", asset.UserId)
+	suite.Equal("BTC", asset.Symbol)
+	suite.Equal(0, asset.TotalBalance.Cmp(types.Numeric("1")))
+	suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("1")))
+	suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("0")))
 
 	systemAsset, err := suite.repo.QueryOne(suite.ctx, map[string]any{
 		"symbol": map[string]any{
@@ -81,11 +81,11 @@ func (suite *assetsRepoTest) TestDespoit() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(systemAsset.UserId, entities.SYSTEM_USER_ROOT)
-	suite.Equal(systemAsset.Symbol, "BTC")
-	suite.Equal(systemAsset.TotalBalance.Cmp(types.Numeric("-1")), 0)
-	suite.Equal(systemAsset.AvailBalance.Cmp(types.Numeric("-1")), 0)
-	suite.Equal(systemAsset.FreezeBalance.Cmp(types.Numeric("0")), 0)
+	suite.Equal(entities.SYSTEM_USER_ROOT, systemAsset.UserId)
+	suite.Equal("BTC", systemAsset.Symbol)
+	suite.Equal(0, systemAsset.TotalBalance.Cmp(types.Numeric("-1")))
+	suite.Equal(0, systemAsset.AvailBalance.Cmp(types.Numeric("-1")))
+	suite.Equal(0, systemAsset.FreezeBalance.Cmp(types.Numeric("0")))
 	//TODO test aseets_log
 }
 
@@ -140,11 +140,11 @@ func (suite *assetsRepoTest) TestWithdraw() {
 				})
 				// fmt.Printf("asset: %+v\n", asset)
 				suite.NoError(err)
-				suite.Equal(asset.UserId, "user1")
-				suite.Equal(asset.Symbol, "BTC")
-				suite.Equal(asset.TotalBalance.Cmp(types.Numeric("1000")), 0)
-				suite.Equal(asset.AvailBalance.Cmp(types.Numeric("1000")), 0)
-				suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("0")), 0)
+				suite.Equal("user1", asset.UserId)
+				suite.Equal("BTC", asset.Symbol)
+				suite.Equal(0, asset.TotalBalance.Cmp(types.Numeric("1000")))
+				suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("1000")))
+				suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("0")))
 			},
 		},
 	}
@@ -178,8 +178,8 @@ func (suite *assetsRepoTest) TestFreeze() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("1")), 0)
-	suite.Equal(asset.AvailBalance.Cmp(types.Numeric("999")), 0)
+	suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("1")))
+	suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("999")))
 
 	// 冻结全部
 	_, err = suite.repo.Freeze(suite.ctx, suite.gorm, uuid.New().String(), "user1", "BTC", types.Numeric("0"))
@@ -194,8 +194,8 @@ func (suite *assetsRepoTest) TestFreeze() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("1000")), 0)
-	suite.Equal(asset.AvailBalance.Cmp(types.Numeric("0")), 0)
+	suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("1000")))
+	suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("0")))
 }
 
 func (suite *assetsRepoTest) TestTransfer() {
@@ -221,8 +221,8 @@ func (suite *assetsRepoTest) TestTransfer() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("899")), 0)
-	suite.Equal(asset.AvailBalance.Cmp(types.Numeric("101")), 0)
+	suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("899")))
+	suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("101")))
 
 	//解冻全部
 	err = suite.repo.UnFreeze(suite.ctx, suite.gorm, transId, "user1", "BTC", types.Numeric("0"))
@@ -237,6 +237,6 @@ func (suite *assetsRepoTest) TestTransfer() {
 		},
 	})
 	suite.NoError(err)
-	suite.Equal(asset.FreezeBalance.Cmp(types.Numeric("0")), 0)
-	suite.Equal(asset.AvailBalance.Cmp(types.Numeric("1000")), 0)
+	suite.Equal(0, asset.FreezeBalance.Cmp(types.Numeric("0")))
+	suite.Equal(0, asset.AvailBalance.Cmp(types.Numeric("1000")))
 }

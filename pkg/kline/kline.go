@@ -21,22 +21,26 @@ type kline struct {
 
 type KLinePeriod interface {
 	GetData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error)
+	GetFormattedData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error)
 	CleanCache(ctx context.Context, openAt, closeAt time.Time) error
 }
 
 type kLine struct {
-	redis  *redis.Client
-	symbol string
-	logger *zap.Logger
+	redis   *redis.Client
+	symbol  string
+	options *options
 }
 
 var _ KLinePeriod = (*kLine)(nil)
 
-func NewKLine(cli *redis.Client, logger *zap.Logger, symbol string) KLinePeriod {
+func NewKLine(cli *redis.Client, symbol string, opts ...Option) KLinePeriod {
+	options := defaultOptions()
+	options.apply(opts...)
+
 	return &kLine{
-		redis:  cli,
-		symbol: symbol,
-		logger: logger,
+		redis:   cli,
+		symbol:  symbol,
+		options: options,
 	}
 }
 
@@ -49,6 +53,39 @@ func (k *kLine) CleanCache(ctx context.Context, openAt, closeAt time.Time) error
 	return k.redis.Del(ctx, key).Err()
 }
 
+func (k *kLine) GetFormattedData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error) {
+	data, err := k.GetData(ctx, periodType, tradeResult)
+	if err != nil {
+		return nil, err
+	}
+
+	data.Open = func() *string {
+		open := k.formatD(*data.Open).StringFixedBank(k.options.pricePrecision)
+		return &open
+	}()
+	data.High = func() *string {
+		high := k.formatD(*data.High).StringFixedBank(k.options.pricePrecision)
+		return &high
+	}()
+	data.Low = func() *string {
+		low := k.formatD(*data.Low).StringFixedBank(k.options.pricePrecision)
+		return &low
+	}()
+	data.Close = func() *string {
+		close := k.formatD(*data.Close).StringFixedBank(k.options.pricePrecision)
+		return &close
+	}()
+	data.Volume = func() *string {
+		volume := k.formatD(*data.Volume).StringFixedBank(k.options.quantityPrecision)
+		return &volume
+	}()
+	data.Amount = func() *string {
+		amount := k.formatD(*data.Amount).StringFixedBank(k.options.amountPrecision)
+		return &amount
+	}()
+	return data, nil
+}
+
 func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeResult matching_types.TradeResult) (*types.KLine, error) {
 	tradeTime := time.Unix(int64(tradeResult.TradeTime/1e9), 0)
 	openAt, closeAt := types.ParsePeriodTime(tradeTime, periodType)
@@ -59,18 +96,18 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 	lockKey := fmt.Sprintf("lock:%s", key)
 	lock, err := k.redis.SetNX(ctx, lockKey, 1, 10*time.Second).Result()
 	if err != nil {
-		k.logger.Error("[kline] set lock for kline calculation failed", zap.Error(err))
+		k.options.logger.Error("[kline] set lock for kline calculation failed", zap.Error(err))
 		return nil, err
 	}
 	if !lock {
-		k.logger.Warn("[kline] failed to acquire lock for kline calculation")
+		k.options.logger.Warn("[kline] failed to acquire lock for kline calculation")
 		return nil, fmt.Errorf("failed to acquire lock for kline calculation")
 	}
 	defer k.redis.Del(ctx, lockKey)
 
 	cache, err := k.redis.Get(ctx, key).Result()
 	if err != nil && err != redis.Nil {
-		k.logger.Error("[kline] get cache data from redis failed", zap.Error(err))
+		k.options.logger.Error("[kline] get cache data from redis failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -79,7 +116,7 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 		cacheData = kline{}
 	} else {
 		if err := json.Unmarshal([]byte(cache), &cacheData); err != nil {
-			k.logger.Error("[kline] unmarshal kline cachedata from redis failed", zap.Error(err))
+			k.options.logger.Error("[kline] unmarshal kline cachedata from redis failed", zap.Error(err))
 			return nil, err
 		}
 	}
@@ -102,13 +139,13 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 
 	dataJson, err := json.Marshal(data)
 	if err != nil {
-		k.logger.Error("[kline] marshal kline data to redis failed", zap.Error(err))
+		k.options.logger.Error("[kline] marshal kline data to redis failed", zap.Error(err))
 		return nil, err
 	}
 
 	err = k.redis.Set(ctx, key, string(dataJson), 0).Err()
 	if err != nil {
-		k.logger.Error("[kline] set kline data to redis failed", zap.Error(err))
+		k.options.logger.Error("[kline] set kline data to redis failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -120,7 +157,7 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 
 	err = k.redis.Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
 	if err != nil {
-		k.logger.Error("[kline] update kline key ttl failed", zap.Error(err))
+		k.options.logger.Error("[kline] update kline key ttl failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -217,7 +254,7 @@ func (k *kLine) getAmount(cacheData *kline, tradeResult *matching_types.TradeRes
 func (k *kLine) formatD(d1 string) decimal.Decimal {
 	d, err := decimal.NewFromString(d1)
 	if err != nil {
-		k.logger.Sugar().Errorf("[kline] new decimal from string failed d1: %s error: %v", d1, zap.Error(err))
+		k.options.logger.Sugar().Errorf("[kline] new decimal from string failed d1: %s error: %v", d1, zap.Error(err))
 		return decimal.Zero
 	}
 	return d
