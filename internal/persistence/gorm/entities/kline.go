@@ -14,12 +14,12 @@ type Kline struct {
 	Period  kline_types.PeriodType
 	OpenAt  time.Time `gorm:"timestamp uniqueIndex: open_at" json:"open_at,omitempty"`
 	CloseAt time.Time `gorm:"timestamp" json:"close_at,omitempty"`
-	Open    string    `gorm:"decimal(30, 10)" json:"open,omitempty"`
-	High    string    `gorm:"decimal(30, 10)" json:"high,omitempty"`
-	Low     string    `gorm:"decimal(30, 10)" json:"low,omitempty"`
-	Close   string    `gorm:"decimal(30, 10)" json:"close,omitempty"`
-	Volume  string    `gorm:"decimal(30, 10)" json:"volume,omitempty"`
-	Amount  string    `gorm:"decimal(30, 10)" json:"amount,omitempty"`
+	Open    string    `gorm:"type:decimal(40,20);default:0" json:"open,omitempty"`
+	High    string    `gorm:"type:decimal(40,20);default:0" json:"high,omitempty"`
+	Low     string    `gorm:"type:decimal(40,20);default:0" json:"low,omitempty"`
+	Close   string    `gorm:"type:decimal(40,20);default:0" json:"close,omitempty"`
+	Volume  string    `gorm:"type:decimal(40,20);default:0" json:"volume,omitempty"`
+	Amount  string    `gorm:"type:decimal(40,20);default:0" json:"amount,omitempty"`
 }
 
 func (kl *Kline) TableName() string {
