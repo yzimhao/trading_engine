@@ -147,7 +147,7 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 			}
 			data.FreezeQty = f.FreezeAmount.String()
 		} else {
-			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Numeric(data.Amount))
+			f, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Numeric(data.FreezeAmount))
 			if err != nil {
 				return err
 			}

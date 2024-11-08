@@ -206,9 +206,45 @@ func (suite *orderRepoTest) TestCreateMarketOrderSideBuy_Amount() {
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(assetFreezes))
 	suite.Require().Equal(models_types.Numeric("1000").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
-	suite.Require().Equal(assetFreezes[0].FreezeAmount, order.FreezeAmount)
+	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeAmount)), 0)
 }
 
-func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Qty() {}
+func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Qty() {
+	suite.cleanMockData()
+	suite.initMockData()
 
-func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Amount() {}
+	order, err := suite.repo.CreateMarketByQty(suite.ctx, testUser, testSymbol, matching_types.OrderSideSell, "1")
+	suite.Require().NoError(err)
+	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(models_types.Numeric("1").Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
+	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)), 0)
+}
+
+func (suite *orderRepoTest) TestCreateMarketOrderSideSell_Amount() {
+	suite.cleanMockData()
+	suite.initMockData()
+
+	order, err := suite.repo.CreateMarketByAmount(suite.ctx, testUser, testSymbol, matching_types.OrderSideSell, "1000")
+	suite.Require().NoError(err)
+	suite.Require().NotNil(order)
+
+	//检查冻结的资产
+	assetFreezes, err := suite.assetRepo.QueryFreeze(suite.ctx, map[string]any{
+		"trans_id": map[string]any{
+			"eq": order.OrderId,
+		},
+	})
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(assetFreezes))
+	suite.Require().Equal(initBalance.Cmp(models_types.Numeric(assetFreezes[0].FreezeAmount)), 0)
+	suite.Require().Equal(models_types.Numeric(assetFreezes[0].FreezeAmount).Cmp(models_types.Numeric(order.FreezeQty)), 0)
+}
