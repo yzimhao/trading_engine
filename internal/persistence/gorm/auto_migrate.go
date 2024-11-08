@@ -23,8 +23,7 @@ type inContext struct {
 
 func autoMigrate(in inContext) error {
 
-	// return nsil
-
+	// auto migrate
 	err := in.Db.AutoMigrate(
 		&entities.Asset{},
 		&entities.AssetLog{},
@@ -36,8 +35,18 @@ func autoMigrate(in inContext) error {
 		in.Logger.Error("auto migrate error", zap.Error(err))
 		return err
 	}
+
 	//init data
-	ctx := context.Background()
+	err = initData(context.Background(), in)
+	if err != nil {
+		in.Logger.Error("init data error", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func initData(ctx context.Context, in inContext) error {
 	varieties, err := initVariety(ctx, in.VarietyRepo)
 	if err != nil {
 		return err
