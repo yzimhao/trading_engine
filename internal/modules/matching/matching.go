@@ -3,10 +3,12 @@ package matching
 import (
 	"context"
 	"encoding/json"
+	"slices"
 	"sync"
 
 	"github.com/duolacloud/broker-core"
 	ds_types "github.com/duolacloud/crud-core/types"
+	"github.com/spf13/viper"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
@@ -20,6 +22,7 @@ type inContext struct {
 	Broker           broker.Broker
 	Logger           *zap.Logger
 	TradeVarietyRepo persistence.TradeVarietyRepository
+	Viper            *viper.Viper
 }
 
 type Matching struct {
@@ -27,6 +30,7 @@ type Matching struct {
 	logger           *zap.Logger
 	tradeVarietyRepo persistence.TradeVarietyRepository
 	tradePairs       sync.Map
+	viper            *viper.Viper
 }
 
 func NewMatching(in inContext) *Matching {
@@ -34,11 +38,15 @@ func NewMatching(in inContext) *Matching {
 		broker:           in.Broker,
 		logger:           in.Logger,
 		tradeVarietyRepo: in.TradeVarietyRepo,
+		viper:            in.Viper,
 	}
 }
 
 func (s *Matching) InitEngine() {
 	s.logger.Sugar().Infof("init matching engine")
+
+	localSymbols := s.viper.GetStringSlice("matching.local_symbols")
+
 	// load trade pair
 	var (
 		cursor string
@@ -64,6 +72,12 @@ func (s *Matching) InitEngine() {
 		next = extra.HasNext
 
 		for _, tradeVariety := range tradeVarieties {
+			if len(localSymbols) > 0 {
+				if !slices.Contains(localSymbols, tradeVariety.Symbol) {
+					continue
+				}
+			}
+
 			opts := []matching.Option{
 				matching.WithPriceDecimals(int32(tradeVariety.PriceDecimals)),
 				matching.WithQuantityDecimals(int32(tradeVariety.QtyDecimals)),
