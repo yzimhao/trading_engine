@@ -66,14 +66,16 @@ func (q *Quote) processQuote(ctx context.Context, notifyQuote models_types.Event
 		}
 
 		if err := q.repo.Save(ctx, &entities.Kline{
-			Symbol: notifyQuote.Symbol,
-			Period: period,
-			Open:   *data.Open,
-			High:   *data.High,
-			Low:    *data.Low,
-			Close:  *data.Close,
-			Volume: *data.Volume,
-			Amount: *data.Amount,
+			OpenAt:  data.OpenAt,
+			CloseAt: data.CloseAt,
+			Symbol:  notifyQuote.Symbol,
+			Period:  period,
+			Open:    *data.Open,
+			High:    *data.High,
+			Low:     *data.Low,
+			Close:   *data.Close,
+			Volume:  *data.Volume,
+			Amount:  *data.Amount,
 		}); err != nil {
 			q.logger.Sugar().Errorf("save kline data error: %v notifyQuote: %v", err, notifyQuote)
 			continue

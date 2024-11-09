@@ -44,7 +44,6 @@ func NewMatching(in inContext) *Matching {
 
 func (s *Matching) InitEngine() {
 	s.logger.Sugar().Infof("init matching engine")
-
 	localSymbols := s.viper.GetStringSlice("matching.local_symbols")
 
 	// load trade pair
