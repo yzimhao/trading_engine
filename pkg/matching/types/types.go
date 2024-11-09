@@ -13,8 +13,8 @@ type TradeBy int
 const (
 	OrderTypeLimit          OrderType = "limit"
 	OrderTypeMarket         OrderType = "market"
-	OrderTypeMarketQuantity OrderType = "market_qty"
-	OrderTypeMarketAmount   OrderType = "market_amount"
+	OrderTypeMarketQuantity OrderType = "marketQty"
+	OrderTypeMarketAmount   OrderType = "marketAmount"
 	OrderSideBuy            OrderSide = "bid"
 	OrderSideSell           OrderSide = "ask"
 	TradeBySeller           TradeBy   = 1
