@@ -57,10 +57,7 @@ func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.Tr
 		return err
 	}
 
-	if err := s.flow(ctx, tradeResult); err != nil {
-		return err
-	}
-	return nil
+	return s.flow(ctx, tradeResult)
 }
 
 func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.TradeResult) error {
