@@ -15,8 +15,8 @@ const (
 	OrderTypeMarket         OrderType = "market"
 	OrderTypeMarketQuantity OrderType = "market_qty"
 	OrderTypeMarketAmount   OrderType = "market_amount"
-	OrderSideBuy            OrderSide = "BID"
-	OrderSideSell           OrderSide = "ASK"
+	OrderSideBuy            OrderSide = "bid"
+	OrderSideSell           OrderSide = "ask"
 	TradeBySeller           TradeBy   = 1
 	TradeByBuyer            TradeBy   = 2
 )
