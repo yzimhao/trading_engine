@@ -16,9 +16,10 @@ import (
 
 type gormTradeVarietyRepo struct {
 	*repositories.MapperRepository[models_variety.TradeVariety, models_variety.CreateTradeVariety, models_variety.UpdateTradeVariety, entities.TradeVariety, entities.TradeVariety, map[string]any]
+	varietyRepo persistence.VarietyRepository
 }
 
-func NewTradeVarietyRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache) persistence.TradeVarietyRepository {
+func NewTradeVarietyRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache, varietyRepo persistence.VarietyRepository) persistence.TradeVarietyRepository {
 	cacheWrapperRepo := repositories.NewCacheRepository(
 		k_repo.NewGormCrudRepository[entities.TradeVariety, entities.TradeVariety, map[string]any](datasource),
 		cache,
@@ -31,6 +32,7 @@ func NewTradeVarietyRepo(datasource datasource.DataSource[gorm.DB], cache cache.
 
 	return &gormTradeVarietyRepo{
 		MapperRepository: mapperRepo,
+		varietyRepo:      varietyRepo,
 	}
 }
 
@@ -40,5 +42,27 @@ func (v *gormTradeVarietyRepo) FindBySymbol(ctx context.Context, symbol string) 
 			"eq": symbol,
 		},
 	})
-	return
+	if err != nil {
+		return nil, err
+	}
+
+	tradeVariety.BaseVariety, err = v.varietyRepo.QueryOne(ctx, map[string]any{
+		"id": map[string]any{
+			"eq": tradeVariety.BaseId,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tradeVariety.TargetVariety, err = v.varietyRepo.QueryOne(ctx, map[string]any{
+		"id": map[string]any{
+			"eq": tradeVariety.TargetId,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return tradeVariety, nil
 }
