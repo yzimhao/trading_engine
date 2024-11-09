@@ -2,8 +2,11 @@ package settlement
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/duolacloud/broker-core"
+	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/duolacloud/crud-core/cache"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
@@ -22,6 +25,7 @@ type SettleProcessor struct {
 	cache            cache.Cache
 	tradeVarietyRepo persistence.TradeVarietyRepository
 	assetRepo        persistence.AssetRepository
+	broker           broker.Broker
 }
 
 type inSettleContext struct {
@@ -31,6 +35,7 @@ type inSettleContext struct {
 	Cache            cache.Cache
 	TradeVarietyRepo persistence.TradeVarietyRepository
 	AssetRepo        persistence.AssetRepository
+	Broker           broker.Broker
 }
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
@@ -40,6 +45,7 @@ func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 		cache:            in.Cache,
 		tradeVarietyRepo: in.TradeVarietyRepo,
 		assetRepo:        in.AssetRepo,
+		broker:           in.Broker,
 	}
 }
 
@@ -51,9 +57,10 @@ func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.Tr
 		return err
 	}
 
-	//TODO 资产相关表
-
-	return s.flow(ctx, tradeResult)
+	if err := s.flow(ctx, tradeResult); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.TradeResult) error {
@@ -88,6 +95,20 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 
 		//订单交割
 		if err := s.orderDelivery(tx, tradeLog, askOrder, bidOrder, tradePairInfo); err != nil {
+			return err
+		}
+
+		// notify quote cacluate kline
+		notifyQuote := models_types.EventNotifyQuote{
+			TradeResult: tradeResult,
+		}
+		body, err := json.Marshal(notifyQuote)
+		if err != nil {
+			return err
+		}
+		if err := s.broker.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, &broker.Message{
+			Body: body,
+		}, rocketmq.WithShardingKey(tradeResult.Symbol)); err != nil {
 			return err
 		}
 
