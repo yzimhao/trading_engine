@@ -3,6 +3,7 @@ package settlement
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/duolacloud/broker-core"
@@ -70,7 +71,7 @@ func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCan
 			return s.process(ctx, data, retryCount+1)
 		}
 		s.logger.Sugar().Errorf("order cancel %s is locked, retry over max retry", data.OrderId)
-		return nil
+		return errors.New("retry over max retry")
 	}
 
 	return s.orderRepo.Cancel(ctx, data.Symbol, data.OrderId, types.CancelTypeUser)
