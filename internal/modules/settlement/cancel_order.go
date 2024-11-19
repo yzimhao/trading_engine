@@ -61,9 +61,12 @@ func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) erro
 func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCancelOrder, retryCount int) error {
 	s.logger.Sugar().Infof("order cancel %s, retry count: %d", data.OrderId, retryCount)
 	//锁等待结算那边全部结束才能取消
-	if ok, err := s.locker.IsExistLock(ctx, data.OrderId); err != nil {
+	ok, err := s.locker.IsExistLock(ctx, data.OrderId)
+	if err != nil {
 		return err
-	} else if ok {
+	}
+
+	if ok {
 		s.logger.Sugar().Errorf("order cancel %s is locked, retry count: %d", data.OrderId, retryCount)
 
 		if retryCount <= s.maxRetry {
