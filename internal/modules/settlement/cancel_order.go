@@ -23,13 +23,12 @@ type inCancelOrderContext struct {
 }
 
 type CancelOrderSubscriber struct {
-	broker     broker.Broker
-	logger     *zap.Logger
-	orderRepo  persistence.OrderRepository
-	redis      *redis.Client
-	locker     *SettleLocker
-	retryCount int
-	maxRetry   int
+	broker    broker.Broker
+	logger    *zap.Logger
+	orderRepo persistence.OrderRepository
+	redis     *redis.Client
+	locker    *SettleLocker
+	maxRetry  int
 }
 
 func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
@@ -55,21 +54,21 @@ func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) erro
 		s.logger.Sugar().Errorf("unmarshal cancel order event error: %v, event: %v", err, event)
 		return err
 	}
-	s.retryCount = 0
-	return s.process(ctx, data)
+	return s.process(ctx, data, 0)
 }
 
-func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCancelOrder) error {
-	s.retryCount++
+func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCancelOrder, retryCount int) error {
+	retryCount++
+	s.logger.Sugar().Infof("order cancel %s, retry count: %d", data.OrderId, retryCount)
 	//锁等待结算那边全部结束才能取消
 	if ok, err := s.locker.IsExistLock(ctx, data.OrderId); err != nil {
 		return err
 	} else if ok {
-		s.logger.Sugar().Errorf("order cancel %s is locked", data.OrderId)
+		s.logger.Sugar().Errorf("order cancel %s is locked, retry count: %d", data.OrderId, retryCount)
 
-		if s.retryCount <= s.maxRetry {
+		if retryCount <= s.maxRetry {
 			time.Sleep(time.Duration(500) * time.Millisecond)
-			return s.process(ctx, data)
+			return s.process(ctx, data, retryCount)
 		}
 		s.logger.Sugar().Errorf("order cancel %s is locked, retry over max retry", data.OrderId)
 		return nil
