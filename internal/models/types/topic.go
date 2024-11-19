@@ -52,3 +52,8 @@ type EventNotifyQuote struct {
 	// TradeBy       matching_types.TradeBy `json:"trade_by,omitempty"`
 	// TradeTime     int64                  `json:"trade_time,omitempty"`
 }
+
+type EventCancelOrder struct {
+	Symbol  string `json:"symbol,omitempty"`
+	OrderId string `json:"order_id,omitempty"`
+}

@@ -2,8 +2,11 @@ package settlement
 
 import (
 	"context"
+	"encoding/json"
+	"time"
 
 	"github.com/duolacloud/broker-core"
+	"github.com/redis/go-redis/v9"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
@@ -15,12 +18,18 @@ type inCancelOrderContext struct {
 	Broker    broker.Broker
 	Logger    *zap.Logger
 	OrderRepo persistence.OrderRepository
+	Redis     *redis.Client
+	Locker    *SettleLocker
 }
 
 type CancelOrderSubscriber struct {
-	broker    broker.Broker
-	logger    *zap.Logger
-	orderRepo persistence.OrderRepository
+	broker     broker.Broker
+	logger     *zap.Logger
+	orderRepo  persistence.OrderRepository
+	redis      *redis.Client
+	locker     *SettleLocker
+	retryCount int
+	maxRetry   int
 }
 
 func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
@@ -28,6 +37,9 @@ func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 		broker:    in.Broker,
 		logger:    in.Logger,
 		orderRepo: in.OrderRepo,
+		redis:     in.Redis,
+		locker:    in.Locker,
+		maxRetry:  20,
 	}
 }
 
@@ -37,7 +49,31 @@ func (s *CancelOrderSubscriber) Subscribe() {
 
 func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) error {
 	s.logger.Info("cancel order", zap.Any("event", event))
-	//TODO
 
-	return nil
+	var data types.EventCancelOrder
+	if err := json.Unmarshal(event.Message().Body, &data); err != nil {
+		s.logger.Sugar().Errorf("unmarshal cancel order event error: %v, event: %v", err, event)
+		return err
+	}
+	s.retryCount = 0
+	return s.process(ctx, data)
+}
+
+func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCancelOrder) error {
+	s.retryCount++
+	//锁等待结算那边全部结束才能取消
+	if ok, err := s.locker.IsExistLock(ctx, data.OrderId); err != nil {
+		return err
+	} else if ok {
+		s.logger.Sugar().Errorf("order cancel %s is locked", data.OrderId)
+
+		if s.retryCount <= s.maxRetry {
+			time.Sleep(time.Duration(500) * time.Millisecond)
+			return s.process(ctx, data)
+		}
+		s.logger.Sugar().Errorf("order cancel %s is locked, retry over max retry", data.OrderId)
+		return nil
+	}
+
+	return s.orderRepo.Cancel(ctx, data.Symbol, data.OrderId, types.CancelTypeUser)
 }

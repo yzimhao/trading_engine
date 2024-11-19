@@ -8,6 +8,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/duolacloud/crud-core/cache"
+	"github.com/redis/go-redis/v9"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/models/variety"
@@ -20,12 +21,14 @@ import (
 )
 
 type SettleProcessor struct {
-	db               *gorm.DB
-	logger           *zap.Logger
-	cache            cache.Cache
+	db     *gorm.DB
+	logger *zap.Logger
+	// cache            cache.Cache
 	tradeVarietyRepo persistence.TradeVarietyRepository
 	assetRepo        persistence.AssetRepository
 	broker           broker.Broker
+	redis            *redis.Client
+	locker           *SettleLocker
 }
 
 type inSettleContext struct {
@@ -36,16 +39,20 @@ type inSettleContext struct {
 	TradeVarietyRepo persistence.TradeVarietyRepository
 	AssetRepo        persistence.AssetRepository
 	Broker           broker.Broker
+	Redis            *redis.Client
+	Locker           *SettleLocker
 }
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 	return &SettleProcessor{
-		db:               in.DB,
-		logger:           in.Logger,
-		cache:            in.Cache,
+		db:     in.DB,
+		logger: in.Logger,
+		// cache:            in.Cache,
 		tradeVarietyRepo: in.TradeVarietyRepo,
 		assetRepo:        in.AssetRepo,
 		broker:           in.Broker,
+		redis:            in.Redis,
+		locker:           in.Locker,
 	}
 }
 
@@ -56,6 +63,12 @@ func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.Tr
 		s.logger.Sugar().Errorf("auto migrate trade log table failed: %v", err)
 		return err
 	}
+
+	//创建买卖双方订单标志锁
+	if err := s.locker.Lock(ctx, tradeResult.AskOrderId, tradeResult.BidOrderId); err != nil {
+		return err
+	}
+	defer s.locker.Unlock(ctx, tradeResult.AskOrderId, tradeResult.BidOrderId)
 
 	return s.flow(ctx, tradeResult)
 }

@@ -59,6 +59,7 @@ func (q *Quote) processQuote(ctx context.Context, notifyQuote models_types.Event
 	k := kline.NewKLine(q.redis, notifyQuote.Symbol)
 	for _, period := range kline_types.Periods() {
 
+		// TODO concurrency
 		data, err := k.GetData(ctx, period, notifyQuote.TradeResult)
 		if err != nil {
 			q.logger.Sugar().Errorf("get kline data error: %v notifyQuote: %v", err, notifyQuote)
