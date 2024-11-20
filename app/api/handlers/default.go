@@ -5,8 +5,8 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/middlewares"
 	_ "github.com/yzimhao/trading_engine/v2/app/docs"
+	"github.com/yzimhao/trading_engine/v2/app/middlewares"
 	"go.uber.org/fx"
 )
 

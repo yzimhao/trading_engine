@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/middlewares"
+	"github.com/yzimhao/trading_engine/v2/app/middlewares"
 	"go.uber.org/fx"
 )
 
