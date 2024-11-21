@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/duolacloud/broker-core"
-	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
@@ -154,7 +153,7 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 
 	err = ctrl.broker.Publish(context.Background(), models_types.TOPIC_ORDER_NEW, &broker.Message{
 		Body: body,
-	}, rocketmq.WithShardingKey(event.Symbol))
+	}, broker.WithShardingKey(event.Symbol))
 
 	if err != nil {
 		ctrl.logger.Error("publish order created event error", zap.Error(err))

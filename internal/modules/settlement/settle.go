@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/duolacloud/broker-core"
-	rocketmq "github.com/duolacloud/broker-rocketmq"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/redis/go-redis/v9"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
@@ -118,7 +117,7 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}
 		if err := s.broker.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, &broker.Message{
 			Body: body,
-		}, rocketmq.WithShardingKey(tradeResult.Symbol)); err != nil {
+		}, broker.WithShardingKey(tradeResult.Symbol)); err != nil {
 			return err
 		}
 
