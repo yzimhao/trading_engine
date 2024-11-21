@@ -40,6 +40,11 @@ image-build:
 run:
 	@bash scripts/run.sh
 
+.PHONY: run-debug
+run-debug:
+	@bash scripts/run_debug.sh
+
+
 
 .PHONY: docs-gen
 docs-gen:
