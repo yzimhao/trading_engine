@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -32,10 +34,20 @@ func NewExampleController(in inContext) *ExampleController {
 func (exa *ExampleController) registerRoutes() {
 
 	exampleGroup := exa.engine.Group("example")
-	exampleGroup.GET("/", exa.example)
+	exampleGroup.GET("/:symbol", exa.example)
 }
 
 func (exa *ExampleController) example(ctx *gin.Context) {
-	exa.logger.Info("example")
-	ctx.HTML(http.StatusOK, "example/index.html", gin.H{})
+
+	support := []string{"usdjpy", "eurusd"}
+	symbol := strings.ToLower(ctx.Param("symbol"))
+
+	if !lo.Contains(support, symbol) {
+		ctx.Redirect(301, "/example/usdjpy")
+		return
+	}
+
+	ctx.HTML(http.StatusOK, "example/index.html", gin.H{
+		"symbol": symbol,
+	})
 }

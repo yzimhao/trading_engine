@@ -1,11 +1,12 @@
 package di
 
 import (
-	"net/http"
+	"html/template"
 	"path/filepath"
 	"strings"
 
 	"github.com/gin-contrib/multitemplate"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/app/template_func"
@@ -13,7 +14,7 @@ import (
 )
 
 func NewGinEngine(v *viper.Viper, logger *zap.Logger) *gin.Engine {
-	v.SetDefault("app.template_path", "app/frontend/views/")
+	v.SetDefault("app.template_path", "./app/frontend/views/")
 	templatePath := v.GetString("app.template_path")
 	v.SetDefault("app.static_path", "./app/frontend/statics/")
 
@@ -22,15 +23,15 @@ func NewGinEngine(v *viper.Viper, logger *zap.Logger) *gin.Engine {
 	engine := gin.New()
 
 	templateFunc := template_func.NewTemplateFunc()
-	engine.SetFuncMap(templateFunc.FuncMap())
+	// engine.SetFuncMap(templateFunc.FuncMap())
+	engine.HTMLRender = renderer(templatePath, logger, templateFunc.FuncMap())
 
-	engine.HTMLRender = renderer(templatePath, logger)
-
-	engine.StaticFS("/statics", http.Dir(staticPath))
+	// engine.StaticFS("/statics", http.Dir(staticPath))
+	engine.Use(static.Serve("/statics", static.LocalFile(staticPath, false)))
 	return engine
 }
 
-func renderer(templatePath string, logger *zap.Logger) multitemplate.Renderer {
+func renderer(templatePath string, logger *zap.Logger, funcMap template.FuncMap) multitemplate.Renderer {
 	r := multitemplate.NewRenderer()
 
 	// 确保路径为规范化的绝对路径
@@ -56,7 +57,7 @@ func renderer(templatePath string, logger *zap.Logger) multitemplate.Renderer {
 		name := strings.TrimPrefix(tpl, absTemplatePath)
 		name = strings.TrimPrefix(name, string(filepath.Separator)) // 去除首部的路径分隔符
 		logger.Sugar().Debug("Registering template", zap.String("name", name), zap.String("path", tpl))
-		r.AddFromFiles(name, tpl)
+		r.AddFromFilesFuncs(name, funcMap, tpl)
 	}
 	return r
 }
