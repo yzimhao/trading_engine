@@ -43,7 +43,7 @@ func (exa *ExampleController) example(ctx *gin.Context) {
 	symbol := strings.ToLower(ctx.Param("symbol"))
 
 	if !lo.Contains(support, symbol) {
-		ctx.Redirect(301, "/example/usdjpy")
+		ctx.Redirect(301, "/example/"+support[0])
 		return
 	}
 
