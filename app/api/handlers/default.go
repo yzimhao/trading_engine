@@ -19,6 +19,7 @@ type Routes struct {
 	orderController      *controllers.OrderController
 	marketController     *controllers.MarketController
 	middleware           *middlewares.Middleware
+	userController       *controllers.UserController
 }
 
 type inContext struct {
@@ -29,6 +30,7 @@ type inContext struct {
 	OrderController      *controllers.OrderController
 	MarketController     *controllers.MarketController
 	Middleware           *middlewares.Middleware
+	UserController       *controllers.UserController
 }
 
 func NewRoutes(in inContext) *Routes {
@@ -39,6 +41,7 @@ func NewRoutes(in inContext) *Routes {
 		orderController:      in.OrderController,
 		marketController:     in.MarketController,
 		middleware:           in.Middleware,
+		userController:       in.UserController,
 	}
 
 	r.registerRoutes()
@@ -53,6 +56,9 @@ func (ctx *Routes) registerRoutes() {
 	v1Group := apiGroup.Group("v1")
 	v1Group.GET("/ping", ctx.baseController.Ping)
 	v1Group.GET("/time", ctx.baseController.Time)
+
+	// demo
+	v1Group.GET("/demo/login", ctx.userController.DemoLogin)
 
 	base := v1Group.Group("base")
 	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)

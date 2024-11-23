@@ -13,6 +13,7 @@ var Module = fx.Options(
 		controllers.NewUserAssetsController,
 		controllers.NewOrderController,
 		controllers.NewMarketController,
+		controllers.NewUserController,
 	),
 	fx.Invoke(NewRoutes),
 )
