@@ -83,7 +83,7 @@ func (m *AuthMiddleware) payloadFunc() func(data interface{}) jwt.MapClaims {
 	return func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*User); ok {
 			return jwt.MapClaims{
-				identityKey: v.Username,
+				identityKey: v.UserID,
 			}
 		}
 		return jwt.MapClaims{}
@@ -94,7 +94,7 @@ func (m *AuthMiddleware) identityHandler() func(c *gin.Context) interface{} {
 	return func(c *gin.Context) interface{} {
 		claims := jwt.ExtractClaims(c)
 		return &User{
-			Username: claims[identityKey].(string),
+			UserID: claims[identityKey].(string),
 		}
 	}
 }
