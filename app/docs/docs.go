@@ -148,7 +148,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset"
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset"
                         }
                     }
                 }
@@ -183,7 +183,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset"
+                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset"
                             }
                         }
                     }
@@ -461,6 +461,76 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/user/login": {
+            "post": {
+                "description": "user login",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "user login",
+                "operationId": "v1.user.login",
+                "parameters": [
+                    {
+                        "description": "args",
+                        "name": "args",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/register": {
+            "post": {
+                "description": "user register",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "user register",
+                "operationId": "v1.user.register",
+                "parameters": [
+                    {
+                        "description": "args",
+                        "name": "args",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/app_api_handlers_controllers.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -478,6 +548,24 @@ const docTemplate = `{
                 }
             }
         },
+        "app_api_handlers_controllers.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "captcha": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "app_api_handlers_controllers.OrderCreateRequest": {
             "type": "object",
             "required": [
@@ -487,11 +575,15 @@ const docTemplate = `{
             ],
             "properties": {
                 "amount": {
-                    "type": "string",
-                    "example": "100.00"
+                    "type": "string"
                 },
                 "order_type": {
-                    "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType"
+                        }
+                    ],
+                    "example": "limit"
                 },
                 "price": {
                     "type": "string",
@@ -502,9 +594,41 @@ const docTemplate = `{
                     "example": "12"
                 },
                 "side": {
-                    "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide"
+                        }
+                    ],
+                    "example": "buy"
                 },
                 "symbol": {
+                    "type": "string",
+                    "example": "btcusdt"
+                }
+            }
+        },
+        "app_api_handlers_controllers.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "repeat_password",
+                "username"
+            ],
+            "properties": {
+                "captcha": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "repeat_password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -540,12 +664,9 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset": {
+        "github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset": {
             "type": "object",
             "properties": {
-                "UUID": {
-                    "type": "string"
-                },
                 "avail_balance": {
                     "type": "string"
                 },
@@ -553,6 +674,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "freeze_balance": {
+                    "type": "string"
+                },
+                "models.UUID": {
                     "type": "string"
                 },
                 "symbol": {
@@ -572,8 +696,8 @@ const docTemplate = `{
         "github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide": {
             "type": "string",
             "enum": [
-                "BID",
-                "ASK"
+                "bid",
+                "ask"
             ],
             "x-enum-varnames": [
                 "OrderSideBuy",
@@ -585,8 +709,8 @@ const docTemplate = `{
             "enum": [
                 "limit",
                 "market",
-                "market_qty",
-                "market_amount"
+                "marketQty",
+                "marketAmount"
             ],
             "x-enum-varnames": [
                 "OrderTypeLimit",

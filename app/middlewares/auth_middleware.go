@@ -105,12 +105,13 @@ func (m *AuthMiddleware) authenticator() func(c *gin.Context) (interface{}, erro
 		if err := c.ShouldBind(&loginVals); err != nil {
 			return "", jwt.ErrMissingLoginValues
 		}
-		userID := loginVals.Username
+		username := loginVals.Username
 		password := loginVals.Password
 
-		if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
+		if (username == "admin" && password == "admin") || (username == "test" && password == "test") {
 			return &User{
-				Username: userID,
+				Username: username,
+				UserID:   username,
 			}, nil
 		}
 		return nil, jwt.ErrFailedAuthentication

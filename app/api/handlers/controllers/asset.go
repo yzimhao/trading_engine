@@ -97,7 +97,7 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 // @Produce json
 // @Param symbol path string true "symbol"
 // @Query userId query string true "userId测试用参数"
-// @Success 200 {object} entities.Asset
+// @Success 200 {object} models_asset.Asset
 // @Router /api/v1/asset/{symbol} [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
@@ -165,7 +165,7 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param symbol path string true "symbol"
-// @Success 200 {object} []entities.Asset
+// @Success 200 {object} []models_asset.Asset
 // @Router /api/v1/asset/{symbol}/history [get]
 func (ctrl *UserAssetsController) QueryAssetHistory(c *gin.Context) {
 	// symbol := c.Param("symbol")

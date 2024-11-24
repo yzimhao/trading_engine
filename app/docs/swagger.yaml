@@ -8,13 +8,26 @@ definitions:
       user_id:
         type: string
     type: object
+  app_api_handlers_controllers.LoginRequest:
+    properties:
+      captcha:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
   app_api_handlers_controllers.OrderCreateRequest:
     properties:
       amount:
-        example: "100.00"
         type: string
       order_type:
-        $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType'
+        allOf:
+        - $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType'
+        example: limit
       price:
         example: "1.00"
         type: string
@@ -22,13 +35,34 @@ definitions:
         example: "12"
         type: string
       side:
-        $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide'
+        allOf:
+        - $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide'
+        example: buy
       symbol:
+        example: btcusdt
         type: string
     required:
     - order_type
     - side
     - symbol
+    type: object
+  app_api_handlers_controllers.RegisterRequest:
+    properties:
+      captcha:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      repeat_password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - repeat_password
+    - username
     type: object
   app_api_handlers_controllers.TransferRequest:
     properties:
@@ -50,15 +84,15 @@ definitions:
       user_id:
         type: string
     type: object
-  github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset:
+  github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset:
     properties:
-      UUID:
-        type: string
       avail_balance:
         type: string
       created_at:
         type: string
       freeze_balance:
+        type: string
+      models.UUID:
         type: string
       symbol:
         type: string
@@ -71,8 +105,8 @@ definitions:
     type: object
   github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide:
     enum:
-    - BID
-    - ASK
+    - bid
+    - ask
     type: string
     x-enum-varnames:
     - OrderSideBuy
@@ -81,8 +115,8 @@ definitions:
     enum:
     - limit
     - market
-    - market_qty
-    - market_amount
+    - marketQty
+    - marketAmount
     type: string
     x-enum-varnames:
     - OrderTypeLimit
@@ -110,7 +144,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset'
+            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset'
       summary: get wallet asset
       tags:
       - asset
@@ -133,7 +167,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_persistence_gorm_entities.Asset'
+              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset'
             type: array
       summary: get asset history
       tags:
@@ -389,4 +423,50 @@ paths:
       summary: ping
       tags:
       - base
+  /api/v1/user/login:
+    post:
+      consumes:
+      - application/json
+      description: user login
+      operationId: v1.user.login
+      parameters:
+      - description: args
+        in: body
+        name: args
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: user login
+      tags:
+      - user
+  /api/v1/user/register:
+    post:
+      consumes:
+      - application/json
+      description: user register
+      operationId: v1.user.register
+      parameters:
+      - description: args
+        in: body
+        name: args
+        required: true
+        schema:
+          $ref: '#/definitions/app_api_handlers_controllers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: user register
+      tags:
+      - user
 swagger: "2.0"
