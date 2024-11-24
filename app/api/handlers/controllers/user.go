@@ -1,12 +1,9 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
 
@@ -41,15 +38,7 @@ type LoginRequest struct {
 // @Success 200 {string} any
 // @Router /api/v1/user/login [post]
 func (u *UserController) Login(ctx *gin.Context) {
-	//TODO
-
-	var args LoginRequest
-	if err := ctx.ShouldBindJSON(&args); err != nil {
-		common.ResponseError(ctx, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "demo login"})
+	// implement in jwt middleware
 }
 
 type RegisterRequest struct {
