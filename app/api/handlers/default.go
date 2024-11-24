@@ -57,11 +57,12 @@ func (ctx *Routes) registerRoutes() {
 	v1Group.GET("/ping", ctx.baseController.Ping)
 	v1Group.GET("/time", ctx.baseController.Time)
 
-	// demo
-	v1Group.GET("/demo/login", ctx.userController.DemoLogin)
-
 	base := v1Group.Group("base")
 	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)
+
+	user := v1Group.Group("user")
+	user.POST("/login", ctx.userController.Login)
+	user.POST("/register", ctx.userController.Register)
 
 	asset := v1Group.Group("asset")
 	asset.Use(ctx.middleware.Auth())
