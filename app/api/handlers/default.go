@@ -18,7 +18,7 @@ type Routes struct {
 	userAssetsController *controllers.UserAssetsController
 	orderController      *controllers.OrderController
 	marketController     *controllers.MarketController
-	middleware           *middlewares.Middleware
+	authMiddleware       *middlewares.AuthMiddleware
 	userController       *controllers.UserController
 }
 
@@ -29,7 +29,7 @@ type inContext struct {
 	UserAssetsController *controllers.UserAssetsController
 	OrderController      *controllers.OrderController
 	MarketController     *controllers.MarketController
-	Middleware           *middlewares.Middleware
+	AuthMiddleware       *middlewares.AuthMiddleware
 	UserController       *controllers.UserController
 }
 
@@ -40,7 +40,7 @@ func NewRoutes(in inContext) *Routes {
 		userAssetsController: in.UserAssetsController,
 		orderController:      in.OrderController,
 		marketController:     in.MarketController,
-		middleware:           in.Middleware,
+		authMiddleware:       in.AuthMiddleware,
 		userController:       in.UserController,
 	}
 
@@ -61,11 +61,11 @@ func (ctx *Routes) registerRoutes() {
 	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)
 
 	user := v1Group.Group("user")
-	user.POST("/login", ctx.userController.Login)
-	user.POST("/register", ctx.userController.Register)
+	user.POST("/login", ctx.authMiddleware.Jwt().LoginHandler)
+	user.POST("/refresh_token", ctx.authMiddleware.Jwt().RefreshHandler)
 
 	asset := v1Group.Group("asset")
-	asset.Use(ctx.middleware.Auth())
+	asset.Use(ctx.authMiddleware.Auth())
 	asset.POST("/despoit", ctx.userAssetsController.Despoit)
 	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
 	asset.GET("/:symbol", ctx.userAssetsController.Query)
@@ -73,7 +73,7 @@ func (ctx *Routes) registerRoutes() {
 	asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
 
 	order := v1Group.Group("order")
-	order.Use(ctx.middleware.Auth())
+	order.Use(ctx.authMiddleware.Auth())
 	order.POST("/create", ctx.orderController.Create)
 	order.GET("/history", ctx.orderController.HistoryList)
 	order.GET("/unfinished", ctx.orderController.UnfinishedList)

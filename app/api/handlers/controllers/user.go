@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
 
@@ -41,11 +42,12 @@ type LoginRequest struct {
 // @Router /api/v1/user/login [post]
 func (u *UserController) Login(ctx *gin.Context) {
 	//TODO
-	//随机一个用户ID
-	// 充值usd和jpy两种货币，返回这个用户的基本信息
 
-	// userId := time.Now().Unix()
-	// u.assetRepo.Despoit()
+	var args LoginRequest
+	if err := ctx.ShouldBindJSON(&args); err != nil {
+		common.ResponseError(ctx, err)
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "demo login"})
 }

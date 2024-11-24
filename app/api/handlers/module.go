@@ -8,7 +8,7 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		middlewares.NewMiddleware,
+		middlewares.NewAuthMiddleware,
 		controllers.NewBaseController,
 		controllers.NewUserAssetsController,
 		controllers.NewOrderController,
