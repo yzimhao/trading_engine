@@ -7,7 +7,7 @@ layui.define(["layer"], function(exports){
         load_info: function(){
             var me = this;
             $.ajax({
-                url: API_HAOBASE_HOST+ "/api/v1/base/varieties/config",
+                url: "/api/v1/base/varieties/config",
                 type: "get",
                 data: {
                     symbol: CURRENT_SYMBOL,

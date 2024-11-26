@@ -7,7 +7,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
     var socket = function () {
         if (window["WebSocket"]) {
             var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
-            conn = new WebSocket(WSHOST+"/quote/ws");
+            conn = new WebSocket("/quote/ws");
             conn.onclose = function (evt) {
                 layer.msg("<b>WebSocket Connection closed</b>");
                 setTimeout(function () {

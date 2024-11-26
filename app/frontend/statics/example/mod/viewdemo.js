@@ -43,7 +43,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 console.log(order_id);
 
                 $.ajax({
-                    url: API_HAOBASE_HOST+ "/api/v1/base/order/cancel",
+                    url: "/api/v1/base/order/cancel",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
@@ -67,7 +67,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 });
             }).on("click", ".get_original_assets", function(){
                 $.ajax({
-                    url: API_HAOBASE_HOST+ "/api/v1/base/assets/recharge_for_demo",
+                    url: "/api/v1/base/assets/recharge_for_demo",
                     type: "get",
                     contentType: "application/json",
                     beforeSend: function(r) {
@@ -90,7 +90,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 var mtype = $("input[name='mtype']:checked").val();
                 
                 $.ajax({
-                    url: API_HAOBASE_HOST+ "/api/v1/base/order/create",
+                    url: "/api/v1/base/order/create",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
@@ -133,14 +133,14 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
 
         load_depth_data: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
+            $.get("/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
                 if(d.ok){
                     utils.renderdepth(d.data);
                 }
             });
         },
         load_tradelog_data: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
+            $.get("/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
                 if (d.ok) {
                     var data = d.data.reverse();
                     for(var i=0; i<data.length; i++){
@@ -151,14 +151,14 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         load_system_info: function(){
-            $.get(API_HAOQUOTE_HOST + "/api/v1/quote/system", function(d){
+            $.get("/api/v1/quote/system", function(d){
                 $(".version").html(d.version);
                 $(".build").html(d.build);
             });
         },
         load_assets: function(){
             $.ajax({
-                url: API_HAOBASE_HOST+ "/api/v1/base/assets",
+                url: "/api/v1/base/assets",
                 type: "get",
                 beforeSend: function(r) {
                     r.setRequestHeader("token", login.user_id);
@@ -188,7 +188,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
         load_order_unfinished: function(){
             $.ajax({
-                url: API_HAOBASE_HOST+ "/api/v1/base/order/unfinished",
+                url: "/api/v1/base/order/unfinished",
                 type: "get",
                 beforeSend: function(r) {
                     r.setRequestHeader("token", login.user_id);
@@ -213,7 +213,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
         load_all_tsymbols: function(){
             $.ajax({
-                url: API_HAOBASE_HOST+ "/api/v1/base/trading/varieties",
+                url: "/api/v1/base/trading/varieties",
                 type: "get",
                 success: function (d) {
                     console.log("/trading/varieties: ", d);

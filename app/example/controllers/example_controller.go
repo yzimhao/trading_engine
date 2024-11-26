@@ -34,6 +34,7 @@ func NewExampleController(in inContext) *ExampleController {
 func (exa *ExampleController) registerRoutes() {
 
 	exampleGroup := exa.engine.Group("example")
+	exampleGroup.GET("/", exa.example)
 	exampleGroup.GET("/:symbol", exa.example)
 }
 
