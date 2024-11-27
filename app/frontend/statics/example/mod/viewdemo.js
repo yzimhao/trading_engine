@@ -67,12 +67,9 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 });
             }).on("click", ".get_original_assets", function(){
                 $.ajax({
-                    url: "/api/v1/base/assets/recharge_for_demo",
+                    url: "/example/deposit",
                     type: "get",
                     contentType: "application/json",
-                    beforeSend: function(r) {
-                        r.setRequestHeader("token", Cookies.get("user_id"));
-                    },
                     success: function (d) {
                         if(d.ok){
                             me.load_assets();
