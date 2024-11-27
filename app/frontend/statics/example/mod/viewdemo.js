@@ -155,7 +155,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
         load_assets: function(){
             $.ajax({
-                url: "/api/v1/asset/",
+                url: "/api/v1/asset/query",
                 type: "get",
                 data:{
                     // symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
