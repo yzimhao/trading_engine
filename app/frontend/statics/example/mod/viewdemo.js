@@ -158,11 +158,8 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
         load_assets: function(){
             $.ajax({
-                url: "/api/v1/base/assets",
+                url: "/api/v1/asset/",
                 type: "get",
-                beforeSend: function(r) {
-                    r.setRequestHeader("token", login.user_id);
-                },
                 data:{
                     // symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
                 },
@@ -231,15 +228,15 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         init: function(){
-            console.log(baseinfo);
             login.init();
             this.bind();
-            this.load_system_info();
-            this.load_all_tsymbols();
-            this.load_depth_data();
-            this.load_tradelog_data();
+            // this.load_system_info();
+            // this.load_all_tsymbols();
+            // this.load_depth_data();
+            // this.load_tradelog_data();
             this.load_assets();
-            this.load_order_unfinished();
+            // this.load_order_unfinished();
+            // websocket.init();
         }
     };
     

@@ -6,8 +6,8 @@ import (
 )
 
 type Asset struct {
-	models.UUID
-	models.Base
+	models.UUID   `json:"-"`
+	models.Base   `json:"-"`
 	UserId        string        `json:"user_id,omitempty"`
 	Symbol        string        `json:"symbol,omitempty"`
 	TotalBalance  types.Numeric `json:"total_balance,omitempty"`

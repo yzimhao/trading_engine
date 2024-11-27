@@ -3,8 +3,11 @@ layui.define(["layer"], function(exports){
         , $ = layui.$;
 
     var login = {
-        user_id: "",
-        show_setting_user_id: function(){
+        options: {
+            username: "",
+            user_id: "",
+        },
+        form: function(){
             var me = this;
             layer.prompt({
                 formType: 0,
@@ -14,28 +17,37 @@ layui.define(["layer"], function(exports){
             }, function(value, index, elem){
                 var pp = new RegExp(/^[a-z0-9]{4,10}$/);
                 if (pp.test(value)) {
-                    me.user_id = value;
-                    Cookies.set("user_id", value, { expires: 7, path: '' });
-                    layer.close(index); // 关闭层
-                    window.location.reload();
+                    me.options.username = value;
+                    
+                    $.post("/api/v1/user/login", {
+                        username: value,
+                        password: "default",
+                    }).then(function(d){
+                        console.log(d);
+                        Cookies.set("username", value, { expires: 7, path: '/' });
+
+                        layer.close(index); // 关闭层
+                        window.location.reload();
+                    });
+
                 }else{
                     layer.msg("用户名不符合规则");
                 }
             });
         },
         logout: function(){
-            Cookies.remove("user_id");
+            Cookies.remove("username");
             window.location.reload();
         },
 
         
         init: function(){
             var me = this;
-            if(!Cookies.get("user_id")) {
-                this.show_setting_user_id();
+            if(!Cookies.get("username")) {
+                this.form();
             }else{
-                this.user_id = Cookies.get("user_id");
-                $(".user").html(this.user_id);
+                this.options.username = Cookies.get("username");
+                $(".user").html(this.options.username);
                 $(".logout").on("click", function(){
                     me.logout();
                 }).show();

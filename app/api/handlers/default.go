@@ -68,7 +68,7 @@ func (ctx *Routes) registerRoutes() {
 	asset.Use(ctx.authMiddleware.Auth())
 	asset.POST("/despoit", ctx.userAssetsController.Despoit)
 	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
-	asset.GET("/:symbol", ctx.userAssetsController.Query)
+	asset.GET("/query", ctx.userAssetsController.Query)
 	asset.GET("/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
 	asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
 

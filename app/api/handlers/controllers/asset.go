@@ -3,12 +3,13 @@ package controllers
 import (
 	"context"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	crud_types "github.com/duolacloud/crud-core/types"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
-	models_asset "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
@@ -89,30 +90,31 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 	common.ResponseOK(c, transId)
 }
 
-// @Summary get wallet asset
-// @Description get an asset balance
+// @Summary get wallet assets
+// @Description get assets balance
 // @ID v1.asset.query
 // @Tags asset
 // @Accept json
 // @Produce json
-// @Param symbol path string true "symbol"
-// @Query userId query string true "userId测试用参数"
-// @Success 200 {object} models_asset.Asset
-// @Router /api/v1/asset/{symbol} [get]
+// @Param symbols query string true "symbols example: BTC,ETH,USDT"
+// @Success 200 {object} []models_asset.Asset
+// @Router /api/v1/asset/query [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
-	symbol := c.Param("symbol")
-	userId := c.Query("userId")
-
-	var asset *models_asset.Asset
+	claims := jwt.ExtractClaims(c)
+	userId := claims["userId"].(string)
+	// symbols := c.Query("symbols")
+	// symbolsSlice := strings.Split(symbols, ",")
 
 	ctx := context.Background()
-	asset, err := ctrl.repo.QueryOne(ctx, map[string]any{
-		"symbol": map[string]any{
-			"eq": symbol,
-		},
-		"user_id": map[string]any{
-			"eq": userId,
+	assets, err := ctrl.repo.Query(ctx, &crud_types.PageQuery{
+		Filter: map[string]any{
+			// "symbol": map[string]any{
+			// 	"in": symbolsSlice,
+			// },
+			"user_id": map[string]any{
+				"eq": userId,
+			},
 		},
 	})
 	if err != nil {
@@ -120,7 +122,7 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 		return
 	}
 
-	common.ResponseOK(c, asset)
+	common.ResponseOK(c, assets)
 }
 
 type TransferRequest struct {

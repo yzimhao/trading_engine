@@ -1,15 +1,22 @@
 package middlewares
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
 	"go.uber.org/zap"
 )
 
-const identityKey = "user_id"
+/*
+* 用于example中测试逻辑，实际应用中需要修改下面的逻辑
+ */
+
+const identityKey = "userId"
 
 type loginRequest struct {
 	Username string `form:"username" json:"username" binding:"required"`
@@ -19,6 +26,7 @@ type loginRequest struct {
 type User struct {
 	UserID   string
 	Username string
+	Password string
 }
 
 type AuthMiddleware struct {
@@ -57,17 +65,21 @@ func (m *AuthMiddleware) initJwt() {
 
 	//TODO load config
 	mid, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:           realm,
-		Key:             []byte(secretKey),
-		Timeout:         timeout,
-		MaxRefresh:      maxRefresh,
-		IdentityKey:     identityKey,
-		PayloadFunc:     m.payloadFunc(),
-		IdentityHandler: m.identityHandler(),
-		Authenticator:   m.authenticator(),
-		Authorizator:    m.authorizator(),
-		Unauthorized:    m.unauthorized(),
-		TokenLookup:     "header: Authorization, query: token, cookie: jwt",
+		Realm:             realm,
+		Key:               []byte(secretKey),
+		Timeout:           timeout,
+		MaxRefresh:        maxRefresh,
+		IdentityKey:       identityKey,
+		SendCookie:        true,
+		CookieHTTPOnly:    true,
+		SendAuthorization: true,
+		PayloadFunc:       m.payloadFunc(),
+		IdentityHandler:   m.identityHandler(),
+		Authenticator:     m.authenticator(),
+		Authorizator:      m.authorizator(),
+		Unauthorized:      m.unauthorized(),
+		TokenLookup:       "header: Authorization, query: token, cookie: jwt",
+		LoginResponse:     m.loginResponse(),
 		// TokenLookup: "query:token",
 		// TokenLookup: "cookie:token",
 		TokenHeadName: "Bearer",
@@ -84,6 +96,7 @@ func (m *AuthMiddleware) payloadFunc() func(data interface{}) jwt.MapClaims {
 		if v, ok := data.(*User); ok {
 			return jwt.MapClaims{
 				identityKey: v.UserID,
+				"userName":  v.Username,
 			}
 		}
 		return jwt.MapClaims{}
@@ -108,30 +121,40 @@ func (m *AuthMiddleware) authenticator() func(c *gin.Context) (interface{}, erro
 		username := loginVals.Username
 		password := loginVals.Password
 
-		if (username == "admin" && password == "admin") || (username == "test" && password == "test") {
-			return &User{
-				Username: username,
-				UserID:   username,
-			}, nil
-		}
+		return &User{
+			UserID:   fmt.Sprintf("%d", time.Now().Unix()),
+			Username: username,
+			Password: password,
+		}, nil
+
 		return nil, jwt.ErrFailedAuthentication
 	}
 }
 
 func (m *AuthMiddleware) authorizator() func(data interface{}, c *gin.Context) bool {
 	return func(data interface{}, c *gin.Context) bool {
-		if v, ok := data.(*User); ok && v.Username == "admin" {
+
+		//只确认有没有登陆
+		if _, ok := data.(*User); ok {
 			return true
 		}
 		return false
+
 	}
 }
 
 func (m *AuthMiddleware) unauthorized() func(c *gin.Context, code int, message string) {
 	return func(c *gin.Context, code int, message string) {
-		c.JSON(code, gin.H{
-			"code":    code,
-			"message": message,
-		})
+		// c.JSON(code, gin.H{
+		// 	"code":    code,
+		// 	"message": message,
+		// })
+		common.ResponseError(c, errors.New(message))
+	}
+}
+
+func (m *AuthMiddleware) loginResponse() func(c *gin.Context, code int, token string, expire time.Time) {
+	return func(c *gin.Context, code int, token string, expire time.Time) {
+		common.ResponseOK(c, gin.H{"token": token, "expire": expire.Format(time.RFC3339)})
 	}
 }

@@ -89,6 +89,12 @@ layui.define(["layer", "utils", "kchart"],function(exports){
             layer.msg("<b>Your browser does not support WebSockets.</b>");
         }
     };
+
     socket();
-    exports("websocket", "");
+    var obj = {
+        init: function(){
+            socket();
+        }
+    };
+    exports("websocket", obj);
 })

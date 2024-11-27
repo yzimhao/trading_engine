@@ -51,4 +51,8 @@ func (ctrl *BaseController) Time(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/base/exchange_info [get]
 func (ctrl *BaseController) ExchangeInfo(c *gin.Context) {
+	//TODO
+	common.ResponseOK(c, gin.H{
+		"data": "not implemented",
+	})
 }
