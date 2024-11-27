@@ -158,7 +158,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 url: "/api/v1/asset/query",
                 type: "get",
                 data:{
-                    // symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
+                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
                 },
                 success: function (d) {
                     console.log("load_assets: ", d);

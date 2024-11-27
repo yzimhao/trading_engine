@@ -53,7 +53,7 @@ func (exa *ExampleController) registerRoutes() {
 
 func (exa *ExampleController) example(ctx *gin.Context) {
 
-	support := []string{"usdjpy", "eurusd"}
+	support := []string{"btcusdt"}
 	symbol := strings.ToLower(ctx.Param("symbol"))
 
 	if !lo.Contains(support, symbol) {

@@ -2,25 +2,32 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 type BaseController struct {
-	logger *zap.Logger
+	logger       *zap.Logger
+	tradeVariety persistence.TradeVarietyRepository
 }
 
 type inBaseContext struct {
 	fx.In
-	Logger *zap.Logger
+	Logger       *zap.Logger
+	TradeVariety persistence.TradeVarietyRepository
 }
 
 func NewBaseController(in inBaseContext) *BaseController {
-	return &BaseController{logger: in.Logger}
+	return &BaseController{
+		logger:       in.Logger,
+		tradeVariety: in.TradeVariety,
+	}
 }
 
 // @Summary ping
@@ -51,8 +58,13 @@ func (ctrl *BaseController) Time(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/base/exchange_info [get]
 func (ctrl *BaseController) ExchangeInfo(c *gin.Context) {
-	//TODO
-	common.ResponseOK(c, gin.H{
-		"data": "not implemented",
-	})
+	symbol := strings.ToUpper(c.Query("symbol"))
+
+	tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+
+	common.ResponseOK(c, tradeVariety)
 }
