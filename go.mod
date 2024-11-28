@@ -5,18 +5,21 @@ go 1.22.7
 toolchain go1.22.8
 
 require (
+	github.com/appleboy/gin-jwt/v2 v2.10.0
 	github.com/duolacloud/broker-core v0.0.6
 	github.com/duolacloud/broker-rocketmq v0.0.7
 	github.com/duolacloud/crud-cache-redis v0.0.7
 	github.com/duolacloud/crud-core v0.0.25
 	github.com/duolacloud/crud-core-gorm v0.0.28
 	github.com/gin-contrib/multitemplate v1.0.1
+	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/rubenv/sql-migrate v1.7.0
+	github.com/samber/lo v1.47.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/spf13/viper v1.19.0
@@ -25,7 +28,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
-	github.com/urfave/cli/v3 v3.0.0-alpha9.3
+	github.com/urfave/cli/v3 v3.0.0-alpha9.6
 	go.uber.org/fx v1.23.0
 	go.uber.org/mock v0.5.0
 	go.uber.org/zap v1.27.0
@@ -41,8 +44,7 @@ require (
 	github.com/PuerkitoBio/purell v1.2.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/apache/rocketmq-client-go/v2 v2.1.2 // indirect
-	github.com/appleboy/gin-jwt/v2 v2.10.0 // indirect
-	github.com/bytedance/sonic v1.12.4 // indirect
+	github.com/bytedance/sonic v1.12.5 // indirect
 	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
@@ -53,7 +55,6 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-contrib/static v1.1.2 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -65,7 +66,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -92,7 +93,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/samber/lo v1.47.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect

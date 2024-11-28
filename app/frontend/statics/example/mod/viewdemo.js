@@ -69,6 +69,9 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 $.ajax({
                     url: "/example/deposit",
                     type: "get",
+                    data: {
+                        symbol: baseinfo.cfg_info.target.symbol + "," + baseinfo.cfg_info.base.symbol
+                    },
                     contentType: "application/json",
                     success: function (d) {
                         if(d.ok){
@@ -170,7 +173,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     var html = [];
                     if(d.data.length > 0){
                         for(var i=0; i<d.data.length; i++){
-                            html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail);
+                            html.push(" " + d.data[i].symbol.toUpperCase() + ":" + d.data[i].avail_balance);
                         }
                     }else{
                         html.push("<a href='javascript:;' style='color:red;' class='get_original_assets'>点我获取资产</a>");

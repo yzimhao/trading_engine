@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -122,7 +121,7 @@ func (m *AuthMiddleware) authenticator() func(c *gin.Context) (interface{}, erro
 		password := loginVals.Password
 
 		return &User{
-			UserID:   fmt.Sprintf("%d", time.Now().Unix()),
+			UserID:   username, //fmt.Sprintf("%d", time.Now().Unix()),
 			Username: username,
 			Password: password,
 		}, nil

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -103,15 +104,16 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
 	claims := jwt.ExtractClaims(c)
 	userId := claims["userId"].(string)
-	// symbols := c.Query("symbols")
-	// symbolsSlice := strings.Split(symbols, ",")
+
+	symbols := c.Query("symbols")
+	symbolsSlice := strings.Split(symbols, ",")
 
 	ctx := context.Background()
 	assets, err := ctrl.repo.Query(ctx, &crud_types.PageQuery{
 		Filter: map[string]any{
-			// "symbol": map[string]any{
-			// 	"in": symbolsSlice,
-			// },
+			"symbol": map[string]any{
+				"in": symbolsSlice,
+			},
 			"user_id": map[string]any{
 				"eq": userId,
 			},

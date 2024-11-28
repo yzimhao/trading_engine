@@ -72,7 +72,7 @@ func (exa *ExampleController) deposit(ctx *gin.Context) {
 
 	userId := claims["userId"].(string)
 
-	symbols := []string{"usd", "jpy", "eur"}
+	symbols := []string{"usdt", "jpy", "eur", "btc"}
 
 	for _, symbol := range symbols {
 		transId := time.Now().Format("20060102")
