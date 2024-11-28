@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
@@ -67,10 +66,7 @@ func (exa *ExampleController) example(ctx *gin.Context) {
 }
 
 func (exa *ExampleController) deposit(ctx *gin.Context) {
-	claims := jwt.ExtractClaims(ctx)
-	exa.logger.Info("deposit", zap.Any("claims", claims))
-
-	userId := claims["userId"].(string)
+	userId := common.GetUserId(ctx)
 
 	symbols := []string{"usdt", "jpy", "eur", "btc"}
 

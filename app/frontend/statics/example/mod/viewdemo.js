@@ -90,7 +90,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 var mtype = $("input[name='mtype']:checked").val();
                 
                 $.ajax({
-                    url: "/api/v1/base/order/create",
+                    url: "/api/v1/order/create",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",

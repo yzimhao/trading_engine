@@ -42,7 +42,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	// 查询交易对配置
 	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "find trade variety failed")
 	}
 
 	data := entities.Order{
@@ -69,11 +69,16 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	o.logger.Sugar().Infof("auto create tables: %s, %s", data.TableName(), unfinished.TableName())
 
 	//auto create tables
-	if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
-		return nil, errors.Wrap(err, "auto migrate order table failed")
+	if !o.db.Migrator().HasTable(data.TableName()) {
+		if err := o.db.Table(data.TableName()).AutoMigrate(&entities.Order{}); err != nil {
+			return nil, errors.Wrap(err, "auto migrate order table failed")
+		}
 	}
-	if err := o.db.Table(unfinished.TableName()).AutoMigrate(&entities.UnfinishedOrder{}); err != nil {
-		return nil, errors.Wrap(err, "auto migrate unfinished order table failed")
+
+	if !o.db.Migrator().HasTable(unfinished.TableName()) {
+		if err := o.db.Table(unfinished.TableName()).AutoMigrate(&entities.UnfinishedOrder{}); err != nil {
+			return nil, errors.Wrap(err, "auto migrate unfinished order table failed")
+		}
 	}
 
 	// 开启事务
@@ -83,7 +88,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 			data.FreezeQty = data.Quantity
 			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.TargetVariety.Symbol, models_types.Numeric(data.Quantity))
 			if err != nil {
-				return err
+				return errors.Wrap(err, "freeze asset failed")
 			}
 		} else {
 			amount := models_types.Numeric(data.Price).Mul(models_types.Numeric(data.Quantity))
@@ -91,23 +96,23 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 			data.FreezeAmount = amount.Add(fee).String()
 			_, err := o.assetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, tradeInfo.BaseVariety.Symbol, models_types.Numeric(data.FreezeAmount))
 			if err != nil {
-				return err
+				return errors.Wrap(err, "freeze asset failed")
 			}
 		}
 
 		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
-			return err
+			return errors.Wrap(err, "create order failed")
 		}
 
 		unfinished.Order = data
 		if err := tx.Table(unfinished.TableName()).Create(&unfinished).Error; err != nil {
-			return err
+			return errors.Wrap(err, "create unfinished order failed")
 		}
 
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "create order failed")
 	}
 
 	return &data, nil

@@ -14,38 +14,6 @@ services:
     ports:
       - '6379:6379'
     restart: always
-  kafka:
-    image: 'bitnami/kafka:latest'
-    volumes:
-      - kafka_volume:/data/kafka
-    environment:
-      # General
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-      - KAFKA_CFG_AUTO_LEADER_REBALANCE_ENABLE=true
-      # KRaft
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-      # listeners
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-0:9092,EXTERNAL://host.docker.internal:10000
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - KAFKA_VOLUME_DIR=/data/kafka
-    ports:
-      - "10000:9094"
-  kafka-ui:
-    image: provectuslabs/kafka-ui:master
-    ports:
-      - "8001:8001"
-    restart: always
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
-      - KAFKA_CLUSTERS_0_READONLY=false
-    depends_on:
-      - kafka
 
   rocketmq-broker:
     image: apache/rocketmq:5.3.1
@@ -95,9 +63,6 @@ services:
       - 8180:8180
 
 volumes:
-  kafka_volume:
-    name: kafka_volume
-    external: true
   rocketmq_namesrv_logs:
     name: rocketmq_namesrv_logs
     external: true

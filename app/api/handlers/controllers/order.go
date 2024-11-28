@@ -62,7 +62,7 @@ type OrderCreateRequest struct {
 func (ctrl *OrderController) Create(c *gin.Context) {
 	var req OrderCreateRequest
 
-	userId := c.MustGet("userId").(string)
+	userId := common.GetUserId(c)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		common.ResponseError(c, err)
