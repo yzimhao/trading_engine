@@ -85,7 +85,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
 
             //新订单
             $(".opt").on("click", function () {
-                var side = $(this).hasClass("sell") ? "sell" : "buy";
+                var side = $(this).hasClass("sell") ? "ask" : "bid";
                 var order_type = $("select[name='order_type']").val();
                 var mtype = $("input[name='mtype']:checked").val();
                 
@@ -94,9 +94,6 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
-                    beforeSend: function(r) {
-                        r.setRequestHeader("token", Cookies.get("user_id"));
-                    },
                     data: function () {
                         var data = {
                             symbol: CURRENT_SYMBOL,
@@ -133,7 +130,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
 
         load_depth_data: function(){
-            $.get("/api/v1/quote/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
+            $.get("/api/v1/market/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
                 if(d.ok){
                     utils.renderdepth(d.data);
                 }
@@ -232,7 +229,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             this.bind();
             // this.load_system_info();
             // this.load_all_tsymbols();
-            // this.load_depth_data();
+            this.load_depth_data();
             // this.load_tradelog_data();
             this.load_assets();
             // this.load_order_unfinished();

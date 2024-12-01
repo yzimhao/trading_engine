@@ -3,10 +3,13 @@ package matching
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"slices"
 	"sync"
+	"time"
 
 	"github.com/duolacloud/broker-core"
+	"github.com/duolacloud/crud-core/cache"
 	ds_types "github.com/duolacloud/crud-core/types"
 	"github.com/spf13/viper"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
@@ -17,12 +20,17 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	CacheKeyOrderbook = "orderbook.%s" //example: orderbook.btcusdt
+)
+
 type inContext struct {
 	fx.In
 	Broker           broker.Broker
 	Logger           *zap.Logger
 	TradeVarietyRepo persistence.TradeVarietyRepository
 	Viper            *viper.Viper
+	Cache            cache.Cache
 }
 
 type Matching struct {
@@ -31,6 +39,7 @@ type Matching struct {
 	tradeVarietyRepo persistence.TradeVarietyRepository
 	tradePairs       sync.Map
 	viper            *viper.Viper
+	cache            cache.Cache
 }
 
 func NewMatching(in inContext) *Matching {
@@ -39,6 +48,7 @@ func NewMatching(in inContext) *Matching {
 		logger:           in.Logger,
 		tradeVarietyRepo: in.TradeVarietyRepo,
 		viper:            in.Viper,
+		cache:            in.Cache,
 	}
 }
 
@@ -93,6 +103,8 @@ func (s *Matching) InitEngine() {
 				s.processTradeResult(result)
 			})
 
+			go s.flushOrderbookToCache(context.Background(), tradeVariety.Symbol)
+
 			s.tradePairs.Store(tradeVariety.Symbol, engine)
 			s.logger.Sugar().Infof("init matching engine for symbol: %s", tradeVariety.Symbol)
 		}
@@ -106,7 +118,7 @@ func (s *Matching) Subscribe() {
 }
 
 func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
-	s.logger.Sugar().Debugf("on new order: %v", event)
+	s.logger.Sugar().Debugf("listen new order %s", event.Message().Body)
 
 	var order models_types.EventOrderNew
 	if err := json.Unmarshal(event.Message().Body, &order); err != nil {
@@ -141,6 +153,7 @@ func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 
 	if engine := s.engine(order.Symbol); engine != nil {
 		engine.AddItem(item)
+		s.logger.Sugar().Debugf("add item to engine %s, askLen: %d, bidLen: %d", order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
 	}
 	return nil
 }
@@ -193,5 +206,32 @@ func (s *Matching) processTradeResult(result matching_types.TradeResult) {
 	})
 	if err != nil {
 		s.logger.Sugar().Errorf("matching process trade result publish error: %v", err)
+	}
+}
+
+func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+
+	engine := s.engine(symbol)
+	if engine == nil {
+		s.logger.Sugar().Errorf("matching engine not found for symbol: %s", symbol)
+		return
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			asks := engine.GetAskOrderBook(10)
+			bids := engine.GetBidOrderBook(10)
+			err := s.cache.Set(ctx, fmt.Sprintf(CacheKeyOrderbook, engine.Symbol()), map[string]any{
+				"asks": asks,
+				"bids": bids,
+			}, cache.WithExpiration(time.Second*5))
+			if err != nil {
+				s.logger.Sugar().Errorf("matching flush orderbook to cache error: %v", err)
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	migrate "github.com/rubenv/sql-migrate"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
 
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -45,5 +46,27 @@ func MigrateDown(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 		return fmt.Errorf("failed to apply migrations. %v", err)
 	}
 	logger.Info("migrations applied", zap.Int("applied", applied))
+	return nil
+}
+
+func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
+	//TODO  justfor development
+	tables := []any{
+		&entities.Asset{},
+		&entities.AssetFreeze{},
+		&entities.AssetLog{},
+		&entities.UnfinishedOrder{},
+		&entities.TradeVariety{},
+		&entities.Variety{},
+	}
+
+	for _, table := range tables {
+		indexes, _ := db.Migrator().GetIndexes(table)
+		for _, index := range indexes {
+			db.Migrator().DropIndex(table, index.Name())
+		}
+		db.Migrator().DropTable(table)
+	}
+
 	return nil
 }

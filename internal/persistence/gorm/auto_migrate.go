@@ -64,13 +64,13 @@ func initVariety(ctx context.Context, varietyRepo persistence.VarietyRepository)
 
 	usdt, _ := varietyRepo.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{
-			"eq": "USDT",
+			"eq": "usdt",
 		},
 	})
 
 	btc, _ := varietyRepo.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{
-			"eq": "BTC",
+			"eq": "btc",
 		},
 	})
 
@@ -83,16 +83,16 @@ func initVariety(ctx context.Context, varietyRepo persistence.VarietyRepository)
 	}
 	varieties, err := varietyRepo.CreateMany(ctx, []*models_variety.CreateVariety{
 		{
-			Symbol:       "USDT",
-			Name:         "usdt",
+			Symbol:       "usdt",
+			Name:         "USDT",
 			ShowDecimals: 4,
 			MinDecimals:  6,
 			IsBase:       true,
 			Status:       models_types.StatusEnabled,
 		},
 		{
-			Symbol:       "BTC",
-			Name:         "bitcoin",
+			Symbol:       "btc",
+			Name:         "Bitcoin",
 			ShowDecimals: 4,
 			MinDecimals:  8,
 			Status:       models_types.StatusEnabled,
@@ -108,14 +108,14 @@ func initTradeVariety(ctx context.Context, tradeVarietyRepo persistence.TradeVar
 
 	btcusdt, _ := tradeVarietyRepo.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{
-			"eq": "BTCUSDT",
+			"eq": "btcusdt",
 		},
 	})
 	if btcusdt != nil {
 		return nil
 	}
 	_, err := tradeVarietyRepo.Create(ctx, &models_variety.CreateTradeVariety{
-		Symbol:         "BTCUSDT",
+		Symbol:         "btcusdt", //统一用小写
 		Name:           "BTCUSDT",
 		BaseId:         varieties[0].ID,
 		TargetId:       varieties[1].ID,

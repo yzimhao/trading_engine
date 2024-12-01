@@ -21,6 +21,12 @@ migrate-down:
 	@echo "Migrating down..."
 	@bash scripts/migrate_down.sh
 
+.PHONY: migrate-clean
+migrate-clean:
+	@echo "Migrating clean..."
+	@bash scripts/migrate_clean.sh
+
+
 .PHONY: docker-up
 docker-up:
 	@echo "Starting docker compose..."

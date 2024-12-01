@@ -3,7 +3,6 @@ package gorm
 import (
 	"context"
 	"errors"
-	"strings"
 
 	k_repo "github.com/duolacloud/crud-core-gorm/repositories"
 	"github.com/duolacloud/crud-core/cache"
@@ -90,7 +89,6 @@ func newAssetFreezeRepo(datasource datasource.DataSource[gorm.DB], cache cache.C
 }
 
 func (r *gormAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
-	symbol = strings.ToUpper(symbol)
 	db, err := r.datasource.GetDB(ctx)
 	if err != nil {
 		return err

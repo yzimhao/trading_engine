@@ -48,6 +48,20 @@ func main() {
 					).Start(ctx)
 				},
 			},
+			{
+				Name:        "clean",
+				Description: "clean db",
+				Action: func(ctx context.Context, c *cli.Command) error {
+					return fx.New(
+						fx.Provide(
+							di.NewViper,
+							zap.NewDevelopment,
+							di.NewGorm,
+						),
+						fx.Invoke(migrations.MigrateClean),
+					).Start(ctx)
+				},
+			},
 		},
 	}
 

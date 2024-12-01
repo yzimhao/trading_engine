@@ -38,7 +38,7 @@ func NewTradeVarietyRepo(datasource datasource.DataSource[gorm.DB], cache cache.
 }
 
 func (v *gormTradeVarietyRepo) FindBySymbol(ctx context.Context, symbol string) (tradeVariety *models_variety.TradeVariety, err error) {
-	symbol = strings.ToUpper(symbol)
+	symbol = strings.ToLower(symbol)
 	tradeVariety, err = v.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{
 			"eq": symbol,
