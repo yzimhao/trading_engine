@@ -13,4 +13,5 @@ type OrderRepository interface {
 	CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error)
 	CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error)
 	Cancel(ctx context.Context, symbol, order_id string, cancelType models_types.CancelType) error
+	LoadUnfinishedOrders(ctx context.Context, symbol string) (orders []*entities.Order, err error)
 }

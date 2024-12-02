@@ -38,6 +38,13 @@ func NewOrderRepo(
 	}
 }
 
+func (o *orderRepository) LoadUnfinishedOrders(ctx context.Context, symbol string) (orders []*entities.Order, err error) {
+	//TODO 分批读取
+	unfinished := entities.UnfinishedOrder{}
+	o.db.Table(unfinished.TableName()).Where("symbol=?", symbol).Order("nano_time asc").Find(&orders)
+	return orders, nil
+}
+
 func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
 	// 查询交易对配置
 	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)

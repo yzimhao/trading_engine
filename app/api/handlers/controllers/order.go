@@ -182,10 +182,17 @@ func (ctrl *OrderController) HistoryList(c *gin.Context) {
 // @Tags order
 // @Accept json
 // @Produce json
+// @Param symbol query string true "symbol"
 // @Success 200 {string} any
 // @Router /api/v1/order/unfinished [get]
 func (ctrl *OrderController) UnfinishedList(c *gin.Context) {
-	common.ResponseOK(c, "test")
+	symbol := c.Query("symbol")
+	orders, err := ctrl.repo.LoadUnfinishedOrders(c, symbol)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+	common.ResponseOK(c, orders)
 }
 
 // @Summary trade history list

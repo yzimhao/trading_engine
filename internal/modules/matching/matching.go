@@ -11,6 +11,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	ds_types "github.com/duolacloud/crud-core/types"
+	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -31,6 +32,7 @@ type inContext struct {
 	TradeVarietyRepo persistence.TradeVarietyRepository
 	Viper            *viper.Viper
 	Cache            cache.Cache
+	OrderRepo        persistence.OrderRepository
 }
 
 type Matching struct {
@@ -40,6 +42,7 @@ type Matching struct {
 	tradePairs       sync.Map
 	viper            *viper.Viper
 	cache            cache.Cache
+	orderRepo        persistence.OrderRepository
 }
 
 func NewMatching(in inContext) *Matching {
@@ -49,6 +52,7 @@ func NewMatching(in inContext) *Matching {
 		tradeVarietyRepo: in.TradeVarietyRepo,
 		viper:            in.Viper,
 		cache:            in.Cache,
+		orderRepo:        in.OrderRepo,
 	}
 }
 
@@ -103,10 +107,13 @@ func (s *Matching) InitEngine() {
 				s.processTradeResult(result)
 			})
 
-			go s.flushOrderbookToCache(context.Background(), tradeVariety.Symbol)
-
 			s.tradePairs.Store(tradeVariety.Symbol, engine)
 			s.logger.Sugar().Infof("init matching engine for symbol: %s", tradeVariety.Symbol)
+
+			go s.flushOrderbookToCache(context.Background(), tradeVariety.Symbol)
+
+			//TODO  load order from db
+			s.loadUnfinishedOrders(context.Background(), tradeVariety.Symbol)
 		}
 	}
 
@@ -234,4 +241,42 @@ func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
 			}
 		}
 	}
+}
+
+func (s *Matching) loadUnfinishedOrders(ctx context.Context, symbol string) error {
+	orders, err := s.orderRepo.LoadUnfinishedOrders(ctx, symbol)
+	if err != nil {
+		s.logger.Sugar().Errorf("matching load unfinished orders error: %v", err)
+		return err
+	}
+
+	for _, order := range orders {
+		var item matching.QueueItem
+		if order.OrderType == matching_types.OrderTypeLimit {
+			price, err := decimal.NewFromString(order.Price)
+			if err != nil {
+				s.logger.Sugar().Errorf("matching load unfinished orders price decimal error: %v", err)
+				continue
+			}
+			quantity, err := decimal.NewFromString(order.Quantity)
+			if err != nil {
+				s.logger.Sugar().Errorf("matching load unfinished orders quantity decimal error: %v", err)
+				continue
+			}
+
+			if order.OrderSide == matching_types.OrderSideSell {
+				item = matching.NewAskLimitItem(order.OrderId, price, quantity, order.NanoTime)
+			} else {
+				item = matching.NewBidLimitItem(order.OrderId, price, quantity, order.NanoTime)
+			}
+			if engine := s.engine(order.Symbol); engine != nil {
+
+				engine.AddItem(item)
+				s.logger.Sugar().Debugf("load unfinished order %s to engine %s, askLen: %d, bidLen: %d", order.OrderId, order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
+			}
+		}
+
+	}
+
+	return nil
 }

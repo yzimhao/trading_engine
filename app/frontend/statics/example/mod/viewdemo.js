@@ -182,11 +182,8 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
         load_order_unfinished: function(){
             $.ajax({
-                url: "/api/v1/base/order/unfinished",
+                url: "/api/v1/order/unfinished",
                 type: "get",
-                beforeSend: function(r) {
-                    r.setRequestHeader("token", login.user_id);
-                },
                 data:{
                     symbol: baseinfo.cfg_info.symbol,
                     limit: 4
@@ -232,7 +229,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             this.load_depth_data();
             // this.load_tradelog_data();
             this.load_assets();
-            // this.load_order_unfinished();
+            this.load_order_unfinished();
             // websocket.init();
         }
     };
