@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"fmt"
+	"strings"
 
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
@@ -58,14 +59,36 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 		&entities.UnfinishedOrder{},
 		&entities.TradeVariety{},
 		&entities.Variety{},
+		"order_",
+		"trade_log_",
+	}
+
+	allTables, err := db.Migrator().GetTables()
+	if err != nil {
+		return err
 	}
 
 	for _, table := range tables {
-		indexes, _ := db.Migrator().GetIndexes(table)
-		for _, index := range indexes {
-			db.Migrator().DropIndex(table, index.Name())
+		var dropTable any
+		switch t := table.(type) {
+		case string:
+			for _, tt := range allTables {
+				if strings.HasPrefix(tt, t) {
+					dropTable = tt
+				}
+			}
+		default:
+			dropTable = table
 		}
-		db.Migrator().DropTable(table)
+
+		indexes, err := db.Migrator().GetIndexes(dropTable)
+		if err != nil {
+			return err
+		}
+		for _, index := range indexes {
+			db.Migrator().DropIndex(dropTable, index.Name())
+		}
+		db.Migrator().DropTable(dropTable)
 	}
 
 	return nil

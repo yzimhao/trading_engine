@@ -161,7 +161,7 @@ func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.
 		Bid:        tradeResult.BidOrderId,
 		TradeBy:    tradeResult.TradeBy,
 		AskUid:     askOrder.UserId,
-		BidUid:     askOrder.UserId,
+		BidUid:     bidOrder.UserId,
 		Price:      tradeResult.TradePrice.String(),
 		Quantity:   tradeResult.TradeQuantity.String(),
 		Amount:     amount.String(),
@@ -199,12 +199,12 @@ func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 			return err
 		}
 
-		if askOrder.Status == models_types.OrderStatusNew {
-			err := tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", askOrder.OrderId).Updates(askOrder).Error
-			if err != nil {
-				return err
-			}
-		} else {
+		err := tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", askOrder.OrderId).Updates(askOrder).Error
+		if err != nil {
+			return err
+		}
+
+		if askOrder.Status == models_types.OrderStatusFilled {
 			err := tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", askOrder.OrderId).Delete(askOrder).Error
 			if err != nil {
 				return err
@@ -251,12 +251,12 @@ func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 			return err
 		}
 
-		if bidOrder.Status == models_types.OrderStatusNew {
-			err := tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", bidOrder.OrderId).Updates(bidOrder).Error
-			if err != nil {
-				return err
-			}
-		} else {
+		err = tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", bidOrder.OrderId).Updates(bidOrder).Error
+		if err != nil {
+			return err
+		}
+
+		if bidOrder.Status == models_types.OrderStatusFilled {
 			err := tx.Table(new(entities.UnfinishedOrder).TableName()).Where("order_id=?", bidOrder.OrderId).Delete(bidOrder).Error
 			if err != nil {
 				return err
@@ -287,7 +287,7 @@ func (s *SettleProcessor) orderDelivery(
 	tradePairInfo *variety.TradeVariety,
 ) error {
 	ctx := context.Background()
-	//买家结算被交易物品
+	//结算被交易物品
 	// 1.解冻卖家的冻结数量
 	// 2.将解冻的数量转移给买家
 	err := s.assetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId,
@@ -303,20 +303,19 @@ func (s *SettleProcessor) orderDelivery(
 		return err
 	}
 
-	//卖家结算本位币
+	//结算本位币
 	// 1.解冻买家冻结的金额
-	// 2.将解冻的金额扣除双方手续费后，转入卖家账户
+	// 2.将买家解冻的金额转入卖家账户
 	amount := models_types.Numeric(tradeLog.Amount)
-	err = s.assetRepo.UnFreeze(ctx, tx,
-		tradeLog.Bid, bid.UserId, tradePairInfo.BaseVariety.Symbol,
-		amount.Add(models_types.Numeric(tradeLog.AskFee).Add(models_types.Numeric(tradeLog.BidFee))))
+	err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId,
+		tradePairInfo.BaseVariety.Symbol, amount.Add(models_types.Numeric(tradeLog.BidFee)))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety unFreeze: %v %s", tradeLog, err.Error())
 		return err
 	}
 
 	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, ask.UserId,
-		tradePairInfo.BaseVariety.Symbol, amount.Sub(models_types.Numeric(tradeLog.AskFee)))
+		tradePairInfo.BaseVariety.Symbol, amount)
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety transfer: %v %s", tradeLog, err.Error())
 		return err
