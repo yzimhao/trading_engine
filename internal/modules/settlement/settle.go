@@ -290,7 +290,7 @@ func (s *SettleProcessor) orderDelivery(
 	//买家结算被交易物品
 	// 1.解冻卖家的冻结数量
 	// 2.将解冻的数量转移给买家
-	err := s.assetRepo.UnFreeze(ctx, tx, tradeLog.TradeId, ask.UserId,
+	err := s.assetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId,
 		tradePairInfo.TargetVariety.Symbol, models_types.Numeric(tradeLog.Quantity))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery target variety unFreeze: %v %s", tradeLog, err.Error())
@@ -308,7 +308,7 @@ func (s *SettleProcessor) orderDelivery(
 	// 2.将解冻的金额扣除双方手续费后，转入卖家账户
 	amount := models_types.Numeric(tradeLog.Amount)
 	err = s.assetRepo.UnFreeze(ctx, tx,
-		tradeLog.TradeId, bid.UserId, tradePairInfo.BaseVariety.Symbol,
+		tradeLog.Bid, bid.UserId, tradePairInfo.BaseVariety.Symbol,
 		amount.Add(models_types.Numeric(tradeLog.AskFee).Add(models_types.Numeric(tradeLog.BidFee))))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety unFreeze: %v %s", tradeLog, err.Error())
@@ -339,15 +339,15 @@ func (s *SettleProcessor) orderDelivery(
 	}
 
 	//订单状态为已成交，则解冻该订单冻结的全部数量
-	if ask.Status == models_types.OrderStatusFilled {
-		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.TradeId, ask.UserId, tradePairInfo.TargetVariety.Symbol, "0")
+	if ask.OrderType == matching_types.OrderTypeMarket && ask.Status == models_types.OrderStatusFilled {
+		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId, tradePairInfo.TargetVariety.Symbol, "0")
 		if err != nil {
 			s.logger.Sugar().Errorf("orderDelivery ask unFreeze: %v %s", tradeLog, err.Error())
 			return err
 		}
 	}
-	if bid.Status == models_types.OrderStatusFilled {
-		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.TradeId, bid.UserId, tradePairInfo.BaseVariety.Symbol, "0")
+	if bid.OrderType == matching_types.OrderTypeMarket && bid.Status == models_types.OrderStatusFilled {
+		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId, tradePairInfo.BaseVariety.Symbol, "0")
 		if err != nil {
 			s.logger.Sugar().Errorf("orderDelivery bid unFreeze: %v %s", tradeLog, err.Error())
 			return err

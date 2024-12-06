@@ -13,7 +13,7 @@ type TradeLog struct {
 	TradeId    string                 `gorm:"type:varchar(30);uniqueIndex:trade;not null" json:"trade_id"`
 	Ask        string                 `gorm:"type:varchar(30);uniqueIndex:trade;not null" json:"ask"`
 	Bid        string                 `gorm:"type:varchar(30);uniqueIndex:trade;not null" json:"bid"`
-	TradeBy    matching_types.TradeBy `gorm:"type:tinyint(1);not null" json:"trade_by"`
+	TradeBy    matching_types.TradeBy `gorm:"type:smallint;default:0" json:"trade_by"`
 	AskUid     string                 `gorm:"not null" json:"ask_uid"`
 	BidUid     string                 `gorm:"not null" json:"bid_uid"`
 	Price      string                 `gorm:"type:decimal(40,20);not null;default:0" json:"price"`
