@@ -56,6 +56,7 @@ func (q *Quote) OnNotifyQuote(ctx context.Context, event broker.Event) error {
 
 func (q *Quote) processQuote(ctx context.Context, notifyQuote models_types.EventNotifyQuote) error {
 
+	q.logger.Sugar().Infof("process quote: %+v", notifyQuote)
 	k := kline.NewKLine(q.redis, notifyQuote.Symbol)
 	for _, period := range kline_types.Periods() {
 

@@ -154,11 +154,13 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         load_assets: function(){
+            console.log('info:', baseinfo.cfg_info);
             $.ajax({
                 url: "/api/v1/asset/query",
                 type: "get",
                 data:{
-                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol
+                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol,
+                    t: Date.now()
                 },
                 success: function (d) {
                     console.log("load_assets: ", d);
@@ -186,7 +188,8 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 type: "get",
                 data:{
                     symbol: baseinfo.cfg_info.symbol,
-                    limit: 4
+                    limit: 4,
+                    t: Date.now()
                 },
                 success: function (d) {
                     console.log("load_order_unfinished: ", d);

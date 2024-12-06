@@ -11,11 +11,12 @@ layui.define(["layer"], function(exports){
                 type: "get",
                 data: {
                     symbol: CURRENT_SYMBOL,
+                    t: Date.now()
                 },
                 dataType: "json",
                 contentType: "application/json",
                 success: function (d) {
-                    console.log(d);
+                    console.log("exchange info:", d);
                     if(d.ok){
                         me.cfg_info = d.data;
                     }
