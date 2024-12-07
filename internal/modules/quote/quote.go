@@ -54,23 +54,26 @@ func (q *Quote) OnNotifyQuote(ctx context.Context, event broker.Event) error {
 	return q.processQuote(ctx, notifyQuote)
 }
 
-func (q *Quote) processQuote(ctx context.Context, notifyQuote models_types.EventNotifyQuote) error {
+func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotifyQuote) error {
 
-	q.logger.Sugar().Infof("process quote: %+v", notifyQuote)
-	k := kline.NewKLine(q.redis, notifyQuote.Symbol)
+	q.logger.Sugar().Infof("process quote: %+v", notify)
+	k := kline.NewKLine(q.redis, notify.Symbol)
+
 	for _, period := range kline_types.Periods() {
-
+		q.logger.Sugar().Infof("get kline data period: %+v", period)
 		// TODO concurrency
-		data, err := k.GetData(ctx, period, notifyQuote.TradeResult)
+		data, err := k.GetData(ctx, period, notify.TradeResult)
 		if err != nil {
-			q.logger.Sugar().Errorf("get kline data error: %v notifyQuote: %v", err, notifyQuote)
+			q.logger.Sugar().Errorf("get kline data error: %v notifyQuote: %v", err, notify)
 			continue
 		}
+
+		q.logger.Sugar().Infof("save kline data: %+v", data)
 
 		if err := q.repo.Save(ctx, &entities.Kline{
 			OpenAt:  data.OpenAt,
 			CloseAt: data.CloseAt,
-			Symbol:  notifyQuote.Symbol,
+			Symbol:  notify.Symbol,
 			Period:  period,
 			Open:    *data.Open,
 			High:    *data.High,
@@ -79,7 +82,7 @@ func (q *Quote) processQuote(ctx context.Context, notifyQuote models_types.Event
 			Volume:  *data.Volume,
 			Amount:  *data.Amount,
 		}); err != nil {
-			q.logger.Sugar().Errorf("save kline data error: %v notifyQuote: %v", err, notifyQuote)
+			q.logger.Sugar().Errorf("save kline data error: %v notifyQuote: %v", err, notify)
 			continue
 		}
 	}

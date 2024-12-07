@@ -36,7 +36,7 @@ func (s *SettlementSubscriber) Subscribe() {
 }
 
 func (s *SettlementSubscriber) On(ctx context.Context, event broker.Event) error {
-	s.logger.Info("settlement", zap.Any("event", event))
+	s.logger.Sugar().Infof("settlement: %+v", event)
 
 	var tradeResult models_types.EventOrderSettle
 	if err := json.Unmarshal(event.Message().Body, &tradeResult); err != nil {

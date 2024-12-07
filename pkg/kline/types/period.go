@@ -1,7 +1,6 @@
 package types
 
 import (
-	"reflect"
 	"time"
 )
 
@@ -26,22 +25,13 @@ const (
 )
 
 func Periods() []PeriodType {
-	// return []PeriodType{
-	// 	PERIOD_M1, PERIOD_M3, PERIOD_M5, PERIOD_M15, PERIOD_M30,
-	// 	PERIOD_H1, PERIOD_H2, PERIOD_H4, PERIOD_H6, PERIOD_H8, PERIOD_H12,
-	// 	PERIOD_D1, PERIOD_D3,
-	// 	PERIOD_W1,
-	// 	PERIOD_MN,
-	// }
-
-	var periods []PeriodType
-	periodType := reflect.TypeOf(PERIOD_M1) // 通过一个常量获取PeriodType类型
-
-	for i := 0; i < reflect.ValueOf(periodType).NumMethod(); i++ {
-		method := periodType.Method(i)
-		periods = append(periods, PeriodType(method.Name))
+	return []PeriodType{
+		PERIOD_M1, PERIOD_M3, PERIOD_M5, PERIOD_M15, PERIOD_M30,
+		PERIOD_H1, PERIOD_H2, PERIOD_H4, PERIOD_H6, PERIOD_H8, PERIOD_H12,
+		PERIOD_D1, PERIOD_D3,
+		PERIOD_W1,
+		PERIOD_MN,
 	}
-	return periods
 }
 
 func ParsePeriodTime(at time.Time, pt PeriodType) (start, end time.Time) {

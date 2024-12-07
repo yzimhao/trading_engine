@@ -61,6 +61,7 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 		&entities.Variety{},
 		"order_",
 		"trade_log_",
+		"kline_",
 	}
 
 	allTables, err := db.Migrator().GetTables()
