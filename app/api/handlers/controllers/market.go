@@ -17,23 +17,26 @@ import (
 )
 
 type MarketController struct {
-	logger    *zap.Logger
-	cache     cache.Cache
-	klineRepo persistence.KlineRepository
+	logger       *zap.Logger
+	cache        cache.Cache
+	klineRepo    persistence.KlineRepository
+	tradeLogRepo persistence.TradeLogRepository
 }
 
 type inMarketContext struct {
 	fx.In
-	Logger    *zap.Logger
-	Cache     cache.Cache
-	KlineRepo persistence.KlineRepository
+	Logger       *zap.Logger
+	Cache        cache.Cache
+	KlineRepo    persistence.KlineRepository
+	TradeLogRepo persistence.TradeLogRepository
 }
 
 func NewMarketController(in inMarketContext) *MarketController {
 	return &MarketController{
-		logger:    in.Logger,
-		cache:     in.Cache,
-		klineRepo: in.KlineRepo,
+		logger:       in.Logger,
+		cache:        in.Cache,
+		klineRepo:    in.KlineRepo,
+		tradeLogRepo: in.TradeLogRepo,
 	}
 }
 
@@ -70,7 +73,22 @@ func (ctrl *MarketController) Depth(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/market/trades [get]
 func (ctrl *MarketController) Trades(c *gin.Context) {
-	common.ResponseOK(c, gin.H{})
+	symbol := c.DefaultQuery("symbol", "")
+	limit := c.DefaultQuery("limit", "1000")
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+
+	data, err := ctrl.tradeLogRepo.Find(c, symbol, limitInt)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+
+	common.ResponseOK(c, data)
 }
 
 // @Summary klines

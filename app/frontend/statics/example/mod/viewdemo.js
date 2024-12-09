@@ -137,7 +137,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         load_tradelog_data: function(){
-            $.get("/api/v1/quote/trans/record?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
+            $.get("/api/v1/market/trades?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
                 if (d.ok) {
                     var data = d.data.reverse();
                     for(var i=0; i<data.length; i++){
@@ -230,7 +230,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             // this.load_system_info();
             // this.load_all_tsymbols();
             this.load_depth_data();
-            // this.load_tradelog_data();
+            this.load_tradelog_data();
             this.load_assets();
             this.load_order_unfinished();
             // websocket.init();

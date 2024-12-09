@@ -15,6 +15,7 @@ var Module = fx.Options(
 		NewTradeVarietyRepo,
 		order_repo.NewOrderRepo,
 		NewKlineRepo,
+		NewTradeLogRepo,
 	),
 
 	fx.Invoke(autoMigrate),
