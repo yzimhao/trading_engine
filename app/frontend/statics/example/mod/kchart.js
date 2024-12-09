@@ -36,7 +36,7 @@ layui.define(["baseinfo"], function(exports){
             });
         },
         load_kline_data: function(){
-            $.get("/api/v1/quote/kline?symbol="+CURRENT_SYMBOL+"&interval=m1&limit=1000", function (d) {
+            $.get("/api/v1/market/klines?symbol="+CURRENT_SYMBOL+"&period=m1&limit=1000", function (d) {
                 if (d.ok) {
                     var items = d.data.reverse();
                     var chartDataList = items.map(function (data) {

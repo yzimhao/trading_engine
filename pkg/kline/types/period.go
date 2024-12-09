@@ -1,6 +1,8 @@
 package types
 
 import (
+	"errors"
+	"strings"
 	"time"
 )
 
@@ -32,6 +34,16 @@ func Periods() []PeriodType {
 		PERIOD_W1,
 		PERIOD_MN,
 	}
+}
+
+func ParsePeriod(period string) (PeriodType, error) {
+	period = strings.ToLower(period)
+	for _, p := range Periods() {
+		if p == PeriodType(period) {
+			return p, nil
+		}
+	}
+	return "", errors.New("invalid period")
 }
 
 func ParsePeriodTime(at time.Time, pt PeriodType) (start, end time.Time) {

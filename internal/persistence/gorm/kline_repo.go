@@ -12,6 +12,7 @@ import (
 	models "github.com/yzimhao/trading_engine/v2/internal/models/kline"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	kline_types "github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -38,6 +39,26 @@ func NewKlineRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cache, 
 		logger:           logger,
 		datasource:       datasource,
 	}
+}
+
+func (repo *gormKlineRepo) Find(ctx context.Context, symbol string, period kline_types.PeriodType, start, end int64, limit int) ([]*entities.Kline, error) {
+	db, err := repo.datasource.GetDB(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	entity := entities.Kline{Symbol: symbol, Period: period}
+	if !db.Migrator().HasTable(entity.TableName()) {
+		return nil, errors.New("kline table not found")
+	}
+
+	var rows []*entities.Kline
+	query := db.Table(entity.TableName()).Find(&rows)
+	if query.Error != nil {
+		return nil, query.Error
+	}
+
+	return rows, nil
 }
 
 func (repo *gormKlineRepo) Save(ctx context.Context, kline *entities.Kline) error {
