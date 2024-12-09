@@ -45,6 +45,13 @@ func (o *orderRepository) LoadUnfinishedOrders(ctx context.Context, symbol strin
 	return orders, nil
 }
 
+func (o *orderRepository) HistoryList(ctx context.Context, user_id, symbol string, start, end int64, limit int) (orders []*entities.Order, err error) {
+	//TODO 分批读取
+	entity := entities.Order{Symbol: symbol}
+	o.db.Table(entity.TableName()).Where("user_id=? and symbol=? and nano_time>=? and nano_time<=?", user_id, symbol, start, end).Order("nano_time asc").Limit(limit).Find(&orders)
+	return orders, nil
+}
+
 func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
 	// 查询交易对配置
 	tradeInfo, err := o.tradeVarietyRepo.FindBySymbol(ctx, symbol)

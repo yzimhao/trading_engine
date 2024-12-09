@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
@@ -170,10 +171,26 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 // @Tags order
 // @Accept json
 // @Produce json
+// @Param symbol query string true "symbol"
+// @Param start query int64 true "start"
+// @Param end query int64 true "end"
+// @Param limit query int true "limit"
 // @Success 200 {string} any
 // @Router /api/v1/order/history [get]
 func (ctrl *OrderController) HistoryList(c *gin.Context) {
-	common.ResponseOK(c, "test")
+	//TODO
+	userId := common.GetUserId(c)
+	symbol := c.DefaultQuery("symbol", "")
+	start, _ := strconv.ParseInt(c.DefaultQuery("start", "0"), 10, 64)
+	end, _ := strconv.ParseInt(c.DefaultQuery("end", "0"), 10, 64)
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	orders, err := ctrl.repo.HistoryList(c, userId, symbol, start, end, limit)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+	common.ResponseOK(c, orders)
 }
 
 // @Summary unfinished list
@@ -186,6 +203,7 @@ func (ctrl *OrderController) HistoryList(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/order/unfinished [get]
 func (ctrl *OrderController) UnfinishedList(c *gin.Context) {
+	//TODO 登陆判断
 	symbol := c.Query("symbol")
 	orders, err := ctrl.repo.LoadUnfinishedOrders(c, symbol)
 	if err != nil {
