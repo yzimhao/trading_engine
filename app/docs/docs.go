@@ -51,6 +51,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/asset/query": {
+            "get": {
+                "description": "get assets balance",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "asset"
+                ],
+                "summary": "get wallet assets",
+                "operationId": "v1.asset.query",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbols example: BTC,ETH,USDT",
+                        "name": "symbols",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/asset/transfer/{symbol}": {
             "post": {
                 "description": "transfer an asset",
@@ -121,39 +157,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/asset/{symbol}": {
-            "get": {
-                "description": "get an asset balance",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "get wallet asset",
-                "operationId": "v1.asset.query",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "symbol",
-                        "name": "symbol",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/asset/{symbol}/history": {
             "get": {
                 "description": "get an asset history",
@@ -179,13 +182,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset"
-                            }
-                        }
+                        "description": "OK"
                     }
                 }
             }
@@ -274,6 +271,41 @@ const docTemplate = `{
                         "name": "symbol",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "M1",
+                            "M3",
+                            "M5",
+                            "M15",
+                            "M30",
+                            "H1",
+                            "H2",
+                            "H4",
+                            "H6",
+                            "H8",
+                            "H12",
+                            "D1",
+                            "D3",
+                            "W1",
+                            "MN"
+                        ],
+                        "type": "string",
+                        "description": "period",
+                        "name": "period",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start",
+                        "name": "start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end",
+                        "name": "end",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -380,6 +412,36 @@ const docTemplate = `{
                 ],
                 "summary": "history list",
                 "operationId": "v1.order.history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "start",
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "end",
+                        "name": "end",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -428,6 +490,15 @@ const docTemplate = `{
                 ],
                 "summary": "unfinished list",
                 "operationId": "v1.order.unfinished",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -670,22 +741,13 @@ const docTemplate = `{
                 "avail_balance": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
                 "freeze_balance": {
-                    "type": "string"
-                },
-                "models.UUID": {
                     "type": "string"
                 },
                 "symbol": {
                     "type": "string"
                 },
                 "total_balance": {
-                    "type": "string"
-                },
-                "updated_at": {
                     "type": "string"
                 },
                 "user_id": {

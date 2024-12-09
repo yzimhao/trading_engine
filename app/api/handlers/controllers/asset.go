@@ -11,6 +11,7 @@ import (
 
 	crud_types "github.com/duolacloud/crud-core/types"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
@@ -98,7 +99,7 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param symbols query string true "symbols example: BTC,ETH,USDT"
-// @Success 200 {object} []models_asset.Asset
+// @Success 200 {object} []asset.Asset
 // @Router /api/v1/asset/query [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
@@ -107,6 +108,8 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 
 	symbols := c.Query("symbols")
 	symbolsSlice := strings.Split(symbols, ",")
+
+	var assets []*asset.Asset
 
 	ctx := context.Background()
 	assets, err := ctrl.repo.Query(ctx, &crud_types.PageQuery{
@@ -169,7 +172,7 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param symbol path string true "symbol"
-// @Success 200 {object} []models_asset.Asset
+// @Success 200
 // @Router /api/v1/asset/{symbol}/history [get]
 func (ctrl *UserAssetsController) QueryAssetHistory(c *gin.Context) {
 	// symbol := c.Param("symbol")

@@ -88,17 +88,11 @@ definitions:
     properties:
       avail_balance:
         type: string
-      created_at:
-        type: string
       freeze_balance:
-        type: string
-      models.UUID:
         type: string
       symbol:
         type: string
       total_balance:
-        type: string
-      updated_at:
         type: string
       user_id:
         type: string
@@ -126,28 +120,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/asset/{symbol}:
-    get:
-      consumes:
-      - application/json
-      description: get an asset balance
-      operationId: v1.asset.query
-      parameters:
-      - description: symbol
-        in: path
-        name: symbol
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset'
-      summary: get wallet asset
-      tags:
-      - asset
   /api/v1/asset/{symbol}/history:
     get:
       consumes:
@@ -165,10 +137,6 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset'
-            type: array
       summary: get asset history
       tags:
       - asset
@@ -193,6 +161,30 @@ paths:
           schema:
             type: string
       summary: asset despoit
+      tags:
+      - asset
+  /api/v1/asset/query:
+    get:
+      consumes:
+      - application/json
+      description: get assets balance
+      operationId: v1.asset.query
+      parameters:
+      - description: 'symbols example: BTC,ETH,USDT'
+        in: query
+        name: symbols
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_internal_models_asset.Asset'
+            type: array
+      summary: get wallet assets
       tags:
       - asset
   /api/v1/asset/transfer/{symbol}:
@@ -296,6 +288,34 @@ paths:
         name: symbol
         required: true
         type: string
+      - description: period
+        enum:
+        - M1
+        - M3
+        - M5
+        - M15
+        - M30
+        - H1
+        - H2
+        - H4
+        - H6
+        - H8
+        - H12
+        - D1
+        - D3
+        - W1
+        - MN
+        in: query
+        name: period
+        type: string
+      - description: start
+        in: query
+        name: start
+        type: integer
+      - description: end
+        in: query
+        name: end
+        type: integer
       - description: limit
         in: query
         name: limit
@@ -365,6 +385,27 @@ paths:
       - application/json
       description: history list
       operationId: v1.order.history
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
+      - description: start
+        in: query
+        name: start
+        required: true
+        type: integer
+      - description: end
+        in: query
+        name: end
+        required: true
+        type: integer
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -397,6 +438,12 @@ paths:
       - application/json
       description: unfinished list
       operationId: v1.order.unfinished
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
       produces:
       - application/json
       responses:
