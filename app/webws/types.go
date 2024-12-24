@@ -3,67 +3,67 @@ package webws
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
-	"fmt"
 	"strings"
 )
 
-var (
-	M *Hub
-)
-
-type subMessage struct {
-	Subsc   []string `json:"sub"`
-	UnSubsc []string `json:"unsub"`
+type RecviceTag struct {
+	Subscribe   []string `json:"subscribe,omitempty"`
+	Unsubscribe []string `json:"unsubscribe,omitempty"`
 }
 
-type MsgBody struct {
+type Response struct {
+	Type string `json:"type,omitempty"`
+	Body []byte `json:"body,omitempty"`
+}
+
+type Message struct {
 	To       string
 	Response Response
 }
 
-type Response struct {
-	Type string      `json:"type"`
-	Body interface{} `json:"body"`
-}
-
-func (m *MsgBody) BodyHash() string {
+func (m *Message) Sign() string {
 	h := md5.New()
-	h.Write([]byte(fmt.Sprintf("%v", m.Response)))
+	h.Write(m.Response.Body)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (m *MsgBody) GetBody() []byte {
-	re := m.Response
-	data, _ := json.Marshal(re)
-	return data
+func (m *Message) Body() []byte {
+	return m.Response.Body
 }
 
-func (m *MsgBody) JSON() []byte {
-	raw, _ := json.Marshal(m)
-	return raw
+func NewMessage(to string, tag string, body []byte) Message {
+	m := Message{
+		To: to,
+		Response: Response{
+			Type: tag,
+			Body: body,
+		},
+	}
+	return m
 }
 
-type WebSocketMsgType string
+// websocket message tags
+type MessageTagTpl string
 
 const (
-	MsgDepth       WebSocketMsgType = "depth.{symbol}"
-	MsgTrade       WebSocketMsgType = "trade.{symbol}"
-	MsgLatestPrice WebSocketMsgType = "price.{symbol}"
-	MsgMarketKLine WebSocketMsgType = "kline.{period}.{symbol}"
-	MsgMarket24H   WebSocketMsgType = "market.24h.{symbol}"
-	MsgOrderCancel WebSocketMsgType = "order.cancel.{symbol}"
-	MsgToken       WebSocketMsgType = "token.{token}"
-	MsgUser        WebSocketMsgType = "_user.{user_id}" //特殊的类型，通过后端程序设置的属性
+	MsgDepthTpl       MessageTagTpl = "depth.{symbol}"
+	MsgTradeTpl       MessageTagTpl = "trade.{symbol}"
+	MsgLatestPriceTpl MessageTagTpl = "price.{symbol}"
+	MsgMarketKLineTpl MessageTagTpl = "kline.{period}.{symbol}"
+	MsgMarket24HTpl   MessageTagTpl = "market.24h.{symbol}"
+	MsgOrderCancelTpl MessageTagTpl = "order.cancel.{symbol}"
+	MsgTokenTpl       MessageTagTpl = "token.{token}"
+	MsgUserTpl        MessageTagTpl = "_user.{user_id}" //特殊的类型，通过后端程序设置的属性
 )
 
 var (
-	AllWebSocketMsg = []WebSocketMsgType{
-		MsgDepth, MsgDepth, MsgLatestPrice, MsgMarketKLine, MsgMarket24H,
+	AllWebSocketMsg = []MessageTagTpl{
+		MsgDepthTpl, MsgDepthTpl, MsgLatestPriceTpl,
+		MsgMarketKLineTpl, MsgMarket24HTpl,
 	}
 )
 
-func (w WebSocketMsgType) Format(data map[string]string) string {
+func (w MessageTagTpl) Format(data map[string]string) string {
 	nw := string(w)
 	for k, v := range data {
 		nw = strings.Replace(nw, "{"+k+"}", v, -1)

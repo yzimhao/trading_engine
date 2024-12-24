@@ -1,4 +1,4 @@
-package webws
+package webws_test
 
 import (
 	"encoding/json"
@@ -9,20 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
+	"go.uber.org/zap"
 )
 
 var (
-	_socket     *Hub
+	manager     *webws.WsManager
 	test_symbol = "usdjpy"
 )
 
 func init() {
 
 	go func() {
-		_socket = NewHub()
+		logger, _ := zap.NewDevelopment()
+		manager = webws.NewWsManager(logger)
 		r := gin.New()
 		r.Any("/ws", func(ctx *gin.Context) {
-			_socket.ServeWs(ctx)
+			manager.Listen(ctx.Writer, ctx.Request, ctx.Request.Header)
 		})
 		r.Run(":8090")
 	}()
@@ -52,10 +55,10 @@ func TestClient(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		time.Sleep(time.Second * time.Duration(1))
-		So(len(_socket.clients), ShouldEqual, 1)
+		So(len(manager.Members()), ShouldEqual, 1)
 		ws.Close()
 		time.Sleep(time.Second * time.Duration(2))
-		So(len(_socket.clients), ShouldEqual, 0)
+		So(len(manager.Members()), ShouldEqual, 0)
 	})
 
 	Convey("客户端添加属性", t, func() {
@@ -63,15 +66,15 @@ func TestClient(t *testing.T) {
 		defer ws.Close()
 
 		tags := []string{}
-		for _, v := range AllWebSocketMsg {
+		for _, v := range webws.AllWebSocketMsg {
 			tags = append(tags, v.Format(map[string]string{
 				"symbol": test_symbol,
 				"period": "h1",
 			}))
 		}
 
-		subM := subMessage{
-			Subsc: tags,
+		subM := webws.RecviceTag{
+			Subscribe: tags,
 		}
 
 		body, _ := json.Marshal(subM)
@@ -83,12 +86,12 @@ func TestClient(t *testing.T) {
 
 		time.Sleep(time.Second * time.Duration(1))
 
-		So(len(_socket.clients), ShouldEqual, 1)
-		for c, _ := range _socket.clients {
+		So(len(manager.Members()), ShouldEqual, 1)
+		for _, c := range manager.Members() {
 			for _, tag := range tags {
-				So(c.attrs, ShouldContainKey, tag)
+				So(manager.ClientHasAttr(c, tag), ShouldBeTrue)
 			}
-			t.Logf("c.attrs: %#v", c.attrs)
+			t.Logf("c.attrs: %#v", manager.GetClientAttrs(c))
 		}
 
 	})

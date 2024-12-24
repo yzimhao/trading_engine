@@ -38,16 +38,15 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 
-	//todo 增加到config文件中
+	//TODO 通过配置文件修改该值
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
 }
 
 // Client is a middleman between the websocket connection and the hub.
-type Client struct {
-	hub *Hub
-
+type client struct {
+	m *WsManager
 	// The websocket connection.
 	conn *websocket.Conn
 
@@ -58,9 +57,20 @@ type Client struct {
 	attrs map[string]bool
 
 	//服务端推送消息的hash，用来去重,每一种消息类型单独去重
-	lastSendMsgHash map[string]string
+	lastMessageHash map[string]string
 
-	sync.Mutex
+	mx sync.Mutex
+}
+
+func newClient(m *WsManager, conn *websocket.Conn) *client {
+	c := client{
+		m:               m,
+		conn:            conn,
+		send:            make(chan []byte),
+		attrs:           make(map[string]bool),
+		lastMessageHash: make(map[string]string),
+	}
+	return &c
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -68,9 +78,9 @@ type Client struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readPump() {
+func (c *client) readPump() {
 	defer func() {
-		c.hub.unregister <- c
+		c.m.unregister <- c
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -85,7 +95,8 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.recv <- message
+		c.m.recv <- message
+
 		c.handleRecvData(message)
 	}
 }
@@ -95,7 +106,7 @@ func (c *Client) readPump() {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *Client) writePump() {
+func (c *client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -136,17 +147,17 @@ func (c *Client) writePump() {
 	}
 }
 
-func (c *Client) handleRecvData(body []byte) {
-	var msg subMessage
+func (c *client) handleRecvData(body []byte) {
+	var msg RecviceTag
 	err := json.Unmarshal(body, &msg)
 	if err != nil {
 		return
 	}
 
 	//新增订阅属性处理
-	for _, attr := range msg.Subsc {
+	for _, attr := range msg.Subscribe {
 		if strings.HasPrefix(attr, "_") {
-			//带有_标记的tag只能是内部程序设置的，不能通过前端发送过来指定
+			//带有"_"标记的tag只能是内部程序设置的，不能通过前端发送过来指定
 			continue
 		}
 		if strings.HasPrefix(attr, "token.") {
@@ -163,23 +174,23 @@ func (c *Client) handleRecvData(body []byte) {
 		}
 	}
 	//取消订阅属性处理
-	for _, attr := range msg.UnSubsc {
+	for _, attr := range msg.Unsubscribe {
 		c.delAttr(attr)
 	}
 
 	// app.Logger.Debugf("[wss] recv: %v attrs: %v", msg, c.attrs)
 }
 
-func (c *Client) setAttr(tag string) {
-	c.Lock()
-	defer c.Unlock()
+func (c *client) setAttr(tag string) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
 
 	c.attrs[tag] = true
 }
 
-func (c *Client) hasAttr(tag string) bool {
-	c.Lock()
-	defer c.Unlock()
+func (c *client) hasAttr(tag string) bool {
+	c.mx.Lock()
+	defer c.mx.Unlock()
 
 	if _, ok := c.attrs[tag]; ok {
 		return true
@@ -187,12 +198,10 @@ func (c *Client) hasAttr(tag string) bool {
 	return false
 }
 
-func (c *Client) delAttr(tag string) bool {
-	c.Lock()
-	defer c.Unlock()
+func (c *client) delAttr(tag string) bool {
+	c.mx.Lock()
+	defer c.mx.Unlock()
 
-	if _, ok := c.attrs[tag]; ok {
-		delete(c.attrs, tag)
-	}
+	delete(c.attrs, tag)
 	return true
 }
