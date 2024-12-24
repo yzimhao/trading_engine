@@ -7,6 +7,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
 	_ "github.com/yzimhao/trading_engine/v2/app/docs"
 	"github.com/yzimhao/trading_engine/v2/app/middlewares"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
 	"go.uber.org/fx"
 )
 
@@ -20,6 +21,7 @@ type Routes struct {
 	marketController     *controllers.MarketController
 	authMiddleware       *middlewares.AuthMiddleware
 	userController       *controllers.UserController
+	wsController         *webws.WsManager
 }
 
 type inContext struct {
@@ -31,6 +33,7 @@ type inContext struct {
 	MarketController     *controllers.MarketController
 	AuthMiddleware       *middlewares.AuthMiddleware
 	UserController       *controllers.UserController
+	WsController         *webws.WsManager
 }
 
 func NewRoutes(in inContext) *Routes {
@@ -42,6 +45,7 @@ func NewRoutes(in inContext) *Routes {
 		marketController:     in.MarketController,
 		authMiddleware:       in.AuthMiddleware,
 		userController:       in.UserController,
+		wsController:         in.WsController,
 	}
 
 	r.registerRoutes()
@@ -53,8 +57,8 @@ func (ctx *Routes) registerRoutes() {
 	ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	//ws
-	ctx.engine.GET("/ws", func(ctx *gin.Context) {
-
+	ctx.engine.GET("/ws", func(c *gin.Context) {
+		ctx.wsController.Listen(c.Writer, c.Request, c.Request.Header)
 	})
 
 	apiGroup := ctx.engine.Group("api")

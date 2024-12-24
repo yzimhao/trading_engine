@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
 	"github.com/yzimhao/trading_engine/v2/app/middlewares"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
 	"go.uber.org/fx"
 )
 
@@ -14,6 +15,7 @@ var Module = fx.Options(
 		controllers.NewOrderController,
 		controllers.NewMarketController,
 		controllers.NewUserController,
+		webws.NewWsManager,
 	),
 	fx.Invoke(NewRoutes),
 )
