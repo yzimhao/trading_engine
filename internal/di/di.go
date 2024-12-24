@@ -3,7 +3,7 @@ package di
 import (
 	"context"
 
-	apiHandlers "github.com/yzimhao/trading_engine/v2/app/api/handlers"
+	app "github.com/yzimhao/trading_engine/v2/app"
 	"github.com/yzimhao/trading_engine/v2/app/example"
 	"github.com/yzimhao/trading_engine/v2/internal/modules"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
@@ -47,7 +47,7 @@ func App() *fx.App {
 		),
 
 		gorm.Module,
-		apiHandlers.Module,
+		app.Module,
 		example.Module,
 		services.Module,
 		modules.Load,
