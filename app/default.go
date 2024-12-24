@@ -52,6 +52,11 @@ func (ctx *Routes) registerRoutes() {
 
 	ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	//ws
+	ctx.engine.GET("/ws", func(ctx *gin.Context) {
+
+	})
+
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
 	v1Group.GET("/ping", ctx.baseController.Ping)
