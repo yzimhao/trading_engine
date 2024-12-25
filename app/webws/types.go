@@ -52,14 +52,16 @@ const (
 	MsgMarketKLineTpl MessageTagTpl = "kline.{period}.{symbol}"
 	MsgMarket24HTpl   MessageTagTpl = "market.24h.{symbol}"
 	MsgOrderCancelTpl MessageTagTpl = "order.cancel.{symbol}"
+	MsgNewOrderTpl    MessageTagTpl = "order.new.{symbol}"
 	MsgTokenTpl       MessageTagTpl = "token.{token}"
 	MsgUserTpl        MessageTagTpl = "_user.{user_id}" //特殊的类型，通过后端程序设置的属性
 )
 
 var (
 	AllWebSocketMsg = []MessageTagTpl{
-		MsgDepthTpl, MsgDepthTpl, MsgLatestPriceTpl,
+		MsgDepthTpl, MsgTradeTpl, MsgLatestPriceTpl,
 		MsgMarketKLineTpl, MsgMarket24HTpl,
+		MsgOrderCancelTpl, MsgNewOrderTpl,
 	}
 )
 
