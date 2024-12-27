@@ -33,7 +33,7 @@ func NewWsManager(logger *zap.Logger) *WsManager {
 }
 
 func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, responseHeader http.Header) {
-	conn, err := upgrader.Upgrade(writer, req, responseHeader)
+	conn, err := upgrader.Upgrade(writer, req, nil)
 	if err != nil {
 		m.logger.Sugar().Errorf("webws upgrader.Upgrade %v", err)
 		return

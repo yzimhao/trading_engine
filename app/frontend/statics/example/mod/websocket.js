@@ -7,7 +7,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
     var socket = function () {
         if (window["WebSocket"]) {
             var protocol = window.location.protocol == "https:" ? "wss:" : "ws:";
-            conn = new WebSocket("/quote/ws");
+            conn = new WebSocket("/ws");
             conn.onclose = function (evt) {
                 layer.msg("<b>WebSocket Connection closed</b>");
                 setTimeout(function () {
@@ -17,7 +17,7 @@ layui.define(["layer", "utils", "kchart"],function(exports){
 
             conn.onopen = function(e){
                 var msg = {
-                    "sub": [
+                    "subscribe": [
                         "depth."+CURRENT_SYMBOL,
                         "trade." + CURRENT_SYMBOL,
                         "price."+CURRENT_SYMBOL,
@@ -25,9 +25,9 @@ layui.define(["layer", "utils", "kchart"],function(exports){
                         "market.24h."+CURRENT_SYMBOL,
                         "market.28h."+CURRENT_SYMBOL,
                         //订阅登陆用户相关消息，会对应多种消息格式
-                        "token."+ Cookies.get("user_id"),
+                        "token."+ Cookies.get("jwt"),
                     ],
-                    "unsub":[
+                    "unsubscribe":[
                         "market.28h."+CURRENT_SYMBOL,
                     ]
                 };
