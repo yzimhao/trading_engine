@@ -6,6 +6,7 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
@@ -20,6 +21,7 @@ type Quote struct {
 	broker broker.Broker
 	redis  *redis.Client
 	repo   persistence.KlineRepository
+	ws     *webws.WsManager
 }
 
 type inContext struct {
@@ -28,6 +30,7 @@ type inContext struct {
 	Broker broker.Broker
 	Redis  *redis.Client
 	Repo   persistence.KlineRepository
+	Ws     *webws.WsManager
 }
 
 func NewQuote(in inContext) *Quote {
@@ -36,6 +39,7 @@ func NewQuote(in inContext) *Quote {
 		broker: in.Broker,
 		redis:  in.Redis,
 		repo:   in.Repo,
+		ws:     in.Ws,
 	}
 }
 
@@ -85,6 +89,19 @@ func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotif
 			q.logger.Sugar().Errorf("save kline data error: %v notifyQuote: %v", err, notify)
 			continue
 		}
+
+		//推送kline记录
+		q.ws.Broadcast(ctx, webws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
+			map[string]any{
+				"timestamp": data.OpenAt,
+				"open":      data.Open,
+				"high":      data.High,
+				"low":       data.Low,
+				"close":     data.Close,
+				"volume":    data.Volume,
+			},
+		)
+
 	}
 
 	return nil
