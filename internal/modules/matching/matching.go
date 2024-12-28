@@ -247,7 +247,9 @@ func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
 			}
 
 			//broadcast depth data
-			s.ws.Broadcast(ctx, webws.MsgDepthTpl.Format(map[string]string{"symbol": engine.Symbol()}), data)
+			if err := s.ws.Broadcast(ctx, webws.MsgDepthTpl.Format(map[string]string{"symbol": engine.Symbol()}), data); err != nil {
+				s.logger.Sugar().Errorf("matching ws broadcast error: %v", err)
+			}
 		}
 	}
 }
