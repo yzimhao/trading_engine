@@ -3,6 +3,7 @@ package webws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -43,14 +44,23 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 }
 
 // example:
-// 广播给所有订阅的用户
-// Send("depth.usdjpy", "depth.usdjpy", "")
-// Send("trade.usdjpy", "trade.usdjpy", "")
-// 单发消息给某一个用户
-// Send("_user.1001", "order.new.usdjpy", "")
-// Send("_user.1001", "order.cancel.usdjpy", "")
-func (m *WsManager) Send(ctx context.Context, to string, _type string, body []byte) error {
+// 广播给所有订阅某个type的用户
+// Broadcast("depth.usdjpy", "")
+// Broadcast("trade.usdjpy", "")
 
+func (m *WsManager) Broadcast(ctx context.Context, _type string, body []byte) error {
+	return m.send(ctx, _type, _type, body)
+}
+
+// 单发消息给某一个用户
+// SendTo("1001", "order.new.usdjpy", "")
+// SendTo("1001", "order.cancel.usdjpy", "")
+func (m *WsManager) SendTo(ctx context.Context, uid string, _type string, body []byte) error {
+	to := fmt.Sprintf("_user.%s", uid)
+	return m.send(ctx, to, _type, body)
+}
+
+func (m *WsManager) send(ctx context.Context, to string, _type string, body []byte) error {
 	msg := NewMessage(to, _type, body)
 	_body, err := msg.Marshal()
 	if err != nil {
