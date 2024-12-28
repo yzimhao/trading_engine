@@ -42,6 +42,13 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 	return &m
 }
 
+// example:
+// 广播给所有订阅的用户
+// Send("depth.usdjpy", "depth.usdjpy", "")
+// Send("trade.usdjpy", "trade.usdjpy", "")
+// 单发消息给某一个用户
+// Send("_user.1001", "order.new.usdjpy", "")
+// Send("_user.1001", "order.cancel.usdjpy", "")
 func (m *WsManager) Send(ctx context.Context, to string, _type string, body []byte) error {
 
 	msg := NewMessage(to, _type, body)
