@@ -24,6 +24,7 @@ type WsManager struct {
 	membersMap map[*client]bool
 	mx         sync.Mutex
 	broker     broker.Broker
+	debug      bool
 }
 
 func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
@@ -41,6 +42,10 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 	go m.subscribe()
 
 	return &m
+}
+
+func (m *WsManager) SetDebug(v bool) {
+	m.debug = v
 }
 
 // example:
@@ -95,7 +100,9 @@ func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, respon
 // TODO 多个websocket节点的时候，订阅模式要修改
 func (m *WsManager) subscribe() {
 	m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
-		m.logger.Sugar().Debugf("[ws] websocket message: %s", event.Message().Body)
+		if m.debug {
+			m.logger.Sugar().Debugf("[ws] broker subscribe message: %s", event.Message().Body)
+		}
 
 		var msg Message
 		err := json.Unmarshal(event.Message().Body, &msg)
@@ -141,7 +148,9 @@ func (m *WsManager) run() {
 				m.mx.Lock()
 				defer m.mx.Unlock()
 
-				m.logger.Sugar().Debugf("[ws] broadcast message: %v", message)
+				if m.debug {
+					m.logger.Sugar().Debugf("[ws] broadcast message: %v", message)
+				}
 
 				for client := range m.membersMap {
 					if !client.hasAttr(message.To) {
@@ -156,7 +165,10 @@ func (m *WsManager) run() {
 						}
 					}
 
-					m.logger.Sugar().Infof("[ws] send to %s body: %v", message.To, message.Response)
+					if m.debug {
+						m.logger.Sugar().Infof("[ws] send to %s body: %v", message.To, message.Response)
+					}
+
 					client.lastMessageHash[message.To] = sign
 					client.send <- message.ResponseBytes()
 				}
