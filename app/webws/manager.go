@@ -92,6 +92,7 @@ func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, respon
 	go cli.readPump()
 }
 
+// TODO 多个websocket节点的时候，订阅模式要修改
 func (m *WsManager) subscribe() {
 	m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
 		m.logger.Sugar().Debugf("websocket message: %s", event.Message().Body)
