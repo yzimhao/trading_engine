@@ -3,6 +3,7 @@ package webws
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"strings"
 )
 
@@ -17,8 +18,8 @@ type Response struct {
 }
 
 type Message struct {
-	To       string
-	Response Response
+	To       string   `json:"to"`
+	Response Response `json:"response"`
 }
 
 func (m *Message) Sign() string {
@@ -29,6 +30,10 @@ func (m *Message) Sign() string {
 
 func (m *Message) Body() []byte {
 	return m.Response.Body
+}
+
+func (m *Message) Marshal() ([]byte, error) {
+	return json.Marshal(m)
 }
 
 func NewMessage(to string, tag string, body []byte) Message {

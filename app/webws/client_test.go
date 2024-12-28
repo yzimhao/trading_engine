@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	. "github.com/smartystreets/goconvey/convey"
@@ -22,7 +23,7 @@ func init() {
 
 	go func() {
 		logger, _ := zap.NewDevelopment()
-		manager = webws.NewWsManager(logger)
+		manager = webws.NewWsManager(logger, broker.NewNoopBroker())
 		r := gin.New()
 		r.Any("/ws", func(ctx *gin.Context) {
 			manager.Listen(ctx.Writer, ctx.Request, ctx.Request.Header)
