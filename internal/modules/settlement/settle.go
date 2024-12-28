@@ -8,6 +8,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/redis/go-redis/v9"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/models/variety"
@@ -28,6 +29,7 @@ type SettleProcessor struct {
 	broker           broker.Broker
 	redis            *redis.Client
 	locker           *SettleLocker
+	ws               *webws.WsManager
 }
 
 type inSettleContext struct {
@@ -40,6 +42,7 @@ type inSettleContext struct {
 	Broker           broker.Broker
 	Redis            *redis.Client
 	Locker           *SettleLocker
+	Ws               *webws.WsManager
 }
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
@@ -52,11 +55,12 @@ func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 		broker:           in.Broker,
 		redis:            in.Redis,
 		locker:           in.Locker,
+		ws:               in.Ws,
 	}
 }
 
 func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.TradeResult) error {
-	//TODO 自动创建结算需要的表
+	//自动创建结算需要的表
 	tradeLog := entities.TradeLog{Symbol: tradeResult.Symbol}
 	if err := s.db.Table(tradeLog.TableName()).AutoMigrate(&tradeLog); err != nil {
 		s.logger.Sugar().Errorf("auto migrate trade log table failed: %v", err)
@@ -120,6 +124,17 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}, broker.WithShardingKey(tradeResult.Symbol)); err != nil {
 			return err
 		}
+
+		//推送交易页面上的最新成交记录
+		s.ws.Broadcast(ctx, webws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
+			map[string]any{
+				"price":    tradeLog.Price,
+				"qty":      tradeLog.Quantity,
+				"amount":   tradeLog.Amount,
+				"trade_at": tradeResult.TradeTime,
+			},
+		)
+		//TODO 推送买卖双方个人结算的成交记录
 
 		return nil
 	})
