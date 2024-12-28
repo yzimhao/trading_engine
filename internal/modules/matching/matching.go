@@ -13,6 +13,7 @@ import (
 	ds_types "github.com/duolacloud/crud-core/types"
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
@@ -33,6 +34,7 @@ type inContext struct {
 	Viper            *viper.Viper
 	Cache            cache.Cache
 	OrderRepo        persistence.OrderRepository
+	Ws               *webws.WsManager
 }
 
 type Matching struct {
@@ -43,6 +45,7 @@ type Matching struct {
 	viper            *viper.Viper
 	cache            cache.Cache
 	orderRepo        persistence.OrderRepository
+	ws               *webws.WsManager
 }
 
 func NewMatching(in inContext) *Matching {
@@ -53,6 +56,7 @@ func NewMatching(in inContext) *Matching {
 		viper:            in.Viper,
 		cache:            in.Cache,
 		orderRepo:        in.OrderRepo,
+		ws:               in.Ws,
 	}
 }
 
@@ -232,13 +236,18 @@ func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
 		case <-ticker.C:
 			asks := engine.GetAskOrderBook(10)
 			bids := engine.GetBidOrderBook(10)
-			err := s.cache.Set(ctx, fmt.Sprintf(CacheKeyOrderbook, engine.Symbol()), map[string]any{
+
+			data := map[string]any{
 				"asks": asks,
 				"bids": bids,
-			}, cache.WithExpiration(time.Second*5))
+			}
+			err := s.cache.Set(ctx, fmt.Sprintf(CacheKeyOrderbook, engine.Symbol()), data, cache.WithExpiration(time.Second*5))
 			if err != nil {
 				s.logger.Sugar().Errorf("matching flush orderbook to cache error: %v", err)
 			}
+
+			//broadcast depth data
+			s.ws.Broadcast(ctx, webws.MsgDepthTpl.Format(map[string]string{"symbol": engine.Symbol()}), data)
 		}
 	}
 }

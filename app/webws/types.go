@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ type RecviceTag struct {
 
 type Response struct {
 	Type string `json:"type,omitempty"`
-	Body []byte `json:"body,omitempty"`
+	Body any    `json:"body,omitempty"`
 }
 
 type Message struct {
@@ -24,19 +25,20 @@ type Message struct {
 
 func (m *Message) Sign() string {
 	h := md5.New()
-	h.Write(m.Response.Body)
+	h.Write([]byte(fmt.Sprintf("%v", m.Response.Body)))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (m *Message) Body() []byte {
-	return m.Response.Body
+func (m *Message) ResponseBytes() []byte {
+	raw, _ := json.Marshal(m.Response)
+	return raw
 }
 
 func (m *Message) Marshal() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func NewMessage(to string, tag string, body []byte) Message {
+func NewMessage(to string, tag string, body any) Message {
 	m := Message{
 		To: to,
 		Response: Response{

@@ -48,23 +48,23 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 // Broadcast("depth.usdjpy", "")
 // Broadcast("trade.usdjpy", "")
 
-func (m *WsManager) Broadcast(ctx context.Context, _type string, body []byte) error {
+func (m *WsManager) Broadcast(ctx context.Context, _type string, body any) error {
 	return m.send(ctx, _type, _type, body)
 }
 
 // 单发消息给某一个用户
 // SendTo("1001", "order.new.usdjpy", "")
 // SendTo("1001", "order.cancel.usdjpy", "")
-func (m *WsManager) SendTo(ctx context.Context, uid string, _type string, body []byte) error {
+func (m *WsManager) SendTo(ctx context.Context, uid string, _type string, body any) error {
 	to := fmt.Sprintf("_user.%s", uid)
 	return m.send(ctx, to, _type, body)
 }
 
-func (m *WsManager) send(ctx context.Context, to string, _type string, body []byte) error {
+func (m *WsManager) send(ctx context.Context, to string, _type string, body any) error {
 	msg := NewMessage(to, _type, body)
 	_body, err := msg.Marshal()
 	if err != nil {
-		m.logger.Sugar().Errorf("msg.Marshal error %v", err)
+		m.logger.Sugar().Errorf("[ws] msg.Marshal error %v", err)
 		return err
 	}
 
@@ -82,7 +82,7 @@ func (m *WsManager) send(ctx context.Context, to string, _type string, body []by
 func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, responseHeader http.Header) {
 	conn, err := upgrader.Upgrade(writer, req, nil)
 	if err != nil {
-		m.logger.Sugar().Errorf("webws upgrader.Upgrade %v", err)
+		m.logger.Sugar().Errorf("[ws] upgrader.Upgrade %v", err)
 		return
 	}
 
@@ -95,12 +95,12 @@ func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, respon
 // TODO 多个websocket节点的时候，订阅模式要修改
 func (m *WsManager) subscribe() {
 	m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
-		m.logger.Sugar().Debugf("websocket message: %s", event.Message().Body)
+		m.logger.Sugar().Debugf("[ws] websocket message: %s", event.Message().Body)
 
 		var msg Message
 		err := json.Unmarshal(event.Message().Body, &msg)
 		if err != nil {
-			m.logger.Sugar().Errorf("websocket message unmarshal error: %v", err)
+			m.logger.Sugar().Errorf("[ws] websocket message unmarshal error: %v", err)
 			return err
 		}
 
@@ -118,7 +118,7 @@ func (m *WsManager) run() {
 				m.mx.Lock()
 				defer m.mx.Unlock()
 
-				m.logger.Sugar().Debugf("[wss] register client: %v", cli)
+				m.logger.Sugar().Debugf("[ws] register client: %v", cli)
 				m.membersMap[client] = true
 			}(cli)
 
@@ -141,7 +141,7 @@ func (m *WsManager) run() {
 				m.mx.Lock()
 				defer m.mx.Unlock()
 
-				m.logger.Sugar().Debugf("[wss] broadcast message: %v", message)
+				m.logger.Sugar().Debugf("[ws] broadcast message: %v", message)
 
 				for client := range m.membersMap {
 					if !client.hasAttr(message.To) {
@@ -156,13 +156,14 @@ func (m *WsManager) run() {
 						}
 					}
 
+					m.logger.Sugar().Infof("[ws] send to %s body: %v", message.To, message.Response)
 					client.lastMessageHash[message.To] = sign
-					client.send <- message.Body()
+					client.send <- message.ResponseBytes()
 				}
 			}(msg)
 
 		case data := <-m.recv:
-			m.logger.Sugar().Debugf("[wss] recivce message: %s", data)
+			m.logger.Sugar().Debugf("[ws] recivce message: %s", data)
 		}
 	}
 }
