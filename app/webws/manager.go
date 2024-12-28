@@ -20,7 +20,7 @@ type WsManager struct {
 	recv       chan []byte
 	register   chan *client
 	unregister chan *client
-	members    map[*client]bool
+	membersMap map[*client]bool
 	mx         sync.Mutex
 	broker     broker.Broker
 }
@@ -32,7 +32,7 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 		recv:       make(chan []byte),
 		register:   make(chan *client),
 		unregister: make(chan *client),
-		members:    make(map[*client]bool),
+		membersMap: make(map[*client]bool),
 		broker:     broker,
 	}
 
@@ -75,32 +75,6 @@ func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, respon
 	go cli.readPump()
 }
 
-func (m *WsManager) Members() []*client {
-	m.mx.Lock()
-	defer m.mx.Unlock()
-
-	var members []*client
-	for c := range m.members {
-		members = append(members, c)
-	}
-	return members
-}
-
-func (m *WsManager) ClientHasAttr(client *client, tag string) bool {
-	return client.hasAttr(tag)
-}
-
-func (m *WsManager) GetClientAttrs(client *client) map[string]bool {
-	client.mx.Lock()
-	defer client.mx.Unlock()
-
-	copyAttrs := make(map[string]bool, len(client.attrs))
-	for k, v := range client.attrs {
-		copyAttrs[k] = v
-	}
-	return copyAttrs
-}
-
 func (m *WsManager) subscribe() {
 	m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
 		m.logger.Sugar().Debugf("websocket message: %s", event.Message().Body)
@@ -127,7 +101,7 @@ func (m *WsManager) run() {
 				defer m.mx.Unlock()
 
 				m.logger.Sugar().Debugf("[wss] register client: %v", cli)
-				m.members[client] = true
+				m.membersMap[client] = true
 			}(cli)
 
 		case cli := <-m.unregister:
@@ -135,8 +109,8 @@ func (m *WsManager) run() {
 				m.mx.Lock()
 				defer m.mx.Unlock()
 
-				if _, ok := m.members[client]; ok {
-					delete(m.members, client)
+				if _, ok := m.membersMap[client]; ok {
+					delete(m.membersMap, client)
 					close(client.send)
 
 					client.attrs = nil
@@ -151,7 +125,7 @@ func (m *WsManager) run() {
 
 				m.logger.Sugar().Debugf("[wss] broadcast message: %v", message)
 
-				for client := range m.members {
+				for client := range m.membersMap {
 					if !client.hasAttr(message.To) {
 						continue
 					}

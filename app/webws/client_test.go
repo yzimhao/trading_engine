@@ -1,4 +1,4 @@
-package webws_test
+package webws
 
 import (
 	"encoding/json"
@@ -10,12 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	. "github.com/smartystreets/goconvey/convey"
-	"github.com/yzimhao/trading_engine/v2/app/webws"
 	"go.uber.org/zap"
 )
 
 var (
-	manager     *webws.WsManager
+	manager     *WsManager
 	test_symbol = "usdjpy"
 )
 
@@ -23,7 +22,7 @@ func init() {
 
 	go func() {
 		logger, _ := zap.NewDevelopment()
-		manager = webws.NewWsManager(logger, broker.NewNoopBroker())
+		manager = NewWsManager(logger, broker.NewNoopBroker())
 		r := gin.New()
 		r.Any("/ws", func(ctx *gin.Context) {
 			manager.Listen(ctx.Writer, ctx.Request, ctx.Request.Header)
@@ -32,7 +31,7 @@ func init() {
 	}()
 }
 
-func newClient() *websocket.Conn {
+func clientConn() *websocket.Conn {
 	// s := httptest.NewServer(http.HandlerFunc(_socket.ServeWs))
 	// defer s.Close()
 
@@ -51,30 +50,30 @@ func newClient() *websocket.Conn {
 func TestClient(t *testing.T) {
 
 	Convey("hello testing", t, func() {
-		ws := newClient()
+		ws := clientConn()
 		err := ws.WriteMessage(websocket.TextMessage, []byte("hello"))
 		So(err, ShouldBeNil)
 
 		time.Sleep(time.Second * time.Duration(1))
-		So(len(manager.Members()), ShouldEqual, 1)
+		So(len(manager.membersMap), ShouldEqual, 1)
 		ws.Close()
 		time.Sleep(time.Second * time.Duration(2))
-		So(len(manager.Members()), ShouldEqual, 0)
+		So(len(manager.membersMap), ShouldEqual, 0)
 	})
 
 	Convey("客户端添加属性", t, func() {
-		ws := newClient()
+		ws := clientConn()
 		defer ws.Close()
 
 		tags := []string{}
-		for _, v := range webws.AllWebSocketMsg {
+		for _, v := range AllWebSocketMsg {
 			tags = append(tags, v.Format(map[string]string{
 				"symbol": test_symbol,
 				"period": "h1",
 			}))
 		}
 
-		subM := webws.RecviceTag{
+		subM := RecviceTag{
 			Subscribe: tags,
 		}
 
@@ -87,12 +86,12 @@ func TestClient(t *testing.T) {
 
 		time.Sleep(time.Second * time.Duration(1))
 
-		So(len(manager.Members()), ShouldEqual, 1)
-		for _, c := range manager.Members() {
+		So(len(manager.membersMap), ShouldEqual, 1)
+		for c := range manager.membersMap {
 			for _, tag := range tags {
-				So(manager.ClientHasAttr(c, tag), ShouldBeTrue)
+				So(c.hasAttr(tag), ShouldBeTrue)
 			}
-			t.Logf("c.attrs: %#v", manager.GetClientAttrs(c))
+			t.Logf("c.attrs: %#v", c)
 		}
 
 	})
