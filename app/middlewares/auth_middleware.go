@@ -7,7 +7,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/app/common"
 	"go.uber.org/zap"
 )
 

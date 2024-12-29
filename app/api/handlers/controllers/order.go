@@ -9,7 +9,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/app/common"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"

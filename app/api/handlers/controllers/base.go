@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/app/common"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

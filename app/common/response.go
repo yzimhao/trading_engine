@@ -1,7 +1,9 @@
 package common
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,4 +20,10 @@ func ResponseError(c *gin.Context, err error) {
 		"ok":  false,
 		"msg": err.Error(),
 	})
+}
+
+func NumberFix(n string, toFix int) string {
+	b, _ := strconv.ParseFloat(n, 64)
+	format := "%." + fmt.Sprintf("%d", toFix) + "f"
+	return fmt.Sprintf(format, b)
 }

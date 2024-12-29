@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/app/common"
 	"github.com/yzimhao/trading_engine/v2/app/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"

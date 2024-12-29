@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	crud_types "github.com/duolacloud/crud-core/types"
-	"github.com/yzimhao/trading_engine/v2/app/api/handlers/common"
+	"github.com/yzimhao/trading_engine/v2/app/common"
 	"github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"

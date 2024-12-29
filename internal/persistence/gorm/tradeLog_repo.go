@@ -40,6 +40,7 @@ func NewTradeLogRepo(datasource datasource.DataSource[gorm.DB], cache cache.Cach
 }
 
 func (repo *gormTradeLogRepo) Find(ctx context.Context, symbol string, limit int) ([]*entities.TradeLog, error) {
+	//TODO 完善参数功能实现
 	db, err := repo.datasource.GetDB(ctx)
 	if err != nil {
 		return nil, err
@@ -51,7 +52,7 @@ func (repo *gormTradeLogRepo) Find(ctx context.Context, symbol string, limit int
 	}
 
 	var rows []*entities.TradeLog
-	query := db.Table(entity.TableName()).Find(&rows)
+	query := db.Table(entity.TableName()).Order("created_at desc").Find(&rows)
 	if query.Error != nil {
 		return nil, query.Error
 	}
