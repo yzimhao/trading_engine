@@ -20,9 +20,10 @@ import (
 )
 
 type OrderController struct {
-	broker broker.Broker
-	logger *zap.Logger
-	repo   persistence.OrderRepository
+	broker       broker.Broker
+	logger       *zap.Logger
+	repo         persistence.OrderRepository
+	tradeVariety persistence.TradeVarietyRepository
 }
 
 type inOrderContext struct {
@@ -32,13 +33,15 @@ type inOrderContext struct {
 	DB               *gorm.DB
 	TradeVarietyRepo persistence.TradeVarietyRepository
 	Repo             persistence.OrderRepository
+	TradeVariety     persistence.TradeVarietyRepository
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
 	return &OrderController{
-		broker: in.Broker,
-		logger: in.Logger,
-		repo:   in.Repo,
+		broker:       in.Broker,
+		logger:       in.Logger,
+		repo:         in.Repo,
+		tradeVariety: in.TradeVariety,
 	}
 }
 
@@ -203,8 +206,17 @@ func (ctrl *OrderController) HistoryList(c *gin.Context) {
 // @Success 200 {string} any
 // @Router /api/v1/order/unfinished [get]
 func (ctrl *OrderController) UnfinishedList(c *gin.Context) {
-	//TODO 登陆判断
+
 	symbol := c.Query("symbol")
+	// userId := common.GetUserId(c)
+
+	// tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	// if err != nil {
+	// 	common.ResponseError(c, err)
+	// 	return
+	// }
+
+	//TODO 这个未完成订单列表 需要重新写一个方法
 	orders, err := ctrl.repo.LoadUnfinishedOrders(c, symbol)
 	if err != nil {
 		common.ResponseError(c, err)
