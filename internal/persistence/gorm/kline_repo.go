@@ -53,7 +53,7 @@ func (repo *gormKlineRepo) Find(ctx context.Context, symbol string, period kline
 	}
 
 	var rows []*entities.Kline
-	query := db.Table(entity.TableName()).Find(&rows)
+	query := db.Table(entity.TableName()).Order("created_at desc").Find(&rows)
 	if query.Error != nil {
 		return nil, query.Error
 	}

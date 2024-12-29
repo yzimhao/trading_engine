@@ -171,11 +171,11 @@ func (ctrl *MarketController) Klines(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, [6]any{
 			v.OpenAt.UnixMilli(),
-			common.NumberFix(v.Open, tradeVariety.PriceDecimals),
-			common.NumberFix(v.High, tradeVariety.PriceDecimals),
-			common.NumberFix(v.Low, tradeVariety.PriceDecimals),
-			common.NumberFix(v.Close, tradeVariety.PriceDecimals),
-			common.NumberFix(v.Volume, tradeVariety.QtyDecimals),
+			common.FormatStrNumber(v.Open, tradeVariety.PriceDecimals),
+			common.FormatStrNumber(v.High, tradeVariety.PriceDecimals),
+			common.FormatStrNumber(v.Low, tradeVariety.PriceDecimals),
+			common.FormatStrNumber(v.Close, tradeVariety.PriceDecimals),
+			common.FormatStrNumber(v.Volume, tradeVariety.QtyDecimals),
 		})
 	}
 

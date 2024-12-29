@@ -1,11 +1,10 @@
 package common
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 )
 
 func ResponseOK(c *gin.Context, data any) {
@@ -22,8 +21,8 @@ func ResponseError(c *gin.Context, err error) {
 	})
 }
 
-func NumberFix(n string, toFix int) string {
-	b, _ := strconv.ParseFloat(n, 64)
-	format := "%." + fmt.Sprintf("%d", toFix) + "f"
-	return fmt.Sprintf(format, b)
+func FormatStrNumber(n string, p int) string {
+	d, _ := decimal.NewFromString(n)
+	//TODO check err
+	return d.StringFixed(int32(p))
 }
