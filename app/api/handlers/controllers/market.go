@@ -79,6 +79,12 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 	symbol := c.DefaultQuery("symbol", "")
 	limit := c.DefaultQuery("limit", "1000")
 
+	tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
+
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
 		common.ResponseError(c, err)
@@ -91,7 +97,18 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 		return
 	}
 
-	common.ResponseOK(c, data)
+	var response []map[string]any
+	for _, v := range data {
+		response = append(response, map[string]any{
+			"id":       v.Id,
+			"price":    common.FormatStrNumber(v.Price, tradeVariety.PriceDecimals),
+			"qty":      common.FormatStrNumber(v.Quantity, tradeVariety.QtyDecimals),
+			"amount":   common.FormatStrNumber(v.Amount, 6), //TODO 金额现实位数控制
+			"trade_at": v.CreatedAt.UnixNano(),
+		})
+	}
+
+	common.ResponseOK(c, response)
 }
 
 // @Summary klines
