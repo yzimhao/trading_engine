@@ -2,7 +2,7 @@ package asset
 
 import (
 	"github.com/yzimhao/trading_engine/v2/internal/models"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 )
 
 type AssetLog struct {

@@ -1,4 +1,4 @@
-package gorm
+package database
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	models_variety "github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

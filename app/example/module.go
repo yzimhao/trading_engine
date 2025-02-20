@@ -5,7 +5,7 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Options(
-
+var Module = fx.Module(
+	"example",
 	fx.Invoke(controllers.NewExampleController),
 )

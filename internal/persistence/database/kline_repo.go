@@ -1,4 +1,4 @@
-package gorm
+package database
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	models "github.com/yzimhao/trading_engine/v2/internal/models/kline"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	kline_types "github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

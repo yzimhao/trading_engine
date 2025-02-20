@@ -1,4 +1,4 @@
-package gorm_test
+package database_test
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"github.com/subosito/gotenv"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	kline_types "github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 	"go.uber.org/zap"
 	_gorm "gorm.io/gorm"
@@ -47,7 +47,7 @@ func (suite *klineRepoTest) SetupTest() {
 	redis := di.NewRedis(suite.v, suite.logger)
 	cache, _ := di.NewCache(suite.v, redis)
 	logger := zap.NewNop()
-	suite.repo = gorm.NewKlineRepo(datasource.NewDataSource(suite.gorm), cache, logger)
+	suite.repo = database.NewKlineRepo(datasource.NewDataSource(suite.gorm), cache, logger)
 }
 
 func (suite *klineRepoTest) TearDownTest() {

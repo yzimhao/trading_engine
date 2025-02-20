@@ -6,7 +6,7 @@ import (
 	"github.com/duolacloud/crud-core/repositories"
 	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"gorm.io/gorm"
 )
 

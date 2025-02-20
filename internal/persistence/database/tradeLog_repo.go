@@ -1,4 +1,4 @@
-package gorm
+package database
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/duolacloud/crud-core/repositories"
 	"github.com/pkg/errors"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

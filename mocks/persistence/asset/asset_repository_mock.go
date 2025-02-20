@@ -16,7 +16,7 @@ import (
 	types "github.com/duolacloud/crud-core/types"
 	asset "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	types0 "github.com/yzimhao/trading_engine/v2/internal/models/types"
-	entities "github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	entities "github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	gomock "go.uber.org/mock/gomock"
 	gorm "gorm.io/gorm"
 )

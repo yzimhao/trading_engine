@@ -1,4 +1,4 @@
-package gorm
+package database
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/duolacloud/crud-core/repositories"
 	models_variety "github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"gorm.io/gorm"
 )
 

@@ -1,4 +1,4 @@
-package gorm_test
+package database_test
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/di"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/migrations"
 	"go.uber.org/zap"
 	_gorm "gorm.io/gorm"
@@ -39,7 +39,7 @@ func (suite *assetsRepoTest) SetupTest() {
 	redis := di.NewRedis(suite.v, suite.logger)
 	cache, _ := di.NewCache(suite.v, redis)
 	logger := zap.NewNop()
-	suite.repo = gorm.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache, logger)
+	suite.repo = database.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache, logger)
 }
 
 func TestAssetsRepo(t *testing.T) {

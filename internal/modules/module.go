@@ -7,7 +7,8 @@ import (
 	"go.uber.org/fx"
 )
 
-var Load = fx.Options(
+var Load = fx.Module(
+	"modules",
 	settlement.Module,
 	matching.Module,
 	quote.Module,

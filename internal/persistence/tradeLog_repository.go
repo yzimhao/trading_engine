@@ -3,7 +3,7 @@ package persistence
 import (
 	"context"
 
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 )
 
 type TradeLogRepository interface {

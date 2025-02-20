@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	migrate "github.com/rubenv/sql-migrate"
-	"github.com/yzimhao/trading_engine/v2/internal/persistence/gorm/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
