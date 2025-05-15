@@ -11,11 +11,31 @@
 #### 贡献代码
   全新重构，希望更多开源爱好者能加入共同开发练手，共同进步，请联系下方wx
 
-#### 撮合
+
+
+### 系统架构
+```mermaid
+graph TD
+    A[交易所]
+    A --> AA[用户资产]
+    A --> AB[用户订单]
+    A --> AC[交易核心]
+    A --> AD[消息推送]
+
+    AC --> AC1[撮合引擎]
+    AC --> AC2[订单结算]
+    AC --> AC5[行情系统]
+```
+
+---
+
+#### 撮合引擎
+> 只集成撮合引擎部分
+
 ```
     go get github.com/yzimhao/trading_engine/v2/pkg/matching
 ```
-#### pkg example
+
 ```go
     ctx := context.Background()
     opts := []matching.Option{
