@@ -16,15 +16,15 @@
 ### 系统架构
 ```mermaid
 graph TD
-    A[交易所]
-    A --> AA[用户资产]
-    A --> AB[用户订单]
-    A --> AC[交易核心]
-    A --> AD[消息推送]
+    A[交易所<br>Exchange]
+    A --> AA[用户资产<br>UserAssets]
+    A --> AB[用户订单<br>UserOrders]
+    A --> AC[交易核心<br>TradingCore]
+    A --> AD[消息推送<br>Notification]
 
-    AC --> AC1[撮合引擎]
-    AC --> AC2[订单结算]
-    AC --> AC5[行情系统]
+    AC --> AC1[撮合引擎<br>MatchingEngine]
+    AC --> AC2[订单结算<br>Settlement]
+    AC --> AC5[行情系统<br>MarketData]
 ```
 
 ---
