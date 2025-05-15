@@ -16,15 +16,25 @@
 ### 系统架构
 ```mermaid
 graph TD
+    classDef done fill:#2ecc71,stroke:#27ae60,color:#fff  
+    classDef pending fill:#bdc3c7,stroke:#95a5a6,color:#333
+
     A[交易所<br>Exchange]
     A --> AA[用户资产<br>UserAssets]
+    class AA done
+
     A --> AB[用户订单<br>UserOrders]
+    class AB done
     A --> AC[交易核心<br>TradingCore]
     A --> AD[消息推送<br>Notification]
+    class AD pending
 
     AC --> AC1[撮合引擎<br>MatchingEngine]
+    class AC1 done
     AC --> AC2[订单结算<br>Settlement]
-    AC --> AC5[行情系统<br>MarketData]
+    class AC2 done
+    AC --> AC3[行情系统<br>MarketData]
+    class AC3 pending
 ```
 
 ---
