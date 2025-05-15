@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v3"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/migrations"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -26,9 +27,9 @@ func main() {
 				Action: func(ctx context.Context, c *cli.Command) error {
 					return fx.New(
 						fx.Provide(
-							di.NewViper,
+							provider.NewViper,
 							zap.NewDevelopment,
-							di.NewGorm,
+							provider.NewGorm,
 						),
 						fx.Invoke(migrations.MigrateUp),
 					).Start(ctx)
@@ -40,9 +41,9 @@ func main() {
 				Action: func(ctx context.Context, c *cli.Command) error {
 					return fx.New(
 						fx.Provide(
-							di.NewViper,
+							provider.NewViper,
 							zap.NewDevelopment,
-							di.NewGorm,
+							provider.NewGorm,
 						),
 						fx.Invoke(migrations.MigrateDown),
 					).Start(ctx)
@@ -54,9 +55,9 @@ func main() {
 				Action: func(ctx context.Context, c *cli.Command) error {
 					return fx.New(
 						fx.Provide(
-							di.NewViper,
+							provider.NewViper,
 							zap.NewDevelopment,
-							di.NewGorm,
+							provider.NewGorm,
 						),
 						fx.Invoke(migrations.MigrateClean),
 					).Start(ctx)

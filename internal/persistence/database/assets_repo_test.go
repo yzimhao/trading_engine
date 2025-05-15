@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
-	"github.com/yzimhao/trading_engine/v2/internal/di"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
@@ -33,11 +33,11 @@ func (suite *assetsRepoTest) SetupTest() {
 
 	suite.ctx = context.Background()
 
-	suite.v = di.NewViper()
-	suite.gorm = di.NewGorm(suite.v)
+	suite.v = provider.NewViper()
+	suite.gorm = provider.NewGorm(suite.v)
 	suite.logger = zap.NewNop()
-	redis := di.NewRedis(suite.v, suite.logger)
-	cache, _ := di.NewCache(suite.v, redis)
+	redis := provider.NewRedis(suite.v, suite.logger)
+	cache, _ := provider.NewCache(suite.v, redis)
 	logger := zap.NewNop()
 	suite.repo = database.NewAssetRepo(datasource.NewDataSource(suite.gorm), cache, logger)
 }

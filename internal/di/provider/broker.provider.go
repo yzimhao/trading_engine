@@ -1,4 +1,4 @@
-package di
+package provider
 
 import (
 	"github.com/duolacloud/broker-core"

@@ -1,4 +1,4 @@
-package di
+package provider
 
 import (
 	redis "github.com/duolacloud/crud-cache-redis"

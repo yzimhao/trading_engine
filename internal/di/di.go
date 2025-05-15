@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	app "github.com/yzimhao/trading_engine/v2/app"
 	"github.com/yzimhao/trading_engine/v2/app/example"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
 	"github.com/yzimhao/trading_engine/v2/internal/services"
@@ -41,12 +42,12 @@ func App() *fx.App {
 				return ctx
 			},
 			zap.NewDevelopment,
-			NewViper,
-			NewRedis,
-			NewGin,
-			NewCache,
-			NewGorm,
-			NewBroker,
+			provider.NewViper,
+			provider.NewRedis,
+			provider.NewGin,
+			provider.NewCache,
+			provider.NewGorm,
+			provider.NewBroker,
 		),
 
 		database.Module,
