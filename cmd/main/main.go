@@ -66,7 +66,7 @@ func main() {
 	}
 
 	cmd := &cli.Command{
-		Name: "jasmDex",
+		Name: "exchange",
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			app := di.App()
 			app.Run()
