@@ -28,6 +28,7 @@ graph TD
     A --> AC[交易核心<br>TradingCore]
     A --> AD[消息推送<br>Notification]
     class AD pending
+    A --> AZ[...<br>Other]
 
     AC --> AC1[撮合引擎<br>MatchingEngine]
     class AC1 done
