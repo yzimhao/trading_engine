@@ -14,6 +14,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	MainName string = "xExchange"
+)
+
 func main() {
 	_ = godotenv.Load()
 
@@ -67,7 +71,7 @@ func main() {
 	}
 
 	cmd := &cli.Command{
-		Name: "exchange",
+		Name: MainName,
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			app := di.App()
 			app.Run()

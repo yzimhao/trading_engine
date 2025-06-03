@@ -8,7 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
-	"github.com/yzimhao/trading_engine/v2/internal/di"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/pkg/kline"
 	"github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
@@ -33,9 +33,9 @@ func TestKLine(t *testing.T) {
 func (suite *klineTest) SetupTest() {
 	suite.ctx = context.Background()
 
-	v := di.NewViper()
+	v := provider.NewViper()
 	logger := zap.NewNop()
-	redis := di.NewRedis(v, logger)
+	redis := provider.NewRedis(v, logger)
 	suite.symbol = "BTCUSDT"
 	suite.service = kline.NewKLine(redis, suite.symbol)
 }

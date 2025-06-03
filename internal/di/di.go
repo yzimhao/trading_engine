@@ -14,7 +14,6 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
-	"github.com/yzimhao/trading_engine/v2/internal/services"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -53,7 +52,6 @@ func App() *fx.App {
 		database.Module,
 		app.Module,
 		example.Module,
-		services.Module,
 		modules.Load,
 		fx.Invoke(run),
 	)
