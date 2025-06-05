@@ -21,7 +21,9 @@ graph TD
 
     A[交易所<br>Exchange]
 
-    A --> aa[交易产品<br>Asset/Product]
+    A --> aa[基础数据<br>Base]
+    aa --> aa1[资产种类<br>Asset]
+    aa --> aa2[交易品种<br>Product]
 
     A --> AA[用户中心<br>UserCenter]
     AA --> AAa[用户资产<br>UserAssets]
