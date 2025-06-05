@@ -19,7 +19,7 @@ type Product struct {
 	FeeRate        string       `gorm:"type:decimal(40,20); default:0" json:"fee_rate"`
 	Status         types.Status `gorm:"default:0" json:"status"`
 	Sort           int64        `gorm:"default:0" json:"sort"`
-	Base           *Asset       `gorm:"-" json:"-"`
-	Target         *Asset       `gorm:"-" json:"-"`
+	Base           *Asset       `gorm:"-" json:"base"`
+	Target         *Asset       `gorm:"-" json:"target"`
 	BaseAt
 }
