@@ -28,35 +28,35 @@ const (
 
 type inContext struct {
 	fx.In
-	Broker           broker.Broker
-	Logger           *zap.Logger
-	TradeVarietyRepo persistence.TradeVarietyRepository
-	Viper            *viper.Viper
-	Cache            cache.Cache
-	OrderRepo        persistence.OrderRepository
-	Ws               *webws.WsManager
+	Broker      broker.Broker
+	Logger      *zap.Logger
+	ProductRepo persistence.ProductRepository
+	Viper       *viper.Viper
+	Cache       cache.Cache
+	OrderRepo   persistence.OrderRepository
+	Ws          *webws.WsManager
 }
 
 type Matching struct {
-	broker           broker.Broker
-	logger           *zap.Logger
-	tradeVarietyRepo persistence.TradeVarietyRepository
-	tradePairs       sync.Map
-	viper            *viper.Viper
-	cache            cache.Cache
-	orderRepo        persistence.OrderRepository
-	ws               *webws.WsManager
+	broker      broker.Broker
+	logger      *zap.Logger
+	productRepo persistence.ProductRepository
+	tradePairs  sync.Map
+	viper       *viper.Viper
+	cache       cache.Cache
+	orderRepo   persistence.OrderRepository
+	ws          *webws.WsManager
 }
 
 func NewMatching(in inContext) *Matching {
 	return &Matching{
-		broker:           in.Broker,
-		logger:           in.Logger,
-		tradeVarietyRepo: in.TradeVarietyRepo,
-		viper:            in.Viper,
-		cache:            in.Cache,
-		orderRepo:        in.OrderRepo,
-		ws:               in.Ws,
+		broker:      in.Broker,
+		logger:      in.Logger,
+		productRepo: in.ProductRepo,
+		viper:       in.Viper,
+		cache:       in.Cache,
+		orderRepo:   in.OrderRepo,
+		ws:          in.Ws,
 	}
 }
 
@@ -70,7 +70,8 @@ func (s *Matching) InitEngine() {
 		next   bool = true
 	)
 	for next {
-		tradeVarieties, extra, err := s.tradeVarietyRepo.CursorQuery(context.Background(), &ds_types.CursorQuery{
+		//todo
+		tradeVarieties, extra, err := s.productRepo.CursorQuery(context.Background(), &ds_types.CursorQuery{
 			Cursor: cursor,
 			Limit:  10,
 			Filter: map[string]any{

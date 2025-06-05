@@ -18,7 +18,7 @@ import (
 type ExampleController struct {
 	engine *gin.Engine
 	logger *zap.Logger
-	asset  persistence.AssetRepository
+	asset  persistence.UserAssetRepository
 	auth   *middlewares.AuthMiddleware
 }
 
@@ -26,7 +26,7 @@ type inContext struct {
 	fx.In
 	Engine *gin.Engine
 	Logger *zap.Logger
-	Asset  persistence.AssetRepository
+	Asset  persistence.UserAssetRepository
 	Auth   *middlewares.AuthMiddleware
 }
 
