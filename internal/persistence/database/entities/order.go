@@ -10,7 +10,7 @@ import (
 
 type Order struct {
 	UUID
-	Base
+	BaseAt
 	Symbol         string                   `gorm:"type:varchar(30)" json:"symbol"`
 	OrderId        string                   `gorm:"type:varchar(30);uniqueIndex:order_id;not null" json:"order_id"`
 	OrderSide      matching_types.OrderSide `gorm:"type:varchar(10);index:order_side" json:"order_side"`

@@ -22,7 +22,7 @@ import (
 type assetsRepoTest struct {
 	suite.Suite
 	ctx    context.Context
-	repo   persistence.AssetRepository
+	repo   persistence.UserAssetRepository
 	v      *viper.Viper
 	gorm   *_gorm.DB
 	logger *zap.Logger

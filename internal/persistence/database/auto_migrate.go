@@ -15,21 +15,21 @@ import (
 
 type inContext struct {
 	fx.In
-	Db               *gorm.DB
-	Logger           *zap.Logger
-	VarietyRepo      persistence.VarietyRepository
-	TradeVarietyRepo persistence.TradeVarietyRepository
+	Db          *gorm.DB
+	Logger      *zap.Logger
+	AssetRepo   persistence.AssetRepository
+	ProductRepo persistence.ProductRepository
 }
 
 func autoMigrate(in inContext) error {
 
 	// auto migrate
 	err := in.Db.AutoMigrate(
+		&entities.UserAsset{},
+		&entities.UserAssetLog{},
+		&entities.UserAssetFreeze{},
 		&entities.Asset{},
-		&entities.AssetLog{},
-		&entities.AssetFreeze{},
-		&entities.Variety{},
-		&entities.TradeVariety{},
+		&entities.Product{},
 	)
 	if err != nil {
 		in.Logger.Error("auto migrate error", zap.Error(err))
@@ -47,12 +47,12 @@ func autoMigrate(in inContext) error {
 }
 
 func initData(ctx context.Context, in inContext) error {
-	varieties, err := initVariety(ctx, in.VarietyRepo)
+	assets, err := initAsset(ctx, in.AssetRepo)
 	if err != nil {
 		return err
 	}
 
-	err = initTradeVariety(ctx, in.TradeVarietyRepo, varieties)
+	err = initProduct(ctx, in.ProductRepo, assets)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func initData(ctx context.Context, in inContext) error {
 	return nil
 }
 
-func initVariety(ctx context.Context, varietyRepo persistence.VarietyRepository) ([]*models_variety.Variety, error) {
+func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*entities.Asset, error) {
 
 	usdt, _ := varietyRepo.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{
@@ -104,7 +104,7 @@ func initVariety(ctx context.Context, varietyRepo persistence.VarietyRepository)
 	return varieties, nil
 }
 
-func initTradeVariety(ctx context.Context, tradeVarietyRepo persistence.TradeVarietyRepository, varieties []*models_variety.Variety) error {
+func initProduct(ctx context.Context, productRepo persistence.ProductRepository, assets []*entities.Asset) error {
 
 	btcusdt, _ := tradeVarietyRepo.QueryOne(ctx, map[string]any{
 		"symbol": map[string]any{

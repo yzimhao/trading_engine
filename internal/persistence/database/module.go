@@ -12,8 +12,8 @@ var Module = fx.Module(
 	fx.Provide(
 		datasource.NewDataSource[_gorm.DB],
 		NewAssetRepo,
-		NewVarietyRepo,
-		NewTradeVarietyRepo,
+		NewUserAssetRepo,
+		NewProductRepo,
 		order_repo.NewOrderRepo,
 		NewKlineRepo,
 		NewTradeLogRepo,

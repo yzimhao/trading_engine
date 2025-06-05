@@ -8,7 +8,6 @@ import (
 )
 
 type KlineRepository interface {
-	// repositories.CrudRepository[models.Kline, models.CreateKline, models.UpdateKline]
 	Save(ctx context.Context, kline *entities.Kline) error
 	Find(ctx context.Context, symbol string, period kline_types.PeriodType, start, end int64, limit int) ([]*entities.Kline, error)
 }

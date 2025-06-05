@@ -2,9 +2,9 @@ package entities
 
 import "github.com/yzimhao/trading_engine/v2/internal/models/types"
 
-type AssetLog struct {
+type UserAssetLog struct {
 	UUID
-	Base
+	BaseAt
 	UserId        string          `gorm:"type:varchar(30);not null;index" json:"user_id"`
 	Symbol        string          `gorm:"type:varchar(30);not null;index" json:"symbol"`
 	BeforeBalance types.Numeric   `gorm:"type:decimal(40,20);default:0" json:"before_balance"`           // 变动前

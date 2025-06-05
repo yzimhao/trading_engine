@@ -8,7 +8,7 @@ import (
 
 type TradeLog struct {
 	UUID
-	Base
+	BaseAt
 	Symbol     string                 `gorm:"-" json:"-"` // 忽略字段
 	TradeId    string                 `gorm:"type:varchar(30);uniqueIndex:trade;not null" json:"trade_id"`
 	Ask        string                 `gorm:"type:varchar(30);uniqueIndex:trade;not null" json:"ask"`

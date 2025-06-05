@@ -2,9 +2,9 @@ package entities
 
 import "github.com/yzimhao/trading_engine/v2/internal/models/types"
 
-type AssetFreeze struct {
+type UserAssetFreeze struct {
 	UUID
-	Base
+	BaseAt
 	UserId       string        `gorm:"type:varchar(30);index;not null" json:"user_id"`
 	Symbol       string        `gorm:"type:varchar(30);index;not null" json:"symbol"`
 	Amount       types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"amount"`            // 冻结总量

@@ -23,9 +23,9 @@ const (
 	SYSTEM_USER_FEE  = "systemFee"
 )
 
-type Asset struct {
+type UserAsset struct {
 	UUID
-	Base
+	BaseAt
 	UserId        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`
 	Symbol        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"symbol"`
 	TotalBalance  types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"total_balance"`

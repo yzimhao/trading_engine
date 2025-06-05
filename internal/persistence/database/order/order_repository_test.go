@@ -75,9 +75,9 @@ func (suite *orderRepoTest) TearDownTest() {
 
 func (suite *orderRepoTest) initMockData() {
 	tables := []any{
-		&entities.Asset{},
-		&entities.AssetFreeze{},
-		&entities.AssetLog{},
+		&entities.UserAsset{},
+		&entities.UserAssetFreeze{},
+		&entities.UserAssetLog{},
 	}
 
 	for _, table := range tables {
@@ -113,8 +113,8 @@ func (suite *orderRepoTest) cleanMockData() {
 
 	tables := []any{
 		&entities.Asset{},
-		&entities.AssetFreeze{},
-		&entities.AssetLog{},
+		&entities.UserAssetFreeze{},
+		&entities.UserAssetLog{},
 		&entities.Order{Symbol: testSymbol},
 		&entities.UnfinishedOrder{},
 	}

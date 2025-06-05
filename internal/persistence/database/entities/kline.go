@@ -10,7 +10,7 @@ import (
 
 type Kline struct {
 	UUID
-	Base
+	BaseAt
 	Symbol  string                 `gorm:"-"`
 	Period  kline_types.PeriodType `gorm:"-"`
 	OpenAt  time.Time              `gorm:"timestamp uniqueIndex: open_close_at" json:"open_at,omitempty"`
