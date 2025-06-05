@@ -10,7 +10,6 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
-	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
@@ -250,21 +249,11 @@ func (s *Matching) loadUnfinishedOrders(ctx context.Context, symbol string) erro
 	for _, order := range orders {
 		var item matching.QueueItem
 		if order.OrderType == matching_types.OrderTypeLimit {
-			price, err := decimal.NewFromString(order.Price)
-			if err != nil {
-				s.logger.Sugar().Errorf("matching load unfinished orders price decimal error: %v", err)
-				continue
-			}
-			quantity, err := decimal.NewFromString(order.Quantity)
-			if err != nil {
-				s.logger.Sugar().Errorf("matching load unfinished orders quantity decimal error: %v", err)
-				continue
-			}
 
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskLimitItem(order.OrderId, price, quantity, order.NanoTime)
+				item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 			} else {
-				item = matching.NewBidLimitItem(order.OrderId, price, quantity, order.NanoTime)
+				item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 			}
 			if engine := s.engine(order.Symbol); engine != nil {
 

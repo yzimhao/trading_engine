@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
+	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/app/common"
 	"github.com/yzimhao/trading_engine/v2/app/middlewares"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -72,7 +72,7 @@ func (exa *ExampleController) deposit(ctx *gin.Context) {
 
 	for _, symbol := range symbols {
 		transId := time.Now().Format("20060102")
-		if err := exa.userAsset.Despoit(ctx, "deposit."+symbol+"."+transId, userId, symbol, types.Numeric("1000")); err != nil {
+		if err := exa.userAsset.Despoit("deposit."+symbol+"."+transId, userId, symbol, decimal.NewFromFloat(1000)); err != nil {
 			common.ResponseError(ctx, err)
 			exa.logger.Error("deposit error", zap.Error(err))
 		}

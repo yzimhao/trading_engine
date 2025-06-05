@@ -16,7 +16,7 @@ var Module = fx.Module(
 		NewProductRepo,
 		order_repo.NewOrderRepo,
 		NewKlineRepo,
-		NewTradeLogRepo,
+		NewTradeRecordRepo,
 	),
 
 	fx.Invoke(autoMigrate),

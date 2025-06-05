@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 
+	"github.com/shopspring/decimal"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
@@ -104,10 +105,10 @@ func initProduct(ctx context.Context, productRepo persistence.ProductRepository,
 		TargetId:       assets[1].ID,
 		PriceDecimals:  2,
 		QtyDecimals:    6,
-		AllowMinQty:    "0.0001",
-		AllowMinAmount: "1.00",
-		AllowMaxAmount: "0",
-		FeeRate:        "0.005",
+		AllowMinQty:    decimal.NewFromFloat(0.0001),
+		AllowMinAmount: decimal.NewFromFloat(1.0),
+		AllowMaxAmount: decimal.Zero,
+		FeeRate:        decimal.NewFromFloat(0.005),
 		Status:         models_types.StatusEnabled,
 	})
 	if err := conn.Error; err != nil {
