@@ -11,7 +11,6 @@ import (
 	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
-	"github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
@@ -24,25 +23,25 @@ type SettleProcessor struct {
 	db     *gorm.DB
 	logger *zap.Logger
 	// cache            cache.Cache
-	tradeVarietyRepo persistence.TradeVarietyRepository
-	assetRepo        persistence.AssetRepository
-	broker           broker.Broker
-	redis            *redis.Client
-	locker           *SettleLocker
-	ws               *webws.WsManager
+	productRepo   persistence.ProductRepository
+	userAssetRepo persistence.UserAssetRepository
+	broker        broker.Broker
+	redis         *redis.Client
+	locker        *SettleLocker
+	ws            *webws.WsManager
 }
 
 type inSettleContext struct {
 	fx.In
-	DB               *gorm.DB
-	Logger           *zap.Logger
-	Cache            cache.Cache
-	TradeVarietyRepo persistence.TradeVarietyRepository
-	AssetRepo        persistence.AssetRepository
-	Broker           broker.Broker
-	Redis            *redis.Client
-	Locker           *SettleLocker
-	Ws               *webws.WsManager
+	DB            *gorm.DB
+	Logger        *zap.Logger
+	Cache         cache.Cache
+	ProductRepo   persistence.ProductRepository
+	UserAssetRepo persistence.UserAssetRepository
+	Broker        broker.Broker
+	Redis         *redis.Client
+	Locker        *SettleLocker
+	Ws            *webws.WsManager
 }
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
@@ -50,12 +49,12 @@ func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 		db:     in.DB,
 		logger: in.Logger,
 		// cache:            in.Cache,
-		tradeVarietyRepo: in.TradeVarietyRepo,
-		assetRepo:        in.AssetRepo,
-		broker:           in.Broker,
-		redis:            in.Redis,
-		locker:           in.Locker,
-		ws:               in.Ws,
+		productRepo:   in.ProductRepo,
+		userAssetRepo: in.UserAssetRepo,
+		broker:        in.Broker,
+		redis:         in.Redis,
+		locker:        in.Locker,
+		ws:            in.Ws,
 	}
 }
 
@@ -79,7 +78,7 @@ func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.Tr
 func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.TradeResult) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
 		//交易对配置
-		tradePairInfo, err := s.tradeVarietyRepo.FindBySymbol(ctx, tradeResult.Symbol)
+		product, err := s.productRepo.Get(tradeResult.Symbol)
 		if err != nil {
 			return err
 		}
@@ -107,7 +106,7 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}
 
 		//订单交割
-		if err := s.orderDelivery(tx, tradeLog, askOrder, bidOrder, tradePairInfo); err != nil {
+		if err := s.orderDelivery(tx, tradeLog, askOrder, bidOrder, product); err != nil {
 			return err
 		}
 
@@ -299,20 +298,20 @@ func (s *SettleProcessor) orderDelivery(
 	tx *gorm.DB,
 	tradeLog *entities.TradeLog,
 	ask, bid *entities.Order,
-	tradePairInfo *variety.TradeVariety,
+	product *entities.Product,
 ) error {
 	ctx := context.Background()
 	//结算被交易物品
 	// 1.解冻卖家的冻结数量
 	// 2.将解冻的数量转移给买家
-	err := s.assetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId,
-		tradePairInfo.TargetVariety.Symbol, models_types.Numeric(tradeLog.Quantity))
+	err := s.userAssetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId,
+		product.Target.Symbol, models_types.Numeric(tradeLog.Quantity))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery target variety unFreeze: %v %s", tradeLog, err.Error())
 		return err
 	}
-	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, bid.UserId,
-		tradePairInfo.TargetVariety.Symbol, models_types.Numeric(tradeLog.Quantity))
+	err = s.userAssetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, bid.UserId,
+		product.Target.Symbol, models_types.Numeric(tradeLog.Quantity))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery target variety transfer: %v %s", tradeLog, err.Error())
 		return err
@@ -322,31 +321,31 @@ func (s *SettleProcessor) orderDelivery(
 	// 1.解冻买家冻结的金额
 	// 2.将买家解冻的金额转入卖家账户
 	amount := models_types.Numeric(tradeLog.Amount)
-	err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId,
-		tradePairInfo.BaseVariety.Symbol, amount.Add(models_types.Numeric(tradeLog.BidFee)))
+	err = s.userAssetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId,
+		product.Base.Symbol, amount.Add(models_types.Numeric(tradeLog.BidFee)))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety unFreeze: %v %s", tradeLog, err.Error())
 		return err
 	}
 
-	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, ask.UserId,
-		tradePairInfo.BaseVariety.Symbol, amount)
+	err = s.userAssetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, ask.UserId,
+		product.Base.Symbol, amount)
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery base variety transfer: %v %s", tradeLog, err.Error())
 		return err
 	}
 
 	//ask手续费收入到系统账号里
-	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, entities.SYSTEM_USER_FEE,
-		tradePairInfo.BaseVariety.Symbol, models_types.Numeric(tradeLog.AskFee))
+	err = s.userAssetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, ask.UserId, entities.SYSTEM_USER_FEE,
+		product.Base.Symbol, models_types.Numeric(tradeLog.AskFee))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery ask fee transfer: %v %s", tradeLog, err.Error())
 		return err
 	}
 
 	//bid的手续费收入到系统账号里
-	err = s.assetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, entities.SYSTEM_USER_FEE,
-		tradePairInfo.BaseVariety.Symbol, models_types.Numeric(tradeLog.BidFee))
+	err = s.userAssetRepo.TransferWithTx(ctx, tx, tradeLog.TradeId, bid.UserId, entities.SYSTEM_USER_FEE,
+		product.Base.Symbol, models_types.Numeric(tradeLog.BidFee))
 	if err != nil {
 		s.logger.Sugar().Errorf("orderDelivery bid fee transfer: %v %s", tradeLog, err.Error())
 		return err
@@ -354,14 +353,14 @@ func (s *SettleProcessor) orderDelivery(
 
 	//订单状态为已成交，则解冻该订单冻结的全部数量
 	if ask.OrderType == matching_types.OrderTypeMarket && ask.Status == models_types.OrderStatusFilled {
-		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId, tradePairInfo.TargetVariety.Symbol, "0")
+		err = s.userAssetRepo.UnFreeze(ctx, tx, tradeLog.Ask, ask.UserId, product.Target.Symbol, "0")
 		if err != nil {
 			s.logger.Sugar().Errorf("orderDelivery ask unFreeze: %v %s", tradeLog, err.Error())
 			return err
 		}
 	}
 	if bid.OrderType == matching_types.OrderTypeMarket && bid.Status == models_types.OrderStatusFilled {
-		err = s.assetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId, tradePairInfo.BaseVariety.Symbol, "0")
+		err = s.userAssetRepo.UnFreeze(ctx, tx, tradeLog.Bid, bid.UserId, product.Base.Symbol, "0")
 		if err != nil {
 			s.logger.Sugar().Errorf("orderDelivery bid unFreeze: %v %s", tradeLog, err.Error())
 			return err

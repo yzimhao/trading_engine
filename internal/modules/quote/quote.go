@@ -18,32 +18,32 @@ import (
 )
 
 type Quote struct {
-	logger       *zap.Logger
-	broker       broker.Broker
-	redis        *redis.Client
-	repo         persistence.KlineRepository
-	ws           *webws.WsManager
-	tradeVariety persistence.TradeVarietyRepository
+	logger      *zap.Logger
+	broker      broker.Broker
+	redis       *redis.Client
+	repo        persistence.KlineRepository
+	ws          *webws.WsManager
+	productRepo persistence.ProductRepository
 }
 
 type inContext struct {
 	fx.In
-	Logger       *zap.Logger
-	Broker       broker.Broker
-	Redis        *redis.Client
-	Repo         persistence.KlineRepository
-	Ws           *webws.WsManager
-	TradeVariety persistence.TradeVarietyRepository
+	Logger      *zap.Logger
+	Broker      broker.Broker
+	Redis       *redis.Client
+	Repo        persistence.KlineRepository
+	Ws          *webws.WsManager
+	ProductRepo persistence.ProductRepository
 }
 
 func NewQuote(in inContext) *Quote {
 	return &Quote{
-		logger:       in.Logger,
-		broker:       in.Broker,
-		redis:        in.Redis,
-		repo:         in.Repo,
-		ws:           in.Ws,
-		tradeVariety: in.TradeVariety,
+		logger:      in.Logger,
+		broker:      in.Broker,
+		redis:       in.Redis,
+		repo:        in.Repo,
+		ws:          in.Ws,
+		productRepo: in.ProductRepo,
 	}
 }
 
@@ -65,9 +65,9 @@ func (q *Quote) OnNotifyQuote(ctx context.Context, event broker.Event) error {
 func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotifyQuote) error {
 
 	q.logger.Sugar().Infof("process quote: %+v", notify)
-	tradeVariety, err := q.tradeVariety.FindBySymbol(ctx, notify.Symbol)
+	product, err := q.productRepo.Get(notify.Symbol)
 	if err != nil {
-		q.logger.Sugar().Errorf("quote process tradelog tradeVariety.FindBySymbol error: %v", err)
+		q.logger.Sugar().Errorf("quote process tradelog product.Get error: %v", err)
 		return err
 	}
 
@@ -104,11 +104,11 @@ func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotif
 		q.ws.Broadcast(ctx, webws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
 			[6]any{
 				data.OpenAt.UnixMilli(),
-				common.FormatStrNumber(*data.Open, tradeVariety.PriceDecimals),
-				common.FormatStrNumber(*data.High, tradeVariety.PriceDecimals),
-				common.FormatStrNumber(*data.Low, tradeVariety.PriceDecimals),
-				common.FormatStrNumber(*data.Close, tradeVariety.PriceDecimals),
-				common.FormatStrNumber(*data.Volume, tradeVariety.QtyDecimals),
+				common.FormatStrNumber(*data.Open, product.PriceDecimals),
+				common.FormatStrNumber(*data.High, product.PriceDecimals),
+				common.FormatStrNumber(*data.Low, product.PriceDecimals),
+				common.FormatStrNumber(*data.Close, product.PriceDecimals),
+				common.FormatStrNumber(*data.Volume, product.QtyDecimals),
 			},
 		)
 
