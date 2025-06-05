@@ -21,7 +21,7 @@ type MarketController struct {
 	cache        cache.Cache
 	klineRepo    persistence.KlineRepository
 	tradeLogRepo persistence.TradeLogRepository
-	tradeVariety persistence.TradeVarietyRepository
+	productRepo  persistence.ProductRepository
 }
 
 type inMarketContext struct {
@@ -30,7 +30,7 @@ type inMarketContext struct {
 	Cache        cache.Cache
 	KlineRepo    persistence.KlineRepository
 	TradeLogRepo persistence.TradeLogRepository
-	TradeVariety persistence.TradeVarietyRepository
+	ProductRepo  persistence.ProductRepository
 }
 
 func NewMarketController(in inMarketContext) *MarketController {
@@ -39,7 +39,7 @@ func NewMarketController(in inMarketContext) *MarketController {
 		cache:        in.Cache,
 		klineRepo:    in.KlineRepo,
 		tradeLogRepo: in.TradeLogRepo,
-		tradeVariety: in.TradeVariety,
+		productRepo:  in.ProductRepo,
 	}
 }
 
@@ -79,7 +79,7 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 	symbol := c.DefaultQuery("symbol", "")
 	limit := c.DefaultQuery("limit", "1000")
 
-	tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	product, err := ctrl.productRepo.Get(symbol)
 	if err != nil {
 		common.ResponseError(c, err)
 		return
@@ -101,8 +101,8 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, map[string]any{
 			"id":       v.Id,
-			"price":    common.FormatStrNumber(v.Price, tradeVariety.PriceDecimals),
-			"qty":      common.FormatStrNumber(v.Quantity, tradeVariety.QtyDecimals),
+			"price":    common.FormatStrNumber(v.Price, product.PriceDecimals),
+			"qty":      common.FormatStrNumber(v.Quantity, product.QtyDecimals),
 			"amount":   common.FormatStrNumber(v.Amount, 6), //TODO 金额现实位数控制
 			"trade_at": v.CreatedAt.UnixNano(),
 		})
@@ -131,7 +131,7 @@ func (ctrl *MarketController) Klines(c *gin.Context) {
 	end := c.DefaultQuery("end", "0")
 	limit := c.DefaultQuery("limit", "1000")
 
-	tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	product, err := ctrl.productRepo.Get(symbol)
 	if err != nil {
 		common.ResponseError(c, err)
 		return
@@ -188,11 +188,11 @@ func (ctrl *MarketController) Klines(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, [6]any{
 			v.OpenAt.UnixMilli(),
-			common.FormatStrNumber(v.Open, tradeVariety.PriceDecimals),
-			common.FormatStrNumber(v.High, tradeVariety.PriceDecimals),
-			common.FormatStrNumber(v.Low, tradeVariety.PriceDecimals),
-			common.FormatStrNumber(v.Close, tradeVariety.PriceDecimals),
-			common.FormatStrNumber(v.Volume, tradeVariety.QtyDecimals),
+			common.FormatStrNumber(v.Open, product.PriceDecimals),
+			common.FormatStrNumber(v.High, product.PriceDecimals),
+			common.FormatStrNumber(v.Low, product.PriceDecimals),
+			common.FormatStrNumber(v.Close, product.PriceDecimals),
+			common.FormatStrNumber(v.Volume, product.QtyDecimals),
 		})
 	}
 

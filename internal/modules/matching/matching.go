@@ -10,12 +10,12 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
-	ds_types "github.com/duolacloud/crud-core/types"
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
@@ -65,61 +65,46 @@ func (s *Matching) InitEngine() {
 	localSymbols := s.viper.GetStringSlice("matching.local_symbols")
 
 	// load trade pair
+
 	var (
-		cursor string
-		next   bool = true
+		products []entities.Product
 	)
-	for next {
-		//todo
-		tradeVarieties, extra, err := s.productRepo.CursorQuery(context.Background(), &ds_types.CursorQuery{
-			Cursor: cursor,
-			Limit:  10,
-			Filter: map[string]any{
-				"status": map[string]any{
-					"eq": models_types.StatusEnabled,
-				},
-			},
+
+	if err := s.productRepo.DB().Model(entities.Product{}).Find(&products).Error; err != nil {
+		s.logger.Sugar().Errorf("query trade product error: %v", err)
+		return
+	}
+
+	for _, product := range products {
+		if len(localSymbols) > 0 {
+			if !slices.Contains(localSymbols, product.Symbol) {
+				continue
+			}
+		}
+
+		opts := []matching.Option{
+			matching.WithPriceDecimals(int32(product.PriceDecimals)),
+			matching.WithQuantityDecimals(int32(product.QtyDecimals)),
+			// matching.WithLogger(s.logger),
+		}
+		engine := matching.NewEngine(context.Background(), product.Symbol, opts...)
+
+		engine.OnRemoveResult(func(result matching_types.RemoveResult) {
+			s.logger.Sugar().Infof("symbol: %s remove result: %v", result.Symbol, result)
+			s.processCancelOrderResult(result)
+		})
+		engine.OnTradeResult(func(result matching_types.TradeResult) {
+			s.logger.Sugar().Infof("symbol: %s trade result: %v", result.Symbol, result)
+			s.processTradeResult(result)
 		})
 
-		if err != nil {
-			s.logger.Sugar().Errorf("query trade variety error: %v", err)
-			continue
-		}
+		s.tradePairs.Store(product.Symbol, engine)
+		s.logger.Sugar().Infof("init matching engine for symbol: %s", product.Symbol)
 
-		cursor = extra.EndCursor
-		next = extra.HasNext
+		go s.flushOrderbookToCache(context.Background(), product.Symbol)
 
-		for _, tradeVariety := range tradeVarieties {
-			if len(localSymbols) > 0 {
-				if !slices.Contains(localSymbols, tradeVariety.Symbol) {
-					continue
-				}
-			}
-
-			opts := []matching.Option{
-				matching.WithPriceDecimals(int32(tradeVariety.PriceDecimals)),
-				matching.WithQuantityDecimals(int32(tradeVariety.QtyDecimals)),
-				// matching.WithLogger(s.logger),
-			}
-			engine := matching.NewEngine(context.Background(), tradeVariety.Symbol, opts...)
-
-			engine.OnRemoveResult(func(result matching_types.RemoveResult) {
-				s.logger.Sugar().Infof("symbol: %s remove result: %v", result.Symbol, result)
-				s.processCancelOrderResult(result)
-			})
-			engine.OnTradeResult(func(result matching_types.TradeResult) {
-				s.logger.Sugar().Infof("symbol: %s trade result: %v", result.Symbol, result)
-				s.processTradeResult(result)
-			})
-
-			s.tradePairs.Store(tradeVariety.Symbol, engine)
-			s.logger.Sugar().Infof("init matching engine for symbol: %s", tradeVariety.Symbol)
-
-			go s.flushOrderbookToCache(context.Background(), tradeVariety.Symbol)
-
-			//TODO  load order from db
-			s.loadUnfinishedOrders(context.Background(), tradeVariety.Symbol)
-		}
+		//TODO  load order from db
+		s.loadUnfinishedOrders(context.Background(), product.Symbol)
 	}
 
 }

@@ -13,20 +13,20 @@ import (
 )
 
 type BaseController struct {
-	logger       *zap.Logger
-	tradeVariety persistence.TradeVarietyRepository
+	logger      *zap.Logger
+	productRepo persistence.ProductRepository
 }
 
 type inBaseContext struct {
 	fx.In
-	Logger       *zap.Logger
-	TradeVariety persistence.TradeVarietyRepository
+	Logger      *zap.Logger
+	ProductRepo persistence.ProductRepository
 }
 
 func NewBaseController(in inBaseContext) *BaseController {
 	return &BaseController{
-		logger:       in.Logger,
-		tradeVariety: in.TradeVariety,
+		logger:      in.Logger,
+		productRepo: in.ProductRepo,
 	}
 }
 
@@ -60,11 +60,11 @@ func (ctrl *BaseController) Time(c *gin.Context) {
 func (ctrl *BaseController) ExchangeInfo(c *gin.Context) {
 	symbol := strings.ToUpper(c.Query("symbol"))
 
-	tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
+	product, err := ctrl.productRepo.Get(symbol)
 	if err != nil {
 		common.ResponseError(c, err)
 		return
 	}
 
-	common.ResponseOK(c, tradeVariety)
+	common.ResponseOK(c, product)
 }

@@ -20,28 +20,27 @@ import (
 )
 
 type OrderController struct {
-	broker       broker.Broker
-	logger       *zap.Logger
-	repo         persistence.OrderRepository
-	tradeVariety persistence.TradeVarietyRepository
+	broker      broker.Broker
+	logger      *zap.Logger
+	repo        persistence.OrderRepository
+	productRepo persistence.ProductRepository
 }
 
 type inOrderContext struct {
 	fx.In
-	Logger           *zap.Logger
-	Broker           broker.Broker
-	DB               *gorm.DB
-	TradeVarietyRepo persistence.TradeVarietyRepository
-	Repo             persistence.OrderRepository
-	TradeVariety     persistence.TradeVarietyRepository
+	Logger      *zap.Logger
+	Broker      broker.Broker
+	DB          *gorm.DB
+	ProductRepo persistence.ProductRepository
+	Repo        persistence.OrderRepository
 }
 
 func NewOrderController(in inOrderContext) *OrderController {
 	return &OrderController{
-		broker:       in.Broker,
-		logger:       in.Logger,
-		repo:         in.Repo,
-		tradeVariety: in.TradeVariety,
+		broker:      in.Broker,
+		logger:      in.Logger,
+		repo:        in.Repo,
+		productRepo: in.ProductRepo,
 	}
 }
 
