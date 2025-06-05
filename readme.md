@@ -20,11 +20,14 @@ graph TD
     classDef pending fill:#bdc3c7,stroke:#95a5a6,color:#333
 
     A[交易所<br>Exchange]
-    A --> AA[用户资产<br>UserAssets]
-    class AA done
 
-    A --> AB[用户订单<br>UserOrders]
-    class AB done
+    A --> aa[交易产品<br>Asset/Product]
+
+    A --> AA[用户中心<br>UserCenter]
+    AA --> AAa[用户资产<br>UserAssets]
+    class AAa done
+    AA--> AAb[用户订单<br>UserOrders]
+    class AAb done
     A --> AC[交易核心<br>TradingCore]
     A --> AD[消息推送<br>Notification]
     class AD pending
