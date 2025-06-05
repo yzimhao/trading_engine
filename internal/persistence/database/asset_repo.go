@@ -22,10 +22,17 @@ func (a *assetRepo) DB() *gorm.DB {
 
 func (a *assetRepo) Get(symbol string) (*entities.Asset, error) {
 	// todo
-	return nil, nil
+	var asset entities.Asset
+	if err := a.db.Where("symbol = ?", symbol).First(&asset).Error; err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }
 
 func (a *assetRepo) GetById(id int32) (*entities.Asset, error) {
-	// todo
-	return nil, nil
+	var asset entities.Asset
+	if err := a.db.Where("id = ?", id).First(&asset).Error; err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }
