@@ -7,29 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
-	app "github.com/yzimhao/trading_engine/v2/app"
-	"github.com/yzimhao/trading_engine/v2/app/example"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
-
-func run(lc fx.Lifecycle, logger *zap.Logger, engine *gin.Engine, v *viper.Viper) {
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			v.SetDefault("listen", "127.0.0.1")
-			v.SetDefault("port", 8080)
-			engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port")))
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			return nil
-		},
-	})
-}
 
 func App() *fx.App {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,11 +32,21 @@ func App() *fx.App {
 		),
 
 		database.Module,
-		//todo 迁移到modules下
-		app.Module,
-		example.Module,
-		// modules.Load,
-		fx.Invoke(run),
+
+		modules.Load,
+		fx.Invoke(func(lc fx.Lifecycle, logger *zap.Logger) {
+			lc.Append(fx.Hook{
+				OnStart: func(context.Context) error {
+					logger.Info("application is starting...")
+					return nil
+				},
+				OnStop: func(context.Context) error {
+					logger.Info("application is stopping...")
+					cancel()
+					return nil
+				},
+			})
+		}),
 	)
 
 	go func() {
