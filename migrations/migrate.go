@@ -54,11 +54,11 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 	//TODO  justfor development
 	tables := []any{
 		&entities.Asset{},
-		&entities.AssetFreeze{},
-		&entities.AssetLog{},
+		&entities.UserAssetFreeze{},
+		&entities.UserAssetLog{},
 		&entities.UnfinishedOrder{},
-		&entities.TradeVariety{},
-		&entities.Variety{},
+		&entities.UserAsset{},
+		&entities.Product{},
 		"order_",
 		"trade_log_",
 		"kline_",
