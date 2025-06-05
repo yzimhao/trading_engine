@@ -12,7 +12,6 @@ import (
 	app "github.com/yzimhao/trading_engine/v2/app"
 	"github.com/yzimhao/trading_engine/v2/app/example"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
-	"github.com/yzimhao/trading_engine/v2/internal/modules"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,11 +21,10 @@ func run(lc fx.Lifecycle, logger *zap.Logger, engine *gin.Engine, v *viper.Viper
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			v.SetDefault("port", 8080)
-			engine.Run(v.GetString("port"))
+			engine.Run(fmt.Sprintf(":%d", v.GetInt("port")))
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-
 			return nil
 		},
 	})
@@ -50,9 +48,10 @@ func App() *fx.App {
 		),
 
 		database.Module,
+		//todo 迁移到modules下
 		app.Module,
 		example.Module,
-		modules.Load,
+		// modules.Load,
 		fx.Invoke(run),
 	)
 
