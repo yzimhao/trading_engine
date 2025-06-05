@@ -1,11 +1,10 @@
 package database
 
 import (
-	"context"
 	"errors"
 
+	"github.com/shopspring/decimal"
 	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"go.uber.org/zap"
@@ -46,32 +45,32 @@ func (u *userAssetRepo) QueryUserAssets(userId string, symbols ...string) ([]*en
 	return assets, nil
 }
 
-func (r *userAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
+func (r *userAssetRepo) Despoit(transId, userId, symbol string, amount decimal.Decimal) error {
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, entities.SYSTEM_USER_ROOT, userId, amount, transId)
+		return r.transfer(tx, symbol, entities.SYSTEM_USER_ROOT, userId, amount, transId)
 	})
 }
 
-func (r *userAssetRepo) Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
+func (r *userAssetRepo) Withdraw(transId, userId, symbol string, amount decimal.Decimal) error {
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, userId, entities.SYSTEM_USER_ROOT, amount, transId)
+		return r.transfer(tx, symbol, userId, entities.SYSTEM_USER_ROOT, amount, transId)
 	})
 }
 
 // 两个user之间的转账
-func (r *userAssetRepo) Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Numeric) error {
+func (r *userAssetRepo) Transfer(transId, from, to, symbol string, amount decimal.Decimal) error {
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		return r.transfer(ctx, tx, symbol, from, to, amount, transId)
+		return r.transfer(tx, symbol, from, to, amount, transId)
 	})
 }
 
 // 冻结资产
 // 这里使用tx传入，方便在结算的时候事务中使用
-func (r *userAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Numeric) (*entities.UserAssetFreeze, error) {
-	if amount.Cmp(types.NumericZero) < 0 {
+func (r *userAssetRepo) Freeze(tx *gorm.DB, transId, userId, symbol string, amount decimal.Decimal) (*entities.UserAssetFreeze, error) {
+	if amount.Cmp(decimal.Zero) < 0 {
 		return nil, errors.New("amount must be >= 0")
 	}
 
@@ -81,14 +80,14 @@ func (r *userAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 	}
 
 	//冻结金额为0，冻结全部可用
-	if amount.Cmp(types.NumericZero) == 0 {
+	if amount.Cmp(decimal.Zero) == 0 {
 		amount = asset.AvailBalance
 	}
 
 	asset.AvailBalance = asset.AvailBalance.Sub(amount)
 	asset.FreezeBalance = asset.FreezeBalance.Add(amount)
 
-	if asset.AvailBalance.Cmp(types.NumericZero) < 0 {
+	if asset.AvailBalance.Cmp(decimal.Zero) < 0 {
 		return nil, errors.New("insufficient balance")
 	}
 
@@ -114,8 +113,8 @@ func (r *userAssetRepo) Freeze(ctx context.Context, tx *gorm.DB, transId, userId
 
 // 解冻资产
 // amount为0，则解冻这条记录的全部剩余
-func (r *userAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, userId, symbol string, amount types.Numeric) error {
-	if amount.Cmp(types.NumericZero) < 0 {
+func (r *userAssetRepo) UnFreeze(tx *gorm.DB, transId, userId, symbol string, amount decimal.Decimal) error {
+	if amount.Cmp(decimal.Zero) < 0 {
 		return errors.New("amount must be > 0")
 	}
 
@@ -129,12 +128,12 @@ func (r *userAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 	}
 
 	//解冻金额为0，则全部金额解冻
-	if amount.Cmp(types.NumericZero) == 0 {
+	if amount.Cmp(decimal.Zero) == 0 {
 		amount = freeze.FreezeAmount
 	}
 
 	freeze.FreezeAmount = freeze.FreezeAmount.Sub(amount)
-	if freeze.FreezeAmount.Cmp(types.NumericZero) == 0 {
+	if freeze.FreezeAmount.Cmp(decimal.Zero) == 0 {
 		freeze.Status = entities.FreezeStatusDone
 	}
 
@@ -155,7 +154,7 @@ func (r *userAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 	return nil
 }
 
-func (r *userAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) (assetFreezes []*models.AssetFreeze, err error) {
+func (r *userAssetRepo) QueryFreeze(filter map[string]any) (assetFreezes []*models.AssetFreeze, err error) {
 	// query := &datasource_types.PageQuery{
 	// 	Filter: filter,
 	// }
@@ -164,16 +163,16 @@ func (r *userAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) 
 	return nil, nil
 }
 
-func (r *userAssetRepo) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Numeric) error {
-	return r.transfer(ctx, tx, symbol, from, to, amount, transId)
+func (r *userAssetRepo) TransferWithTx(tx *gorm.DB, transId, from, to, symbol string, amount decimal.Decimal) error {
+	return r.transfer(tx, symbol, from, to, amount, transId)
 }
 
-func (r *userAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from, to string, amount types.Numeric, transId string) error {
+func (r *userAssetRepo) transfer(tx *gorm.DB, symbol, from, to string, amount decimal.Decimal, transId string) error {
 	if from == to {
 		return errors.New("from and to cannot be the same")
 	}
 
-	if amount.Cmp(types.NumericZero) <= 0 {
+	if amount.Cmp(decimal.Zero) <= 0 {
 		return errors.New("amount must be greater than 0")
 	}
 
@@ -194,7 +193,7 @@ func (r *userAssetRepo) transfer(ctx context.Context, tx *gorm.DB, symbol, from,
 	fromAsset.AvailBalance = fromAsset.AvailBalance.Sub(amount)
 
 	if fromAsset.UserId != entities.SYSTEM_USER_ROOT {
-		if fromAsset.AvailBalance.Cmp(types.NumericZero) < 0 {
+		if fromAsset.AvailBalance.Cmp(decimal.Zero) < 0 {
 			return errors.New("insufficient balance")
 		}
 	}

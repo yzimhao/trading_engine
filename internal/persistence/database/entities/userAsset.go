@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/shopspring/decimal"
 )
 
 type FreezeStatus int
@@ -24,11 +24,11 @@ const (
 )
 
 type UserAsset struct {
-	UUID
+	ID
+	UserId        string          `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`
+	Symbol        string          `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"symbol"`
+	TotalBalance  decimal.Decimal `gorm:"type:decimal(40,20);default:0;not null" json:"total_balance"`
+	FreezeBalance decimal.Decimal `gorm:"type:decimal(40,20);default:0;not null" json:"freeze_balance"`
+	AvailBalance  decimal.Decimal `gorm:"type:decimal(40,20);default:0;not null" json:"avail_balance"`
 	BaseAt
-	UserId        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"user_id"`
-	Symbol        string        `gorm:"type:varchar(30);not null;uniqueIndex:userid_symbol" json:"symbol"`
-	TotalBalance  types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"total_balance"`
-	FreezeBalance types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"freeze_balance"`
-	AvailBalance  types.Numeric `gorm:"type:decimal(40,20);default:0;not null" json:"avail_balance"`
 }

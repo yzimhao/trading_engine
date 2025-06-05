@@ -1,16 +1,15 @@
 package controllers
 
 import (
-	"context"
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	"github.com/yzimhao/trading_engine/v2/app/common"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
 
@@ -24,9 +23,9 @@ func NewUserAssetsController(repo persistence.UserAssetRepository, logger *zap.L
 }
 
 type DespoitRequest struct {
-	UserId string `json:"user_id"`
-	Symbol string `json:"symbol"`
-	Amount string `json:"amount"`
+	UserId string          `json:"user_id"`
+	Symbol string          `json:"symbol"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 // @Summary asset despoit
@@ -46,9 +45,8 @@ func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Despoit(ctx, transId, req.UserId, req.Symbol, types.Numeric(req.Amount)); err != nil {
+	if err := ctrl.repo.Despoit(transId, req.UserId, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
@@ -58,9 +56,9 @@ func (ctrl *UserAssetsController) Despoit(c *gin.Context) {
 }
 
 type WithdrawRequest struct {
-	UserId string `json:"user_id"`
-	Symbol string `json:"symbol"`
-	Amount string `json:"amount"`
+	UserId string          `json:"user_id"`
+	Symbol string          `json:"symbol"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 // @Summary asset withdraw
@@ -80,9 +78,8 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Withdraw(ctx, transId, req.UserId, req.Symbol, types.Numeric(req.Amount)); err != nil {
+	if err := ctrl.repo.Withdraw(transId, req.UserId, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}
@@ -116,10 +113,10 @@ func (ctrl *UserAssetsController) Query(c *gin.Context) {
 }
 
 type TransferRequest struct {
-	From   string `json:"from"`
-	To     string `json:"to"`
-	Symbol string `json:"symbol"`
-	Amount string `json:"amount"`
+	From   string          `json:"from"`
+	To     string          `json:"to"`
+	Symbol string          `json:"symbol"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 // @Summary asset transfer
@@ -140,9 +137,8 @@ func (ctrl *UserAssetsController) Transfer(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
 	transId := uuid.New().String()
-	if err := ctrl.repo.Transfer(ctx, transId, req.From, req.To, req.Symbol, types.Numeric(req.Amount)); err != nil {
+	if err := ctrl.repo.Transfer(transId, req.From, req.To, req.Symbol, req.Amount); err != nil {
 		common.ResponseError(c, err)
 		return
 	}

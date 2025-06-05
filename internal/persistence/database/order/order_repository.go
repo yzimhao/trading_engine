@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
 	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -51,7 +52,7 @@ func (o *orderRepository) HistoryList(ctx context.Context, user_id, symbol strin
 	return orders, nil
 }
 
-func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, price, qty decimal.Decimal) (order *entities.Order, err error) {
 	// 查询交易对配置
 	product, err := o.productRepo.Get(symbol)
 	if err != nil {
@@ -99,15 +100,15 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		//冻结资产
 		if data.OrderSide == matching_types.OrderSideSell {
 			data.FreezeQty = data.Quantity
-			_, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Target.Symbol, models_types.Numeric(data.Quantity))
+			_, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Target.Symbol, data.Quantity)
 			if err != nil {
 				return errors.Wrap(err, "freeze asset failed")
 			}
 		} else {
-			amount := models_types.Numeric(data.Price).Mul(models_types.Numeric(data.Quantity))
-			fee := amount.Mul(models_types.Numeric(data.FeeRate))
-			data.FreezeAmount = amount.Add(fee).String()
-			_, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Base.Symbol, models_types.Numeric(data.FreezeAmount))
+			amount := data.Price.Mul(data.Quantity)
+			fee := amount.Mul(data.FeeRate)
+			data.FreezeAmount = amount.Add(fee)
+			_, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Base.Symbol, data.FreezeAmount)
 			if err != nil {
 				return errors.Wrap(err, "freeze asset failed")
 			}
@@ -131,7 +132,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	return &data, nil
 }
 
-func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, amount decimal.Decimal) (order *entities.Order, err error) {
 	product, err := o.productRepo.Get(symbol)
 	if err != nil {
 		return nil, err
@@ -159,19 +160,19 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		if data.OrderSide == matching_types.OrderSideSell {
-			f, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Target.Symbol, models_types.NumericZero)
+			f, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Target.Symbol, decimal.Zero)
 			if err != nil {
 				return err
 			}
-			data.FreezeQty = f.FreezeAmount.String()
+			data.FreezeQty = f.FreezeAmount
 		} else {
-			f, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Base.Symbol, models_types.Numeric(data.FreezeAmount))
+			f, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Base.Symbol, data.FreezeAmount)
 			if err != nil {
 				return err
 			}
-			data.FreezeAmount = f.FreezeAmount.String()
-			fee := models_types.Numeric(data.FreezeAmount).Mul(models_types.Numeric(data.FeeRate))
-			data.Amount = models_types.Numeric(data.FreezeAmount).Sub(fee).String()
+			data.FreezeAmount = f.FreezeAmount
+			fee := data.FreezeAmount.Mul(data.FeeRate)
+			data.Amount = data.FreezeAmount.Sub(fee)
 		}
 
 		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
@@ -187,7 +188,7 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 	return &data, nil
 }
 
-func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty string) (order *entities.Order, err error) {
+func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol string, side matching_types.OrderSide, qty decimal.Decimal) (order *entities.Order, err error) {
 	product, err := o.productRepo.Get(symbol)
 	if err != nil {
 		return nil, err
@@ -215,17 +216,17 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		if data.OrderSide == matching_types.OrderSideSell {
-			f, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Target.Symbol, models_types.Numeric(data.Quantity))
+			f, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Target.Symbol, data.Quantity)
 			if err != nil {
 				return err
 			}
-			data.FreezeQty = f.FreezeAmount.String()
+			data.FreezeQty = f.FreezeAmount
 		} else {
-			f, err := o.userAssetRepo.Freeze(ctx, tx, data.OrderId, data.UserId, product.Base.Symbol, models_types.NumericZero)
+			f, err := o.userAssetRepo.Freeze(tx, data.OrderId, data.UserId, product.Base.Symbol, decimal.Zero)
 			if err != nil {
 				return err
 			}
-			data.FreezeAmount = f.FreezeAmount.String()
+			data.FreezeAmount = f.FreezeAmount
 		}
 
 		if err := tx.Table(data.TableName()).Create(&data).Error; err != nil {
@@ -266,12 +267,12 @@ func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, c
 	err = o.db.Transaction(func(tx *gorm.DB) (err error) {
 		//解冻资产
 		if order.OrderSide == matching_types.OrderSideSell {
-			err := o.userAssetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, product.Target.Symbol, models_types.NumericZero)
+			err := o.userAssetRepo.UnFreeze(tx, order.OrderId, order.UserId, product.Target.Symbol, decimal.Zero)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := o.userAssetRepo.UnFreeze(ctx, tx, order.OrderId, order.UserId, product.Base.Symbol, models_types.NumericZero)
+			err := o.userAssetRepo.UnFreeze(tx, order.OrderId, order.UserId, product.Base.Symbol, decimal.Zero)
 			if err != nil {
 				return err
 			}
