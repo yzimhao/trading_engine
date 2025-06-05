@@ -73,7 +73,7 @@ func (ctx *Routes) registerRoutes() {
 	user.POST("/login", ctx.authMiddleware.Jwt().LoginHandler)
 	user.POST("/refresh_token", ctx.authMiddleware.Jwt().RefreshHandler)
 
-	asset := v1Group.Group("asset")
+	asset := user.Group("asset")
 	asset.Use(ctx.authMiddleware.Auth())
 	asset.POST("/despoit", ctx.userAssetsController.Despoit)
 	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)

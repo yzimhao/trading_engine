@@ -38,6 +38,14 @@ func (u *userAssetRepo) QueryUserAsset(userId string, symbol string) (*entities.
 	return &asset, nil
 }
 
+func (u *userAssetRepo) QueryUserAssets(userId string, symbols ...string) ([]*entities.UserAsset, error) {
+	var assets []*entities.UserAsset
+	if err := u.db.Where("user_id = ?", userId).Where("symbol in (?)", symbols).Find(&assets).Error; err != nil {
+		return nil, err
+	}
+	return assets, nil
+}
+
 func (r *userAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {
 
 	return r.db.Transaction(func(tx *gorm.DB) error {

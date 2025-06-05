@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"context"
+	"strings"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/yzimhao/trading_engine/v2/app/common"
-	"github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
@@ -100,31 +101,17 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 // @Router /api/v1/asset/query [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 	//todo 在repo中实现对应的方法
-	// claims := jwt.ExtractClaims(c)
-	// userId := claims["userId"].(string)
+	claims := jwt.ExtractClaims(c)
+	userId := claims["userId"].(string)
 
-	// symbols := c.Query("symbols")
-	// symbolsSlice := strings.Split(symbols, ",")
+	symbols := c.Query("symbols")
+	symbolsSlice := strings.Split(symbols, ",")
 
-	var assets []*asset.Asset
-
-	// ctx := context.Background()
-
-	// assets, err := ctrl.repo.Query(ctx, &crud_types.PageQuery{
-	// 	Filter: map[string]any{
-	// 		"symbol": map[string]any{
-	// 			"in": symbolsSlice,
-	// 		},
-	// 		"user_id": map[string]any{
-	// 			"eq": userId,
-	// 		},
-	// 	},
-	// })
-	// if err != nil {
-	// 	common.ResponseError(c, err)
-	// 	return
-	// }
-
+	assets, err := ctrl.repo.QueryUserAssets(userId, symbolsSlice...)
+	if err != nil {
+		common.ResponseError(c, err)
+		return
+	}
 	common.ResponseOK(c, assets)
 }
 

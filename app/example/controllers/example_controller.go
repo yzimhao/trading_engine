@@ -16,26 +16,26 @@ import (
 )
 
 type ExampleController struct {
-	engine *gin.Engine
-	logger *zap.Logger
-	asset  persistence.UserAssetRepository
-	auth   *middlewares.AuthMiddleware
+	engine    *gin.Engine
+	logger    *zap.Logger
+	userAsset persistence.UserAssetRepository
+	auth      *middlewares.AuthMiddleware
 }
 
 type inContext struct {
 	fx.In
-	Engine *gin.Engine
-	Logger *zap.Logger
-	Asset  persistence.UserAssetRepository
-	Auth   *middlewares.AuthMiddleware
+	Engine    *gin.Engine
+	Logger    *zap.Logger
+	UserAsset persistence.UserAssetRepository
+	Auth      *middlewares.AuthMiddleware
 }
 
 func NewExampleController(in inContext) *ExampleController {
 	example := ExampleController{
-		engine: in.Engine,
-		logger: in.Logger,
-		asset:  in.Asset,
-		auth:   in.Auth,
+		engine:    in.Engine,
+		logger:    in.Logger,
+		userAsset: in.UserAsset,
+		auth:      in.Auth,
 	}
 
 	example.registerRoutes()
@@ -72,7 +72,7 @@ func (exa *ExampleController) deposit(ctx *gin.Context) {
 
 	for _, symbol := range symbols {
 		transId := time.Now().Format("20060102")
-		if err := exa.asset.Despoit(ctx, "deposit."+symbol+"."+transId, userId, symbol, types.Numeric("1000")); err != nil {
+		if err := exa.userAsset.Despoit(ctx, "deposit."+symbol+"."+transId, userId, symbol, types.Numeric("1000")); err != nil {
 			common.ResponseError(ctx, err)
 			exa.logger.Error("deposit error", zap.Error(err))
 		}
