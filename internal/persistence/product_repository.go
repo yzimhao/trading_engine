@@ -2,8 +2,10 @@ package persistence
 
 import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	"gorm.io/gorm"
 )
 
 type ProductRepository interface {
-	Find(symbol string) ([]*entities.Product, error)
+	DB() *gorm.DB
+	Get(symbol string) (*entities.Product, error)
 }

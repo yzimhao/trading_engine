@@ -3,9 +3,7 @@ package database
 import (
 	"context"
 
-	"github.com/duolacloud/crud-core/types"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
-	models_variety "github.com/yzimhao/trading_engine/v2/internal/models/variety"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"go.uber.org/fx"
@@ -62,26 +60,14 @@ func initData(ctx context.Context, in inContext) error {
 
 func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*entities.Asset, error) {
 
-	usdt, _ := varietyRepo.QueryOne(ctx, map[string]any{
-		"symbol": map[string]any{
-			"eq": "usdt",
-		},
-	})
-
-	btc, _ := varietyRepo.QueryOne(ctx, map[string]any{
-		"symbol": map[string]any{
-			"eq": "btc",
-		},
-	})
+	usdt, _ := assetRepo.Get("usdt")
+	btc, _ := assetRepo.Get("btc")
 
 	if usdt != nil && btc != nil {
-		return []*models_variety.Variety{usdt, btc}, nil
+		return []*entities.Asset{usdt, btc}, nil
 	}
 
-	opts := []types.CreateManyOption{
-		types.WithCreateBatchSize(2),
-	}
-	varieties, err := varietyRepo.CreateMany(ctx, []*models_variety.CreateVariety{
+	assets := []*entities.Asset{
 		{
 			Symbol:       "usdt",
 			Name:         "USDT",
@@ -97,28 +83,25 @@ func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*e
 			MinDecimals:  8,
 			Status:       models_types.StatusEnabled,
 		},
-	}, opts...)
-	if err != nil {
+	}
+
+	if err := assetRepo.DB().CreateInBatches(assets, 2).Error; err != nil {
 		return nil, err
 	}
-	return varieties, nil
+	return assets, nil
 }
 
 func initProduct(ctx context.Context, productRepo persistence.ProductRepository, assets []*entities.Asset) error {
 
-	btcusdt, _ := tradeVarietyRepo.QueryOne(ctx, map[string]any{
-		"symbol": map[string]any{
-			"eq": "btcusdt",
-		},
-	})
+	btcusdt, _ := productRepo.Get("btcusdt")
 	if btcusdt != nil {
 		return nil
 	}
-	_, err := tradeVarietyRepo.Create(ctx, &models_variety.CreateTradeVariety{
+	conn := productRepo.DB().Create(&entities.Product{
 		Symbol:         "btcusdt", //统一用小写
 		Name:           "BTCUSDT",
-		BaseId:         varieties[0].ID,
-		TargetId:       varieties[1].ID,
+		BaseId:         assets[0].ID,
+		TargetId:       assets[1].ID,
 		PriceDecimals:  2,
 		QtyDecimals:    6,
 		AllowMinQty:    "0.0001",
@@ -126,8 +109,8 @@ func initProduct(ctx context.Context, productRepo persistence.ProductRepository,
 		AllowMaxAmount: "0",
 		FeeRate:        "0.005",
 		Status:         models_types.StatusEnabled,
-	}, nil)
-	if err != nil {
+	})
+	if err := conn.Error; err != nil {
 		return err
 	}
 	return nil

@@ -20,30 +20,29 @@ func NewProductRepo(datasource *gorm.DB, assetRepo persistence.AssetRepository) 
 	}
 }
 
-func (v *productRepo) Find(symbol string) ([]*entities.Product, error) {
+func (p *productRepo) DB() *gorm.DB {
+	return p.db
+}
+
+func (p *productRepo) Get(symbol string) (*entities.Product, error) {
 	symbol = strings.ToLower(symbol)
+	product := &entities.Product{}
 
-	if err := v.db.Model(&models_variety.TradeVariety{}).Where("symbol = ?", symbol).First(&tradeVariety).Error; err != nil {
+	if err := p.db.Model(&entities.Product{}).Where("symbol = ?", symbol).First(&product).Error; err != nil {
 		return nil, err
 	}
 
-	tradeVariety.BaseVariety, err = v.varietyRepo.QueryOne(ctx, map[string]any{
-		"id": map[string]any{
-			"eq": tradeVariety.BaseId,
-		},
-	})
+	base, err := p.assetRepo.GetById(product.BaseId)
 	if err != nil {
 		return nil, err
 	}
+	product.Base = base
 
-	tradeVariety.TargetVariety, err = v.varietyRepo.QueryOne(ctx, map[string]any{
-		"id": map[string]any{
-			"eq": tradeVariety.TargetId,
-		},
-	})
+	target, err := p.assetRepo.GetById(product.TargetId)
 	if err != nil {
 		return nil, err
 	}
+	product.Target = target
 
-	return tradeVariety, nil
+	return product, nil
 }

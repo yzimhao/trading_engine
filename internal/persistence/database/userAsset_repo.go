@@ -137,11 +137,12 @@ func (r *userAssetRepo) UnFreeze(ctx context.Context, tx *gorm.DB, transId, user
 }
 
 func (r *userAssetRepo) QueryFreeze(ctx context.Context, filter map[string]any) (assetFreezes []*models.AssetFreeze, err error) {
-	query := &datasource_types.PageQuery{
-		Filter: filter,
-	}
-	data, err := r.assetFreezeRepo.Query(ctx, query)
-	return data, err
+	// query := &datasource_types.PageQuery{
+	// 	Filter: filter,
+	// }
+	// data, err := r.assetFreezeRepo.Query(ctx, query)
+	// return data, err
+	return nil, nil
 }
 
 func (r *userAssetRepo) TransferWithTx(ctx context.Context, tx *gorm.DB, transId, from, to, symbol string, amount types.Numeric) error {

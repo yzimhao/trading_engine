@@ -11,12 +11,21 @@ type assetRepo struct {
 }
 
 func NewAssetRepo(datasource *gorm.DB) persistence.AssetRepository {
-
 	return &assetRepo{
 		db: datasource,
 	}
 }
 
-func (v *assetRepo) Get(symbol string) (*entities.Asset, error) {
+func (a *assetRepo) DB() *gorm.DB {
+	return a.db
+}
+
+func (a *assetRepo) Get(symbol string) (*entities.Asset, error) {
+	// todo
+	return nil, nil
+}
+
+func (a *assetRepo) GetById(id int32) (*entities.Asset, error) {
+	// todo
 	return nil, nil
 }
