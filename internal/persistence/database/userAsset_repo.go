@@ -18,6 +18,8 @@ type userAssetRepo struct {
 	logger *zap.Logger
 }
 
+var _ persistence.UserAssetRepository = (*userAssetRepo)(nil)
+
 func NewUserAssetRepo(datasource *gorm.DB, logger *zap.Logger) persistence.UserAssetRepository {
 
 	return &userAssetRepo{
@@ -25,6 +27,15 @@ func NewUserAssetRepo(datasource *gorm.DB, logger *zap.Logger) persistence.UserA
 		logger: logger,
 	}
 
+}
+
+func (u *userAssetRepo) QueryUserAsset(userId string, symbol string) (*entities.UserAsset, error) {
+	var asset entities.UserAsset
+
+	if err := u.db.Where("user_id = ? AND symbol = ?", userId, symbol).First(&asset).Error; err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }
 
 func (r *userAssetRepo) Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error {

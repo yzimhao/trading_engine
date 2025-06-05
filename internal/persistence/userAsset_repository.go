@@ -10,6 +10,8 @@ import (
 )
 
 type UserAssetRepository interface {
+	QueryUserAsset(userId string, symbol string) (*entities.UserAsset, error)
+
 	Despoit(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error
 	Withdraw(ctx context.Context, transId, userId, symbol string, amount types.Numeric) error
 	Transfer(ctx context.Context, transId, from, to, symbol string, amount types.Numeric) error

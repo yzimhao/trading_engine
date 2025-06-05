@@ -37,16 +37,17 @@ func TestKlineRepo(t *testing.T) {
 }
 
 func (suite *klineRepoTest) SetupTest() {
-	_ = gotenv.Load("../../../.env")
+	_ = gotenv.Load(provider.Root() + "/.env")
 
 	suite.ctx = context.Background()
 
-	suite.v = provider.NewViper()
+	logger := zap.NewExample()
+	suite.v = provider.NewViper(logger)
 	suite.gorm = provider.NewGorm(suite.v)
-	suite.logger = zap.NewNop()
+	suite.logger = logger
 	redis := provider.NewRedis(suite.v, suite.logger)
 	cache, _ := provider.NewCache(suite.v, redis)
-	logger := zap.NewNop()
+
 	suite.repo = database.NewKlineRepo(datasource.NewDataSource(suite.gorm), cache, logger)
 }
 
