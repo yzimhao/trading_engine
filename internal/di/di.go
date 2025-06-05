@@ -20,8 +20,9 @@ import (
 func run(lc fx.Lifecycle, logger *zap.Logger, engine *gin.Engine, v *viper.Viper) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			v.SetDefault("listen", "127.0.0.1")
 			v.SetDefault("port", 8080)
-			engine.Run(fmt.Sprintf(":%d", v.GetInt("port")))
+			engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port")))
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
