@@ -20,7 +20,7 @@ type MarketController struct {
 	logger       *zap.Logger
 	cache        cache.Cache
 	klineRepo    persistence.KlineRepository
-	tradeLogRepo persistence.TradeLogRepository
+	tradeLogRepo persistence.TradeRecordRepository
 	productRepo  persistence.ProductRepository
 }
 
@@ -29,7 +29,7 @@ type inMarketContext struct {
 	Logger       *zap.Logger
 	Cache        cache.Cache
 	KlineRepo    persistence.KlineRepository
-	TradeLogRepo persistence.TradeLogRepository
+	TradeLogRepo persistence.TradeRecordRepository
 	ProductRepo  persistence.ProductRepository
 }
 
@@ -101,9 +101,9 @@ func (ctrl *MarketController) Trades(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, map[string]any{
 			"id":       v.Id,
-			"price":    common.FormatStrNumber(v.Price, product.PriceDecimals),
-			"qty":      common.FormatStrNumber(v.Quantity, product.QtyDecimals),
-			"amount":   common.FormatStrNumber(v.Amount, 6), //TODO 金额现实位数控制
+			"price":    v.Price.Truncate(int32(product.PriceDecimals)).String(),
+			"qty":      v.Quantity.Truncate(int32(product.QtyDecimals)).String(),
+			"amount":   v.Amount.Truncate(int32(product.PriceDecimals)).String(),
 			"trade_at": v.CreatedAt.UnixNano(),
 		})
 	}

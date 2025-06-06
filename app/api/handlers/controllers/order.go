@@ -48,9 +48,9 @@ type OrderCreateRequest struct {
 	Symbol    string                   `json:"symbol" binding:"required" example:"btcusdt"`
 	Side      matching_types.OrderSide `json:"side" binding:"required" example:"buy"`
 	OrderType matching_types.OrderType `json:"order_type" binding:"required" example:"limit"`
-	Price     *string                  `json:"price,omitempty" example:"1.00"`
-	Quantity  *string                  `json:"qty,omitempty" example:"12"`
-	Amount    *string                  `json:"amount,omitempty"`
+	Price     *decimal.Decimal         `json:"price,omitempty" example:"1.00"`
+	Quantity  *decimal.Decimal         `json:"qty,omitempty" example:"12"`
+	Amount    *decimal.Decimal         `json:"amount,omitempty"`
 }
 
 // @Summary create order
@@ -91,12 +91,12 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 		}
 
 		event.Price = func() *decimal.Decimal {
-			p := models_types.Numeric(order.Price).Decimal()
+			p := order.Price
 			return &p
 		}()
 
 		event.Quantity = func() *decimal.Decimal {
-			q := models_types.Numeric(order.Quantity).Decimal()
+			q := order.Quantity
 			return &q
 		}()
 
@@ -106,7 +106,7 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 			return
 		}
 
-		if req.Amount != nil && models_types.Numeric(*req.Amount).Cmp(models_types.NumericZero) > 0 {
+		if req.Amount != nil && req.Amount.Cmp(decimal.Zero) > 0 {
 			order, err = ctrl.repo.CreateMarketByAmount(context.Background(), userId, req.Symbol, req.Side, *req.Amount)
 			if err != nil {
 				ctrl.logger.Error("create market by amount order error", zap.Error(err), zap.Any("req", req))
@@ -115,11 +115,11 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 			}
 
 			event.Amount = func() *decimal.Decimal {
-				a := models_types.Numeric(order.Amount).Decimal()
+				a := order.Amount
 				return &a
 			}()
 			event.MaxAmount = func() *decimal.Decimal {
-				a := models_types.Numeric(order.FreezeAmount).Decimal()
+				a := order.FreezeAmount
 				return &a
 			}()
 		} else {
@@ -131,11 +131,11 @@ func (ctrl *OrderController) Create(c *gin.Context) {
 			}
 
 			event.Quantity = func() *decimal.Decimal {
-				q := models_types.Numeric(order.Quantity).Decimal()
+				q := order.Quantity
 				return &q
 			}()
 			event.MaxQty = func() *decimal.Decimal {
-				q := models_types.Numeric(order.FreezeQty).Decimal()
+				q := order.FreezeQty
 				return &q
 			}()
 		}
