@@ -13,10 +13,10 @@ type Order struct {
 	UUID
 	BaseAt
 	Symbol         string                   `gorm:"type:varchar(30)" json:"symbol"`
-	OrderId        string                   `gorm:"type:varchar(30);uniqueIndex:order_id;not null" json:"order_id"`
-	OrderSide      matching_types.OrderSide `gorm:"type:varchar(10);index:order_side" json:"order_side"`
-	OrderType      matching_types.OrderType `gorm:"type:varchar(10)" json:"order_type"` //价格策略，市价单，限价单
-	UserId         string                   `gorm:"type:varchar(64);index:userid;not null" json:"user_id"`
+	OrderId        string                   `gorm:"type:varchar(30);uniqueIndex;not null" json:"order_id"`
+	OrderSide      matching_types.OrderSide `gorm:"type:varchar(10);index;not null" json:"order_side"`
+	OrderType      matching_types.OrderType `gorm:"type:varchar(10);not null" json:"order_type"` //价格策略，市价单，限价单
+	UserId         string                   `gorm:"type:varchar(64);index;not null" json:"user_id"`
 	Price          decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"price"`
 	Quantity       decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"quantity"`
 	FeeRate        decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"fee_rate"`
@@ -40,5 +40,5 @@ type UnfinishedOrder struct {
 }
 
 func (o *UnfinishedOrder) TableName() string {
-	return "unfinished_order"
+	return "order_unfinished"
 }
