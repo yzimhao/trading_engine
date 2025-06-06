@@ -54,18 +54,19 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 	//TODO  justfor development
 	tables := []any{
 		&entities.Asset{},
+		&entities.Product{},
 		&entities.UserAssetFreeze{},
 		&entities.UserAssetLog{},
 		&entities.UnfinishedOrder{},
 		&entities.UserAsset{},
-		&entities.Product{},
 		"order_",
-		"trade_log_",
+		"trade_record_",
 		"kline_",
 	}
 
 	allTables, err := db.Migrator().GetTables()
 	if err != nil {
+		logger.Debug("get tables failed", zap.Error(err))
 		return err
 	}
 
@@ -84,7 +85,8 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 
 		indexes, err := db.Migrator().GetIndexes(dropTable)
 		if err != nil {
-			return err
+			logger.Debug("get indexes failed", zap.Error(err))
+			continue
 		}
 		for _, index := range indexes {
 			db.Migrator().DropIndex(dropTable, index.Name())
