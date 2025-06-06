@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shopspring/decimal"
 	kline_types "github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 )
 
@@ -15,12 +16,12 @@ type Kline struct {
 	Period  kline_types.PeriodType `gorm:"-"`
 	OpenAt  time.Time              `gorm:"timestamp uniqueIndex: open_close_at" json:"open_at,omitempty"`
 	CloseAt time.Time              `gorm:"timestamp uniqueIndex: open_close_at" json:"close_at,omitempty"`
-	Open    string                 `gorm:"type:decimal(40,20);default:0" json:"open,omitempty"`
-	High    string                 `gorm:"type:decimal(40,20);default:0" json:"high,omitempty"`
-	Low     string                 `gorm:"type:decimal(40,20);default:0" json:"low,omitempty"`
-	Close   string                 `gorm:"type:decimal(40,20);default:0" json:"close,omitempty"`
-	Volume  string                 `gorm:"type:decimal(40,20);default:0" json:"volume,omitempty"`
-	Amount  string                 `gorm:"type:decimal(40,20);default:0" json:"amount,omitempty"`
+	Open    decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"open,omitempty"`
+	High    decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"high,omitempty"`
+	Low     decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"low,omitempty"`
+	Close   decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"close,omitempty"`
+	Volume  decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"volume,omitempty"`
+	Amount  decimal.Decimal        `gorm:"type:decimal(40,20);default:0" json:"amount,omitempty"`
 }
 
 func (kl *Kline) TableName() string {

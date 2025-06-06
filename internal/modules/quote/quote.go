@@ -6,7 +6,6 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
-	"github.com/yzimhao/trading_engine/v2/app/common"
 	"github.com/yzimhao/trading_engine/v2/app/webws"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -104,11 +103,16 @@ func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotif
 		q.ws.Broadcast(ctx, webws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
 			[6]any{
 				data.OpenAt.UnixMilli(),
-				common.FormatStrNumber(*data.Open, product.PriceDecimals),
-				common.FormatStrNumber(*data.High, product.PriceDecimals),
-				common.FormatStrNumber(*data.Low, product.PriceDecimals),
-				common.FormatStrNumber(*data.Close, product.PriceDecimals),
-				common.FormatStrNumber(*data.Volume, product.QtyDecimals),
+				// common.FormatStrNumber(*data.Open, product.PriceDecimals),
+				// common.FormatStrNumber(*data.High, product.PriceDecimals),
+				// common.FormatStrNumber(*data.Low, product.PriceDecimals),
+				// common.FormatStrNumber(*data.Close, product.PriceDecimals),
+				// common.FormatStrNumber(*data.Volume, product.QtyDecimals),
+				data.Open.Truncate(product.PriceDecimals),
+				data.High.Truncate(product.PriceDecimals),
+				data.Low.Truncate(product.PriceDecimals),
+				data.Close.Truncate(product.PriceDecimals),
+				data.Volume.Truncate(product.QtyDecimals),
 			},
 		)
 

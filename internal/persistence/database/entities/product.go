@@ -11,8 +11,8 @@ type Product struct {
 	Name           string          `gorm:"type:varchar(250); not null" json:"name"`
 	TargetId       int32           `gorm:"default:0; uniqueIndex:symbol_base_idx" json:"target_id"`
 	BaseId         int32           `gorm:"default:0; uniqueIndex:symbol_base_idx" json:"base_id"`
-	PriceDecimals  int             `gorm:"default:2" json:"price_decimals"`
-	QtyDecimals    int             `gorm:"default:0" json:"qty_decimals"`
+	PriceDecimals  int32           `gorm:"default:2" json:"price_decimals"`
+	QtyDecimals    int32           `gorm:"default:0" json:"qty_decimals"`
 	AllowMinQty    decimal.Decimal `gorm:"type:decimal(40,20); default:0.01" json:"allow_min_qty"`
 	AllowMaxQty    decimal.Decimal `gorm:"type:decimal(40,20); default:999999" json:"allow_max_qty"`
 	AllowMinAmount decimal.Decimal `gorm:"type:decimal(40,20); default:0.01" json:"allow_min_amount"`

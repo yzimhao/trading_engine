@@ -188,11 +188,16 @@ func (ctrl *MarketController) Klines(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, [6]any{
 			v.OpenAt.UnixMilli(),
-			common.FormatStrNumber(v.Open, product.PriceDecimals),
-			common.FormatStrNumber(v.High, product.PriceDecimals),
-			common.FormatStrNumber(v.Low, product.PriceDecimals),
-			common.FormatStrNumber(v.Close, product.PriceDecimals),
-			common.FormatStrNumber(v.Volume, product.QtyDecimals),
+			v.Open.Truncate(product.PriceDecimals).String(),
+			v.High.Truncate(product.PriceDecimals).String(),
+			v.Low.Truncate(product.PriceDecimals).String(),
+			v.Close.Truncate(product.PriceDecimals).String(),
+			v.Volume.Truncate(product.QtyDecimals).String(),
+			// common.FormatStrNumber(v.Open, product.PriceDecimals),
+			// common.FormatStrNumber(v.High, product.PriceDecimals),
+			// common.FormatStrNumber(v.Low, product.PriceDecimals),
+			// common.FormatStrNumber(v.Close, product.PriceDecimals),
+			// common.FormatStrNumber(v.Volume, product.QtyDecimals),
 		})
 	}
 

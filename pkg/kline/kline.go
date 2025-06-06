@@ -59,30 +59,36 @@ func (k *kLine) GetFormattedData(ctx context.Context, periodType types.PeriodTyp
 		return nil, err
 	}
 
-	data.Open = func() *string {
-		open := k.formatD(*data.Open).StringFixedBank(k.options.pricePrecision)
-		return &open
+	data.Open = func() *decimal.Decimal {
+		a := data.Open.Truncate(k.options.pricePrecision)
+		return &a
 	}()
-	data.High = func() *string {
-		high := k.formatD(*data.High).StringFixedBank(k.options.pricePrecision)
-		return &high
+
+	data.High = func() *decimal.Decimal {
+		a := data.High.Truncate(k.options.pricePrecision)
+		return &a
 	}()
-	data.Low = func() *string {
-		low := k.formatD(*data.Low).StringFixedBank(k.options.pricePrecision)
-		return &low
+
+	data.Low = func() *decimal.Decimal {
+		a := data.Low.Truncate(k.options.pricePrecision)
+		return &a
 	}()
-	data.Close = func() *string {
-		close := k.formatD(*data.Close).StringFixedBank(k.options.pricePrecision)
-		return &close
+
+	data.Close = func() *decimal.Decimal {
+		a := data.Close.Truncate(k.options.pricePrecision)
+		return &a
 	}()
-	data.Volume = func() *string {
-		volume := k.formatD(*data.Volume).StringFixedBank(k.options.quantityPrecision)
-		return &volume
+
+	data.Volume = func() *decimal.Decimal {
+		a := data.Volume.Truncate(k.options.quantityPrecision)
+		return &a
 	}()
-	data.Amount = func() *string {
-		amount := k.formatD(*data.Amount).StringFixedBank(k.options.amountPrecision)
-		return &amount
+
+	data.Amount = func() *decimal.Decimal {
+		a := data.Amount.Truncate(k.options.amountPrecision)
+		return &a
 	}()
+
 	return data, nil
 }
 
@@ -164,8 +170,8 @@ func (k *kLine) GetData(ctx context.Context, periodType types.PeriodType, tradeR
 	return &data.Data, nil
 }
 
-func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	price := tradeResult.TradePrice.String()
+func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	price := tradeResult.TradePrice
 
 	if cacheData.Data.Open == nil {
 		cacheData.Data.Open = &price
@@ -181,13 +187,13 @@ func (k *kLine) getOpen(cacheData *kline, tradeResult *matching_types.TradeResul
 	return cacheData.Data.Open
 }
 
-func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	price := tradeResult.TradePrice.String()
+func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	price := tradeResult.TradePrice
 
 	if cacheData.Data.High == nil {
 		cacheData.Data.High = &price
 	} else {
-		if tradeResult.TradePrice.Cmp(k.formatD(*cacheData.Data.High)) > 0 {
+		if tradeResult.TradePrice.Cmp(*cacheData.Data.High) > 0 {
 			cacheData.Data.High = &price
 		}
 	}
@@ -195,14 +201,14 @@ func (k *kLine) getHigh(cacheData *kline, tradeResult *matching_types.TradeResul
 	return cacheData.Data.High
 }
 
-func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	price := tradeResult.TradePrice.String()
+func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	price := tradeResult.TradePrice
 
 	if cacheData.Data.Low == nil {
 		cacheData.Data.Low = &price
 	} else {
 
-		if tradeResult.TradePrice.Cmp(k.formatD(*cacheData.Data.Low)) < 0 {
+		if tradeResult.TradePrice.Cmp(*cacheData.Data.Low) < 0 {
 			cacheData.Data.Low = &price
 		}
 	}
@@ -210,8 +216,8 @@ func (k *kLine) getLow(cacheData *kline, tradeResult *matching_types.TradeResult
 	return cacheData.Data.Low
 }
 
-func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	price := tradeResult.TradePrice.String()
+func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	price := tradeResult.TradePrice
 
 	if cacheData.Data.Close == nil {
 		cacheData.Data.Close = &price
@@ -226,36 +232,27 @@ func (k *kLine) getClose(cacheData *kline, tradeResult *matching_types.TradeResu
 	return cacheData.Data.Close
 }
 
-func (k *kLine) getVolume(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	quantity := tradeResult.TradeQuantity.String()
+func (k *kLine) getVolume(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	quantity := tradeResult.TradeQuantity
 
 	if cacheData.Data.Volume == nil {
 		cacheData.Data.Volume = &quantity
 	} else {
-		volume := k.formatD(*cacheData.Data.Volume).Add(tradeResult.TradeQuantity).String()
+		volume := cacheData.Data.Volume.Add(tradeResult.TradeQuantity)
 		cacheData.Data.Volume = &volume
 	}
 	return cacheData.Data.Volume
 }
 
-func (k *kLine) getAmount(cacheData *kline, tradeResult *matching_types.TradeResult) *string {
-	amount := tradeResult.TradePrice.Mul(tradeResult.TradeQuantity).String()
+func (k *kLine) getAmount(cacheData *kline, tradeResult *matching_types.TradeResult) *decimal.Decimal {
+	amount := tradeResult.TradePrice.Mul(tradeResult.TradeQuantity)
 
 	if cacheData.Data.Amount == nil {
 		cacheData.Data.Amount = &amount
 	} else {
-		amount = k.formatD(*cacheData.Data.Amount).Add(k.formatD(amount)).String()
+		amount = cacheData.Data.Amount.Add(amount)
 		cacheData.Data.Amount = &amount
 	}
 
 	return cacheData.Data.Amount
-}
-
-func (k *kLine) formatD(d1 string) decimal.Decimal {
-	d, err := decimal.NewFromString(d1)
-	if err != nil {
-		k.options.logger.Sugar().Errorf("[kline] new decimal from string failed d1: %s error: %v", d1, zap.Error(err))
-		return decimal.Zero
-	}
-	return d
 }
