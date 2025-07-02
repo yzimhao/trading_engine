@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
@@ -28,18 +27,6 @@ func NewBaseController(in inBaseContext) *BaseController {
 		logger:      in.Logger,
 		productRepo: in.ProductRepo,
 	}
-}
-
-// @Summary ping
-// @Description test if the server is running
-// @ID v1.ping
-// @Tags base
-// @Accept json
-// @Produce json
-// @Success 200 {string} any
-// @Router /api/v1/ping [get]
-func (ctrl *BaseController) Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (ctrl *BaseController) Time(c *gin.Context) {

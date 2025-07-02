@@ -29,6 +29,7 @@ func App() *fx.App {
 			provider.NewCache,
 			provider.NewGorm,
 			provider.NewBroker,
+			provider.NewRouter,
 		),
 
 		database.Module,

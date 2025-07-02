@@ -26,8 +26,6 @@ var Invoke = fx.Module(
 	base.Module,
 	usercenter.Module,
 	tradingcore.Module,
-
-	//Todo
 	quote.Module,
 
 	fx.Invoke(run),
@@ -36,13 +34,17 @@ var Invoke = fx.Module(
 func run(lc fx.Lifecycle, logger *zap.Logger, engine *gin.Engine, v *viper.Viper) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			v.SetDefault("listen", "127.0.0.1")
-			v.SetDefault("port", 8080)
-			go engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port")))
+			starupGinServer(v, engine)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
 			return nil
 		},
 	})
+}
+
+func starupGinServer(v *viper.Viper, engine *gin.Engine) {
+	v.SetDefault("listen", "127.0.0.1")
+	v.SetDefault("port", 8080)
+	go engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port")))
 }

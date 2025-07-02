@@ -63,8 +63,8 @@ func (ctx *Routes) registerRoutes() {
 
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
-	v1Group.GET("/ping", ctx.baseController.Ping)
-	v1Group.GET("/time", ctx.baseController.Time)
+	// v1Group.GET("/ping", ctx.baseController.Ping)
+	// v1Group.GET("/time", ctx.baseController.Time)
 
 	base := v1Group.Group("base")
 	base.GET("/exchange_info", ctx.baseController.ExchangeInfo)
