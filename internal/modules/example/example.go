@@ -1,4 +1,4 @@
-package controllers
+package example
 
 import (
 	"net/http"
@@ -9,14 +9,15 @@ import (
 	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/app/common"
-	"github.com/yzimhao/trading_engine/v2/app/middlewares"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-type ExampleController struct {
-	engine    *gin.Engine
+type exampleModule struct {
+	router    *provider.Router
 	logger    *zap.Logger
 	userAsset persistence.UserAssetRepository
 	auth      *middlewares.AuthMiddleware
@@ -24,33 +25,31 @@ type ExampleController struct {
 
 type inContext struct {
 	fx.In
-	Engine    *gin.Engine
+	Router    *provider.Router
 	Logger    *zap.Logger
 	UserAsset persistence.UserAssetRepository
 	Auth      *middlewares.AuthMiddleware
 }
 
-func NewExampleController(in inContext) *ExampleController {
-	example := ExampleController{
-		engine:    in.Engine,
+func newExample(in inContext) {
+	ex := exampleModule{
+		router:    in.Router,
 		logger:    in.Logger,
 		userAsset: in.UserAsset,
 		auth:      in.Auth,
 	}
-
-	example.registerRoutes()
-	return &example
+	ex.registerRoutes()
 }
 
-func (exa *ExampleController) registerRoutes() {
-
-	exampleGroup := exa.engine.Group("example")
+func (exa *exampleModule) registerRoutes() {
+	exampleGroup := exa.router.Group("example")
 	exampleGroup.GET("/", exa.example)
 	exampleGroup.GET("/:symbol", exa.example)
-	exampleGroup.GET("/deposit", exa.auth.Auth(), exa.deposit)
+	exampleGroup.Use(exa.auth.Auth())
+	exampleGroup.GET("/deposit", exa.deposit)
 }
 
-func (exa *ExampleController) example(ctx *gin.Context) {
+func (exa *exampleModule) example(ctx *gin.Context) {
 
 	support := []string{"btcusdt"}
 	symbol := strings.ToLower(ctx.Param("symbol"))
@@ -65,7 +64,7 @@ func (exa *ExampleController) example(ctx *gin.Context) {
 	})
 }
 
-func (exa *ExampleController) deposit(ctx *gin.Context) {
+func (exa *exampleModule) deposit(ctx *gin.Context) {
 	userId := common.GetUserId(ctx)
 
 	symbols := []string{"usdt", "jpy", "eur", "btc"}

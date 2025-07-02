@@ -14,9 +14,9 @@ import (
 )
 
 func NewGin(v *viper.Viper, logger *zap.Logger) *gin.Engine {
-	v.SetDefault("app.template_path", "./app/frontend/views/")
+	v.SetDefault("app.template_path", Root()+"/frontend/views/")
 	templatePath := v.GetString("app.template_path")
-	v.SetDefault("app.static_path", "./app/frontend/statics/")
+	v.SetDefault("app.static_path", Root()+"/frontend/statics/")
 
 	staticPath := v.GetString("app.static_path")
 

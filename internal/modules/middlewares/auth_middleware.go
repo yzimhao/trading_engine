@@ -7,7 +7,7 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/v2/app/common"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"go.uber.org/zap"
 )
 
@@ -32,12 +32,14 @@ type AuthMiddleware struct {
 	jwt    *jwt.GinJWTMiddleware
 	logger *zap.Logger
 	viper  *viper.Viper
+	router *provider.Router
 }
 
-func NewAuthMiddleware(logger *zap.Logger, viper *viper.Viper) *AuthMiddleware {
+func NewAuthMiddleware(logger *zap.Logger, viper *viper.Viper, router *provider.Router) *AuthMiddleware {
 	auth := AuthMiddleware{
 		logger: logger,
 		viper:  viper,
+		router: router,
 	}
 	auth.initJwt()
 	return &auth
@@ -144,16 +146,12 @@ func (m *AuthMiddleware) authorizator() func(data interface{}, c *gin.Context) b
 
 func (m *AuthMiddleware) unauthorized() func(c *gin.Context, code int, message string) {
 	return func(c *gin.Context, code int, message string) {
-		// c.JSON(code, gin.H{
-		// 	"code":    code,
-		// 	"message": message,
-		// })
-		common.ResponseError(c, errors.New(message))
+		m.router.ResponseError(c, errors.New(message))
 	}
 }
 
 func (m *AuthMiddleware) loginResponse() func(c *gin.Context, code int, token string, expire time.Time) {
 	return func(c *gin.Context, code int, token string, expire time.Time) {
-		common.ResponseOK(c, gin.H{"token": token, "expire": expire.Format(time.RFC3339)})
+		m.router.ResponseOk(c, gin.H{"token": token, "expire": expire.Format(time.RFC3339)})
 	}
 }

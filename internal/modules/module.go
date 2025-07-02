@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/example"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/usercenter"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -14,12 +16,15 @@ import (
 
 var Invoke = fx.Module(
 	"modules",
+	fx.Provide(
+		middlewares.NewAuthMiddleware,
+	),
 	base.Module,
 	usercenter.Module,
 	// tradingcore.Module,
 	// quote.Module,
 	// notification.Module,
-	// example.Module,
+	example.Module,
 	fx.Invoke(run),
 )
 
