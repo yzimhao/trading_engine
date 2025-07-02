@@ -327,9 +327,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/order/create": {
+        "/api/v1/order": {
             "post": {
-                "description": "create order",
                 "consumes": [
                     "application/json"
                 ],
@@ -339,8 +338,8 @@ const docTemplate = `{
                 "tags": [
                     "order"
                 ],
-                "summary": "create order",
-                "operationId": "v1.order.create",
+                "summary": "创建订单",
+                "operationId": "v1.order",
                 "parameters": [
                     {
                         "description": "args",
@@ -348,7 +347,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.OrderCreateRequest"
+                            "$ref": "#/definitions/internal_modules_base_order.CreateOrderRequest"
                         }
                     }
                 ],
@@ -793,6 +792,47 @@ const docTemplate = `{
                 "OrderTypeMarketQuantity",
                 "OrderTypeMarketAmount"
             ]
+        },
+        "internal_modules_base_order.CreateOrderRequest": {
+            "type": "object",
+            "required": [
+                "order_type",
+                "side",
+                "symbol"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "order_type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType"
+                        }
+                    ],
+                    "example": "limit"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 1
+                },
+                "qty": {
+                    "type": "number",
+                    "example": 12
+                },
+                "side": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide"
+                        }
+                    ],
+                    "example": "buy"
+                },
+                "symbol": {
+                    "type": "string",
+                    "example": "btcusdt"
+                }
+            }
         }
     }
 }`

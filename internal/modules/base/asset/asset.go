@@ -7,35 +7,34 @@ import (
 	"go.uber.org/zap"
 )
 
-type AssetModule struct {
+type assetModule struct {
 	logger    *zap.Logger
 	router    *provider.Router
 	assetRepo persistence.AssetRepository
 }
 
-func NewAssetModule(logger *zap.Logger, router *provider.Router, repo persistence.AssetRepository) *AssetModule {
-	asset := AssetModule{
+func newAssetModule(logger *zap.Logger, router *provider.Router, repo persistence.AssetRepository) {
+	asset := assetModule{
 		logger:    logger,
 		router:    router,
 		assetRepo: repo,
 	}
 	asset.registerRouter()
-	return &asset
 }
 
-func (a *AssetModule) registerRouter() {
+func (a *assetModule) registerRouter() {
 	assetGroup := a.router.APIv1.Group("/asset")
 	assetGroup.GET("/", a.query)
 	assetGroup.GET("/:symbol", a.detail)
 
 }
 
-func (a *AssetModule) query(c *gin.Context) {
+func (a *assetModule) query(c *gin.Context) {
 	//TODO implement
 	a.router.ResponseOk(c, nil)
 }
 
-func (a *AssetModule) detail(c *gin.Context) {
+func (a *assetModule) detail(c *gin.Context) {
 	//TODO implement
 	a.router.ResponseOk(c, nil)
 }

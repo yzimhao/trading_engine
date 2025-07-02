@@ -1,13 +1,16 @@
 package quote
 
-import "go.uber.org/fx"
+import (
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
 
 var Module = fx.Module(
 	"quote",
-	fx.Provide(NewQuote),
-	fx.Invoke(startupQuote),
+	fx.Invoke(run),
 )
 
-func startupQuote(quote *Quote) {
-	quote.Subscribe()
+func run(router *provider.Router, logger *zap.Logger) {
+	newQuoteApi(router, logger)
 }

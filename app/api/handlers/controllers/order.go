@@ -61,8 +61,8 @@ type OrderCreateRequest struct {
 // @Produce json
 // @Param args body OrderCreateRequest true "args"
 // @Success 200 {string} any
-// @Router /api/v1/order/create [post]
-func (ctrl *OrderController) Create(c *gin.Context) {
+// @Router /api/v1/order [post]
+func (ctrl *OrderController) create(c *gin.Context) {
 	var req OrderCreateRequest
 
 	userId := common.GetUserId(c)

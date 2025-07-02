@@ -6,21 +6,20 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 )
 
-type ProductModule struct {
+type productModule struct {
 	router      *provider.Router
 	productRepo persistence.ProductRepository
 }
 
-func NewProductModule(router *provider.Router, repo persistence.ProductRepository) *ProductModule {
-	p := ProductModule{
+func newProductModule(router *provider.Router, repo persistence.ProductRepository) {
+	p := productModule{
 		productRepo: repo,
 		router:      router,
 	}
 	p.registerRouter()
-	return &p
 }
 
-func (p *ProductModule) registerRouter() {
+func (p *productModule) registerRouter() {
 	productGroup := p.router.APIv1.Group("/product")
 	productGroup.GET("/", p.query)
 	productGroup.GET("/:symbol", p.detail)
@@ -35,7 +34,7 @@ func (p *ProductModule) registerRouter() {
 // @Produce json
 // @Success 200 {string} any
 // @Router /api/v1/product [get]
-func (p *ProductModule) query(c *gin.Context) {
+func (p *productModule) query(c *gin.Context) {
 	//TODO implement
 	p.router.ResponseOk(c, nil)
 }
@@ -49,7 +48,7 @@ func (p *ProductModule) query(c *gin.Context) {
 // @Query param string true "symbol"
 // @Success 200 {string} any
 // @Router /api/v1/product/:symbol [get]
-func (p *ProductModule) detail(c *gin.Context) {
+func (p *productModule) detail(c *gin.Context) {
 	//TODO implement
 	p.router.ResponseOk(c, nil)
 }

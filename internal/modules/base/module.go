@@ -10,6 +10,7 @@ import (
 	_ "github.com/yzimhao/trading_engine/v2/docs"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/asset"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/base/order"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/product"
 	"go.uber.org/fx"
 )
@@ -18,14 +19,15 @@ var Module = fx.Module(
 	"base",
 	asset.Module,
 	product.Module,
+	order.Module,
 	fx.Invoke(run),
 )
 
 func run(router *provider.Router) {
-	registerRouter(router)
+	registerOtherRouter(router)
 }
 
-func registerRouter(router *provider.Router) {
+func registerOtherRouter(router *provider.Router) {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.APIv1.GET("ping", ping)
 	router.APIv1.GET("version", version)

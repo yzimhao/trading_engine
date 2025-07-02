@@ -7,9 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base"
-	"github.com/yzimhao/trading_engine/v2/internal/modules/notification"
-	"github.com/yzimhao/trading_engine/v2/internal/modules/quote"
-	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/usercenter"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -17,16 +14,12 @@ import (
 
 var Invoke = fx.Module(
 	"modules",
-
-	//TODO 着两行需要被优化掉
-	// app.Module,
-	// example.Module,
-
 	base.Module,
 	usercenter.Module,
-	tradingcore.Module,
-	quote.Module,
-	notification.Module,
+	// tradingcore.Module,
+	// quote.Module,
+	// notification.Module,
+	// example.Module,
 	fx.Invoke(run),
 )
 

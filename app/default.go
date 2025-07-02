@@ -2,8 +2,6 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yzimhao/trading_engine/v2/app/api/handlers/controllers"
 	"github.com/yzimhao/trading_engine/v2/app/middlewares"
 	"github.com/yzimhao/trading_engine/v2/app/webws"
@@ -54,12 +52,12 @@ func NewRoutes(in inContext) *Routes {
 
 func (ctx *Routes) registerRoutes() {
 
-	ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// ctx.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	//ws
-	ctx.engine.GET("/ws", func(c *gin.Context) {
-		ctx.wsController.Listen(c.Writer, c.Request, c.Request.Header)
-	})
+	// //ws
+	// ctx.engine.GET("/ws", func(c *gin.Context) {
+	// 	ctx.wsController.Listen(c.Writer, c.Request, c.Request.Header)
+	// })
 
 	apiGroup := ctx.engine.Group("api")
 	v1Group := apiGroup.Group("v1")
@@ -75,21 +73,21 @@ func (ctx *Routes) registerRoutes() {
 
 	asset := user.Group("asset")
 	asset.Use(ctx.authMiddleware.Auth())
-	asset.POST("/despoit", ctx.userAssetsController.Despoit)
-	asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
-	asset.GET("/query", ctx.userAssetsController.Query)
-	asset.GET("/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
-	asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
+	// asset.POST("/despoit", ctx.userAssetsController.Despoit)
+	// asset.POST("/withdraw", ctx.userAssetsController.Withdraw)
+	// asset.GET("/query", ctx.userAssetsController.Query)
+	// asset.GET("/:symbol/history", ctx.userAssetsController.QueryAssetHistory)
+	// asset.POST("/transfer/:symbol", ctx.userAssetsController.Transfer)
 
 	order := v1Group.Group("order")
 	order.Use(ctx.authMiddleware.Auth())
-	order.POST("/create", ctx.orderController.Create)
-	order.GET("/history", ctx.orderController.HistoryList)
-	order.GET("/unfinished", ctx.orderController.UnfinishedList)
-	order.GET("/trade/history", ctx.orderController.TradeHistoryList)
+	// order.POST("/create", ctx.orderController.Create)
+	// order.GET("/history", ctx.orderController.HistoryList)
+	// order.GET("/unfinished", ctx.orderController.UnfinishedList)
+	// order.GET("/trade/history", ctx.orderController.TradeHistoryList)
 
-	market := v1Group.Group("market")
-	market.GET("/depth", ctx.marketController.Depth)
-	market.GET("/trades", ctx.marketController.Trades)
-	market.GET("/klines", ctx.marketController.Klines)
+	// market := v1Group.Group("market")
+	// market.GET("/depth", ctx.marketController.Depth)
+	// market.GET("/trades", ctx.marketController.Trades)
+	// market.GET("/klines", ctx.marketController.Klines)
 }
