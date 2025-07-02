@@ -31,7 +31,7 @@ graph TD
     AA--> AAb[用户订单<br>UserOrders]
     class AAb done
     A --> AC[交易核心<br>TradingCore]
-    A --> AC3[行情系统<br>MarketData]
+    A --> AC3[行情系统<br>Quote]
     class AC3 pending
     A --> AD[消息推送<br>Notification]
     class AD pending
