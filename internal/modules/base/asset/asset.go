@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/zap"
 )
 
@@ -31,7 +32,7 @@ func (a *assetModule) registerRouter() {
 
 func (a *assetModule) query(c *gin.Context) {
 	//TODO implement
-	a.router.ResponseOk(c, nil)
+	a.router.ResponseError(c, types.ErrSystemBusy)
 }
 
 func (a *assetModule) detail(c *gin.Context) {
