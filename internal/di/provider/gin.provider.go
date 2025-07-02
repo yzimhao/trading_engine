@@ -43,7 +43,7 @@ func renderer(templatePath string, logger *zap.Logger, funcMap template.FuncMap)
 	logger.Sugar().Debug("Resolved template path", zap.String("path", absTemplatePath))
 
 	// 加载所有 HTML 模板
-	tpls, err := filepath.Glob(filepath.Join(absTemplatePath, "**/*.html"))
+	tpls, err := filepath.Glob(filepath.Join(absTemplatePath, "**/*"))
 	if err != nil {
 		logger.Sugar().Panic("Error loading templates", zap.Error(err))
 	}
