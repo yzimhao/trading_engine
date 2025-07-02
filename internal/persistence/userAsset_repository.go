@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"github.com/shopspring/decimal"
-	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"gorm.io/gorm"
 )
@@ -17,5 +16,5 @@ type UserAssetRepository interface {
 	TransferWithTx(tx *gorm.DB, transId, from, to, symbol string, amount decimal.Decimal) error
 	Freeze(tx *gorm.DB, transId, userId, symbol string, amount decimal.Decimal) (*entities.UserAssetFreeze, error)
 	UnFreeze(tx *gorm.DB, transId, userId, symbol string, amount decimal.Decimal) error
-	QueryFreeze(filter map[string]any) (assetFreezes []*models.AssetFreeze, err error)
+	QueryFreeze(filter map[string]any) (assetFreezes []*entities.UserAssetFreeze, err error)
 }

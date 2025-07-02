@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/shopspring/decimal"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
 

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/shopspring/decimal"
-	models "github.com/yzimhao/trading_engine/v2/internal/models/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"go.uber.org/zap"
@@ -154,7 +153,7 @@ func (r *userAssetRepo) UnFreeze(tx *gorm.DB, transId, userId, symbol string, am
 	return nil
 }
 
-func (r *userAssetRepo) QueryFreeze(filter map[string]any) (assetFreezes []*models.AssetFreeze, err error) {
+func (r *userAssetRepo) QueryFreeze(filter map[string]any) (assetFreezes []*entities.UserAssetFreeze, err error) {
 	// query := &datasource_types.PageQuery{
 	// 	Filter: filter,
 	// }

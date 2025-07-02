@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/duolacloud/broker-core"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

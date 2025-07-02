@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
 
@@ -27,7 +27,7 @@ type Order struct {
 	FinishedQty    decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"finished_qty"`
 	FinishedAmount decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"finished_amount"`
 	Fee            decimal.Decimal          `gorm:"type:decimal(40,20);not null;default:0" json:"fee"`
-	Status         models_types.OrderStatus `gorm:"type:smallint;default:0" json:"status"`
+	Status         types.OrderStatus        `gorm:"type:smallint;default:0" json:"status"`
 	NanoTime       int64                    `gorm:"type:bigint;not null;default:0" json:"nano_time"`
 }
 

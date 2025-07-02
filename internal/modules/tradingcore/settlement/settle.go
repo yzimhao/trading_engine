@@ -2,18 +2,19 @@ package settlement
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/app/webws"
-	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -171,7 +172,7 @@ func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.
 
 	tradeLog := entities.TradeRecord{
 		Symbol:     tradeResult.Symbol,
-		TradeId:    models_order.GenerateTradeId(tradeResult.AskOrderId, tradeResult.BidOrderId),
+		TradeId:    generateTradeId(tradeResult.AskOrderId, tradeResult.BidOrderId),
 		Ask:        tradeResult.AskOrderId,
 		Bid:        tradeResult.BidOrderId,
 		TradeBy:    tradeResult.TradeBy,
@@ -364,4 +365,14 @@ func (s *SettleProcessor) orderDelivery(
 	}
 
 	return nil
+}
+
+func generateTradeId(ask, bid string) string {
+	date := time.Now().Format("060102")
+	raw := fmt.Sprintf("%s%s", ask, bid)
+
+	hash := sha256.New()
+	hash.Write([]byte(fmt.Sprintf("%v", raw)))
+	hashed := fmt.Sprintf("%x", hash.Sum(nil))
+	return fmt.Sprintf("T%s%s", date, hashed[0:17])
 }

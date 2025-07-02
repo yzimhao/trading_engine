@@ -2,7 +2,7 @@ package entities
 
 import (
 	"github.com/shopspring/decimal"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 )
 
 type Product struct {

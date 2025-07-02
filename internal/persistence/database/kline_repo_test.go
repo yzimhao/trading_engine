@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/duolacloud/crud-core/datasource"
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
@@ -46,10 +45,7 @@ func (suite *klineRepoTest) SetupTest() {
 	suite.v = provider.NewViper(logger)
 	suite.gorm = provider.NewGorm(suite.v)
 	suite.logger = logger
-	redis := provider.NewRedis(suite.v, suite.logger)
-	cache, _ := provider.NewCache(suite.v, redis)
-
-	suite.repo = database.NewKlineRepo(datasource.NewDataSource(suite.gorm), cache, logger)
+	suite.repo = database.NewKlineRepo(suite.gorm, logger)
 }
 
 func (suite *klineRepoTest) TearDownTest() {

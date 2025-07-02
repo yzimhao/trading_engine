@@ -8,8 +8,8 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
-	"github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

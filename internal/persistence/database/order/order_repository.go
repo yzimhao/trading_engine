@@ -6,10 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	models_order "github.com/yzimhao/trading_engine/v2/internal/models/order"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -60,7 +59,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 	}
 
 	data := entities.Order{
-		OrderId:   models_order.GenerateOrderId(side),
+		OrderId:   generateOrderId(side),
 		UserId:    user_id,
 		Symbol:    symbol,
 		OrderSide: side,
@@ -69,7 +68,7 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		Quantity:  qty,
 		NanoTime:  time.Now().UnixNano(),
 		FeeRate:   product.FeeRate,
-		Status:    models_types.OrderStatusNew,
+		Status:    types.OrderStatusNew,
 	}
 
 	unfinished := entities.UnfinishedOrder{
@@ -139,14 +138,14 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 	}
 
 	data := entities.Order{
-		OrderId:      models_order.GenerateOrderId(side),
+		OrderId:      generateOrderId(side),
 		UserId:       user_id,
 		Symbol:       symbol,
 		OrderSide:    side,
 		OrderType:    matching_types.OrderTypeMarket,
 		FeeRate:      product.FeeRate,
 		FreezeAmount: amount,
-		Status:       models_types.OrderStatusNew,
+		Status:       types.OrderStatusNew,
 		NanoTime:     time.Now().UnixNano(),
 	}
 
@@ -195,14 +194,14 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 	}
 
 	data := entities.Order{
-		OrderId:   models_order.GenerateOrderId(side),
+		OrderId:   generateOrderId(side),
 		UserId:    user_id,
 		Symbol:    symbol,
 		OrderSide: side,
 		OrderType: matching_types.OrderTypeMarket,
 		FeeRate:   product.FeeRate,
 		Quantity:  qty,
-		Status:    models_types.OrderStatusNew,
+		Status:    types.OrderStatusNew,
 		NanoTime:  time.Now().UnixNano(),
 	}
 
@@ -242,7 +241,7 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 	return &data, nil
 }
 
-func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, cancelType models_types.CancelType) error {
+func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, cancelType types.CancelType) error {
 	o.logger.Sugar().Infof("cancel order: %s, %s, %s, %d", symbol, order_id, cancelType)
 
 	product, err := o.productRepo.Get(symbol)
@@ -279,7 +278,7 @@ func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, c
 		}
 
 		//更新订单状态
-		if err := tx.Table(order.TableName()).Where("order_id=?", order_id).Update("status", models_types.OrderStatusCanceled).Error; err != nil {
+		if err := tx.Table(order.TableName()).Where("order_id=?", order_id).Update("status", types.OrderStatusCanceled).Error; err != nil {
 			return err
 		}
 

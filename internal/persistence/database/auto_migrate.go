@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/shopspring/decimal"
-	models_types "github.com/yzimhao/trading_engine/v2/internal/models/types"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -75,14 +75,14 @@ func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*e
 			ShowDecimals: 4,
 			MinDecimals:  6,
 			IsBase:       true,
-			Status:       models_types.StatusEnabled,
+			Status:       types.StatusEnabled,
 		},
 		{
 			Symbol:       "btc",
 			Name:         "Bitcoin",
 			ShowDecimals: 4,
 			MinDecimals:  8,
-			Status:       models_types.StatusEnabled,
+			Status:       types.StatusEnabled,
 		},
 	}
 
@@ -109,7 +109,7 @@ func initProduct(ctx context.Context, productRepo persistence.ProductRepository,
 		AllowMinAmount: decimal.NewFromFloat(1.0),
 		AllowMaxAmount: decimal.Zero,
 		FeeRate:        decimal.NewFromFloat(0.005),
-		Status:         models_types.StatusEnabled,
+		Status:         types.StatusEnabled,
 	})
 	if err := conn.Error; err != nil {
 		return err
