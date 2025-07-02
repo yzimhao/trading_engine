@@ -33,8 +33,8 @@ func TestKLine(t *testing.T) {
 func (suite *klineTest) SetupTest() {
 	suite.ctx = context.Background()
 
-	v := provider.NewViper()
 	logger := zap.NewNop()
+	v := provider.NewViper(logger)
 	redis := provider.NewRedis(v, logger)
 	suite.symbol = "BTCUSDT"
 	suite.service = kline.NewKLine(redis, suite.symbol)

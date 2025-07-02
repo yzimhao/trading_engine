@@ -9,7 +9,7 @@ import (
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/app/common"
-	"github.com/yzimhao/trading_engine/v2/internal/modules/matching"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore/matching"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	kline_types "github.com/yzimhao/trading_engine/v2/pkg/kline/types"
 	"go.uber.org/fx"

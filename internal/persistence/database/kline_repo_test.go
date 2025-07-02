@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/duolacloud/crud-core/datasource"
+	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"github.com/subosito/gotenv"
@@ -81,12 +82,12 @@ func (suite *klineRepoTest) TestSaveKline() {
 		Period:  testPeriod,
 		OpenAt:  openAt,
 		CloseAt: closeAt,
-		Open:    "1",
-		High:    "2",
-		Low:     "0.5",
-		Close:   "1.5",
-		Volume:  "1000",
-		Amount:  "10000",
+		Open:    decimal.NewFromFloat(1),
+		High:    decimal.NewFromFloat(2),
+		Low:     decimal.NewFromFloat(0.5),
+		Close:   decimal.NewFromFloat(1.5),
+		Volume:  decimal.NewFromFloat(1000),
+		Amount:  decimal.NewFromFloat(10000),
 	})
 	suite.Require().NoError(err)
 
@@ -95,12 +96,12 @@ func (suite *klineRepoTest) TestSaveKline() {
 		Period:  testPeriod,
 		OpenAt:  openAt,
 		CloseAt: closeAt,
-		Open:    "1",
-		High:    "10",
-		Low:     "0.01",
-		Close:   "8",
-		Volume:  "1001",
-		Amount:  "10000",
+		Open:    decimal.NewFromFloat(1),
+		High:    decimal.NewFromFloat(10),
+		Low:     decimal.NewFromFloat(0.01),
+		Close:   decimal.NewFromFloat(8),
+		Volume:  decimal.NewFromFloat(1001),
+		Amount:  decimal.NewFromFloat(10000),
 	})
 	suite.Require().NoError(err)
 }

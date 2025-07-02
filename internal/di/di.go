@@ -32,8 +32,7 @@ func App() *fx.App {
 		),
 
 		database.Module,
-
-		modules.Load,
+		modules.Invoke,
 		fx.Invoke(func(lc fx.Lifecycle, logger *zap.Logger) {
 			lc.Append(fx.Hook{
 				OnStart: func(context.Context) error {
