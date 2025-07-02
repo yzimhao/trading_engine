@@ -8,10 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
-	"github.com/yzimhao/trading_engine/v2/app/common"
+
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -65,17 +66,18 @@ func (exa *exampleModule) example(ctx *gin.Context) {
 }
 
 func (exa *exampleModule) deposit(ctx *gin.Context) {
-	userId := common.GetUserId(ctx)
+	userId := exa.router.ParseUserID(ctx)
 
 	symbols := []string{"usdt", "jpy", "eur", "btc"}
 
 	for _, symbol := range symbols {
 		transId := time.Now().Format("20060102")
 		if err := exa.userAsset.Despoit("deposit."+symbol+"."+transId, userId, symbol, decimal.NewFromFloat(1000)); err != nil {
-			common.ResponseError(ctx, err)
 			exa.logger.Error("deposit error", zap.Error(err))
+			exa.router.ResponseError(ctx, types.ErrInternalError)
+			return
 		}
 	}
 
-	common.ResponseOK(ctx, "success")
+	exa.router.ResponseOk(ctx, "success")
 }

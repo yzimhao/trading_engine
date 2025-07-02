@@ -20,32 +20,6 @@ definitions:
     - password
     - username
     type: object
-  controllers.OrderCreateRequest:
-    properties:
-      amount:
-        type: number
-      order_type:
-        allOf:
-        - $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType'
-        example: limit
-      price:
-        example: 1
-        type: number
-      qty:
-        example: 12
-        type: number
-      side:
-        allOf:
-        - $ref: '#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide'
-        example: buy
-      symbol:
-        example: btcusdt
-        type: string
-    required:
-    - order_type
-    - side
-    - symbol
-    type: object
   controllers.RegisterRequest:
     properties:
       captcha:
@@ -223,22 +197,6 @@ paths:
       summary: asset withdraw
       tags:
       - asset
-  /api/v1/base/exchange_info:
-    get:
-      consumes:
-      - application/json
-      description: get exchange info
-      operationId: v1.base.exchange_info
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: exchange info
-      tags:
-      - base
   /api/v1/market/depth:
     get:
       consumes:
@@ -372,7 +330,7 @@ paths:
       consumes:
       - application/json
       description: history list
-      operationId: v1.order.history
+      operationId: v1.user.order.history
       parameters:
       - description: symbol
         in: query
@@ -401,47 +359,9 @@ paths:
           description: OK
           schema:
             type: string
-      summary: history list
+      summary: 历史订单
       tags:
-      - order
-  /api/v1/order/trade/history:
-    get:
-      consumes:
-      - application/json
-      description: trade history list
-      operationId: v1.order.trade_history
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: trade history list
-      tags:
-      - order
-  /api/v1/order/unfinished:
-    get:
-      consumes:
-      - application/json
-      description: unfinished list
-      operationId: v1.order.unfinished
-      parameters:
-      - description: symbol
-        in: query
-        name: symbol
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: unfinished list
-      tags:
-      - order
+      - 用户中心
   /api/v1/ping:
     get:
       description: test if the server is running
@@ -511,6 +431,44 @@ paths:
       summary: user login
       tags:
       - user
+  /api/v1/user/order/trade/history:
+    get:
+      consumes:
+      - application/json
+      description: trade history list
+      operationId: v1.order.trade_history
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: 成交历史
+      tags:
+      - 用户中心
+  /api/v1/user/order/unfinished:
+    get:
+      consumes:
+      - application/json
+      description: unfinished list
+      operationId: v1.user.order.unfinished
+      parameters:
+      - description: symbol
+        in: query
+        name: symbol
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: 未成交的订单
+      tags:
+      - 用户中心
   /api/v1/user/register:
     post:
       consumes:

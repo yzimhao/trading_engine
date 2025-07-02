@@ -3,12 +3,11 @@ package order
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
-	"github.com/yzimhao/trading_engine/v2/app/common"
+
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
@@ -71,10 +70,10 @@ type CreateOrderRequest struct {
 func (o *orderModule) create(c *gin.Context) {
 	var req CreateOrderRequest
 
-	userId := common.GetUserId(c)
+	userId := o.router.ParseUserID(c)
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		o.router.ResponseError(c, err)
+		o.router.ResponseError(c, types.ErrInvalidParam)
 		return
 	}
 
@@ -86,13 +85,14 @@ func (o *orderModule) create(c *gin.Context) {
 
 	if req.OrderType == matching_types.OrderTypeLimit {
 		if req.Price == nil || req.Quantity == nil {
-			o.router.ResponseError(c, errors.New("price and quantity are required"))
+			o.logger.Sugar().Warnf("price or quantity is required")
+			o.router.ResponseError(c, types.ErrInvalidParam)
 			return
 		}
 		order, err = o.orderRepo.CreateLimit(context.Background(), userId, req.Symbol, req.Side, *req.Price, *req.Quantity)
 		if err != nil {
 			o.logger.Error("create limit order error", zap.Error(err), zap.Any("req", req))
-			o.router.ResponseError(c, err)
+			o.router.ResponseError(c, types.ErrInternalError)
 			return
 		}
 
@@ -108,7 +108,8 @@ func (o *orderModule) create(c *gin.Context) {
 
 	} else {
 		if req.Amount == nil && req.Quantity == nil {
-			o.router.ResponseError(c, errors.New("amount or quantity is required"))
+			o.logger.Sugar().Warnf("amount or quantity is required")
+			o.router.ResponseError(c, types.ErrInvalidParam)
 			return
 		}
 
@@ -116,7 +117,7 @@ func (o *orderModule) create(c *gin.Context) {
 			order, err = o.orderRepo.CreateMarketByAmount(context.Background(), userId, req.Symbol, req.Side, *req.Amount)
 			if err != nil {
 				o.logger.Error("create market by amount order error", zap.Error(err), zap.Any("req", req))
-				o.router.ResponseError(c, err)
+				o.router.ResponseError(c, types.ErrInternalError)
 				return
 			}
 
@@ -132,7 +133,7 @@ func (o *orderModule) create(c *gin.Context) {
 			order, err = o.orderRepo.CreateMarketByQty(context.Background(), userId, req.Symbol, req.Side, *req.Quantity)
 			if err != nil {
 				o.logger.Error("create market by qty order error", zap.Error(err), zap.Any("req", req))
-				o.router.ResponseError(c, err)
+				o.router.ResponseError(c, types.ErrInternalError)
 				return
 			}
 
@@ -156,7 +157,7 @@ func (o *orderModule) create(c *gin.Context) {
 	body, err := json.Marshal(event)
 	if err != nil {
 		o.logger.Error("marshal order created event error", zap.Error(err), zap.Any("event", event))
-		o.router.ResponseError(c, err)
+		o.router.ResponseError(c, types.ErrInternalError)
 		return
 	}
 
@@ -166,7 +167,7 @@ func (o *orderModule) create(c *gin.Context) {
 
 	if err != nil {
 		o.logger.Error("publish order created event error", zap.Error(err))
-		o.router.ResponseError(c, err)
+		o.router.ResponseError(c, types.ErrInternalError)
 		return
 	}
 	o.router.ResponseOk(c, gin.H{"order_id": order.OrderId})

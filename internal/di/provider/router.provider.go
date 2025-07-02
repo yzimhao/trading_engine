@@ -3,7 +3,9 @@ package provider
 import (
 	"net/http"
 
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 )
 
 type Router struct {
@@ -20,15 +22,21 @@ func NewRouter(engine *gin.Engine) *Router {
 
 func (r *Router) ResponseOk(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, gin.H{
-		"ok":   true,
+		"code": types.SuccessCode,
 		"data": data,
 	})
 }
 
-// todo 携带错误码
-func (r *Router) ResponseError(c *gin.Context, err error) {
+// 携带错误码
+func (r *Router) ResponseError(c *gin.Context, code types.ErrorCode) {
 	c.JSON(http.StatusOK, gin.H{
-		"ok":  false,
-		"msg": err.Error(),
+		"code": code,
+		"msg":  types.GetErrorMsg(code),
 	})
+}
+
+// 从jwt认证中获取用户ID
+func (r *Router) ParseUserID(c *gin.Context) string {
+	claims := jwt.ExtractClaims(c)
+	return claims["userId"].(string)
 }

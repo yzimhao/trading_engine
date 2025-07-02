@@ -1,13 +1,13 @@
 package middlewares
 
 import (
-	"errors"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/zap"
 )
 
@@ -146,7 +146,8 @@ func (m *AuthMiddleware) authorizator() func(data interface{}, c *gin.Context) b
 
 func (m *AuthMiddleware) unauthorized() func(c *gin.Context, code int, message string) {
 	return func(c *gin.Context, code int, message string) {
-		m.router.ResponseError(c, errors.New(message))
+		m.logger.Sugar().Errorf("[auth] unauthorized: %s", message)
+		m.router.ResponseError(c, types.ErrUnauthorized)
 	}
 }
 

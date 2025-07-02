@@ -151,30 +151,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/base/exchange_info": {
-            "get": {
-                "description": "get exchange info",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "base"
-                ],
-                "summary": "exchange info",
-                "operationId": "v1.base.exchange_info",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/market/depth": {
             "get": {
                 "description": "get depth",
@@ -371,10 +347,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "order"
+                    "用户中心"
                 ],
-                "summary": "history list",
-                "operationId": "v1.order.history",
+                "summary": "历史订单",
+                "operationId": "v1.user.order.history",
                 "parameters": [
                     {
                         "type": "string",
@@ -401,63 +377,6 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/order/trade/history": {
-            "get": {
-                "description": "trade history list",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "order"
-                ],
-                "summary": "trade history list",
-                "operationId": "v1.order.trade_history",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/order/unfinished": {
-            "get": {
-                "description": "unfinished list",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "order"
-                ],
-                "summary": "unfinished list",
-                "operationId": "v1.order.unfinished",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "symbol",
-                        "name": "symbol",
                         "in": "query",
                         "required": true
                     }
@@ -576,6 +495,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/user/order/trade/history": {
+            "get": {
+                "description": "trade history list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户中心"
+                ],
+                "summary": "成交历史",
+                "operationId": "v1.order.trade_history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/order/unfinished": {
+            "get": {
+                "description": "unfinished list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户中心"
+                ],
+                "summary": "未成交的订单",
+                "operationId": "v1.user.order.unfinished",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "symbol",
+                        "name": "symbol",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/user/register": {
             "post": {
                 "description": "user register",
@@ -666,47 +642,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "controllers.OrderCreateRequest": {
-            "type": "object",
-            "required": [
-                "order_type",
-                "side",
-                "symbol"
-            ],
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "order_type": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderType"
-                        }
-                    ],
-                    "example": "limit"
-                },
-                "price": {
-                    "type": "number",
-                    "example": 1
-                },
-                "qty": {
-                    "type": "number",
-                    "example": 12
-                },
-                "side": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide"
-                        }
-                    ],
-                    "example": "buy"
-                },
-                "symbol": {
-                    "type": "string",
-                    "example": "btcusdt"
                 }
             }
         },
