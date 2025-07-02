@@ -3,18 +3,21 @@ package asset
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"go.uber.org/zap"
 )
 
 type AssetModule struct {
-	logger *zap.Logger
-	router *provider.Router
+	logger    *zap.Logger
+	router    *provider.Router
+	assetRepo persistence.AssetRepository
 }
 
-func NewAssetModule(logger *zap.Logger, router *provider.Router) *AssetModule {
+func NewAssetModule(logger *zap.Logger, router *provider.Router, repo persistence.AssetRepository) *AssetModule {
 	asset := AssetModule{
-		logger: logger,
-		router: router,
+		logger:    logger,
+		router:    router,
+		assetRepo: repo,
 	}
 	asset.registerRouter()
 	return &asset
