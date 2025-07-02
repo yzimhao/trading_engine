@@ -1,4 +1,4 @@
-package webws
+package ws
 
 import (
 	"context"

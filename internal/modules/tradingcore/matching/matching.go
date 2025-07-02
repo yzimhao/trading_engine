@@ -11,7 +11,7 @@ import (
 	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/v2/app/webws"
+	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
@@ -33,7 +33,7 @@ type inContext struct {
 	Viper       *viper.Viper
 	Cache       cache.Cache
 	OrderRepo   persistence.OrderRepository
-	Ws          *webws.WsManager
+	Ws          *notification_ws.WsManager
 }
 
 type Matching struct {
@@ -44,7 +44,7 @@ type Matching struct {
 	viper       *viper.Viper
 	cache       cache.Cache
 	orderRepo   persistence.OrderRepository
-	ws          *webws.WsManager
+	ws          *notification_ws.WsManager
 }
 
 func NewMatching(in inContext) *Matching {
@@ -232,7 +232,7 @@ func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
 			}
 
 			//broadcast depth data
-			if err := s.ws.Broadcast(ctx, webws.MsgDepthTpl.Format(map[string]string{"symbol": engine.Symbol()}), data); err != nil {
+			if err := s.ws.Broadcast(ctx, notification_ws.MsgDepthTpl.Format(map[string]string{"symbol": engine.Symbol()}), data); err != nil {
 				s.logger.Sugar().Errorf("matching ws broadcast error: %v", err)
 			}
 		}

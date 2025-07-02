@@ -87,15 +87,6 @@ func (ctrl *UserAssetsController) Withdraw(c *gin.Context) {
 	common.ResponseOK(c, transId)
 }
 
-// @Summary get wallet assets
-// @Description get assets balance
-// @ID v1.asset.query
-// @Tags asset
-// @Accept json
-// @Produce json
-// @Param symbols query string true "symbols example: BTC,ETH,USDT"
-// @Success 200 {object} []asset.Asset
-// @Router /api/v1/asset/query [get]
 func (ctrl *UserAssetsController) Query(c *gin.Context) {
 	//todo 在repo中实现对应的方法
 	claims := jwt.ExtractClaims(c)

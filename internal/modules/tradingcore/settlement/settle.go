@@ -11,7 +11,7 @@ import (
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
-	"github.com/yzimhao/trading_engine/v2/app/webws"
+	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
@@ -30,7 +30,7 @@ type SettleProcessor struct {
 	broker        broker.Broker
 	redis         *redis.Client
 	locker        *SettleLocker
-	ws            *webws.WsManager
+	ws            *notification_ws.WsManager
 }
 
 type inSettleContext struct {
@@ -43,7 +43,7 @@ type inSettleContext struct {
 	Broker        broker.Broker
 	Redis         *redis.Client
 	Locker        *SettleLocker
-	Ws            *webws.WsManager
+	Ws            *notification_ws.WsManager
 }
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
@@ -127,7 +127,7 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}
 
 		//推送交易页面上的最新成交记录
-		s.ws.Broadcast(ctx, webws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
+		s.ws.Broadcast(ctx, notification_ws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
 			map[string]any{
 				"price":    tradeLog.Price,
 				"qty":      tradeLog.Quantity,

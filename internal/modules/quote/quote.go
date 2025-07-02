@@ -6,7 +6,7 @@ import (
 
 	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
-	"github.com/yzimhao/trading_engine/v2/app/webws"
+	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
@@ -21,7 +21,7 @@ type Quote struct {
 	broker      broker.Broker
 	redis       *redis.Client
 	repo        persistence.KlineRepository
-	ws          *webws.WsManager
+	ws          *notification_ws.WsManager
 	productRepo persistence.ProductRepository
 }
 
@@ -31,7 +31,7 @@ type inContext struct {
 	Broker      broker.Broker
 	Redis       *redis.Client
 	Repo        persistence.KlineRepository
-	Ws          *webws.WsManager
+	Ws          *notification_ws.WsManager
 	ProductRepo persistence.ProductRepository
 }
 
@@ -100,7 +100,7 @@ func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotif
 		}
 
 		//推送kline记录
-		q.ws.Broadcast(ctx, webws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
+		q.ws.Broadcast(ctx, notification_ws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
 			[6]any{
 				data.OpenAt.UnixMilli(),
 				// common.FormatStrNumber(*data.Open, product.PriceDecimals),

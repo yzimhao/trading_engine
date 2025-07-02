@@ -5,6 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	pkgVersion "github.com/qvcloud/gopkg/version"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/yzimhao/trading_engine/v2/docs"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/product"
@@ -23,6 +26,7 @@ func run(router *provider.Router) {
 }
 
 func registerRouter(router *provider.Router) {
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.APIv1.GET("ping", ping)
 	router.APIv1.GET("version", version)
 }

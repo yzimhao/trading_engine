@@ -54,7 +54,7 @@ run-debug:
 
 .PHONY: docs-gen
 docs-gen:
-	swag init -g cmd/main/main.go --parseDependency --parseInternal -o app/docs
+	swag init -g cmd/main/main.go --parseDependency --parseInternal -o ./docs
 
 .PHONY: lint
 lint:
