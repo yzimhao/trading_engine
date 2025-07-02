@@ -22,9 +22,17 @@ func NewAssetModule(logger *zap.Logger, router *provider.Router) *AssetModule {
 
 func (a *AssetModule) registerRouter() {
 	assetGroup := a.router.APIv1.Group("/asset")
-	assetGroup.GET("/:symbol", a.query)
+	assetGroup.GET("/", a.query)
+	assetGroup.GET("/:symbol", a.detail)
+
 }
 
 func (a *AssetModule) query(c *gin.Context) {
+	//TODO implement
+	a.router.ResponseOk(c, nil)
+}
 
+func (a *AssetModule) detail(c *gin.Context) {
+	//TODO implement
+	a.router.ResponseOk(c, nil)
 }
