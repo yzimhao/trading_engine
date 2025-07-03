@@ -9,7 +9,6 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"github.com/yzimhao/trading_engine/v2/app/template_func"
 	"go.uber.org/zap"
 )
 
@@ -22,9 +21,19 @@ func NewGin(v *viper.Viper, logger *zap.Logger) *gin.Engine {
 
 	engine := gin.New()
 
-	templateFunc := template_func.NewTemplateFunc()
+	templateFunc := template.FuncMap{
+		"unsafe": func(str string) template.HTML {
+			return template.HTML(str)
+		},
+		"upper": func(str string) string {
+			return strings.ToUpper(str)
+		},
+		"lower": func(str string) string {
+			return strings.ToLower(str)
+		},
+	}
 	// engine.SetFuncMap(templateFunc.FuncMap())
-	engine.HTMLRender = renderer(templatePath, logger, templateFunc.FuncMap())
+	engine.HTMLRender = renderer(templatePath, logger, templateFunc)
 
 	// engine.StaticFS("/statics", http.Dir(staticPath))
 	engine.Use(static.Serve("/statics", static.LocalFile(staticPath, false)))
