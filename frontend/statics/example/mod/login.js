@@ -19,7 +19,7 @@ layui.define(["layer"], function(exports){
                 if (pp.test(value)) {
                     me.options.username = value;
                     
-                    $.post("/api/v1/user/login", {
+                    $.post("/api/v1/login", {
                         username: value,
                         password: "default",
                     }).then(function(d){

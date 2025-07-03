@@ -12,6 +12,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/order"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/product"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"go.uber.org/fx"
 )
 
@@ -23,14 +24,18 @@ var Module = fx.Module(
 	fx.Invoke(run),
 )
 
-func run(router *provider.Router) {
-	registerOtherRouter(router)
+func run(router *provider.Router, authMiddleware *middlewares.AuthMiddleware) {
+	registerOtherRouter(router, authMiddleware)
 }
 
-func registerOtherRouter(router *provider.Router) {
+func registerOtherRouter(router *provider.Router, authMiddleware *middlewares.AuthMiddleware) {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.APIv1.GET("ping", ping)
 	router.APIv1.GET("version", version)
+
+	router.APIv1.POST("/login", authMiddleware.Jwt().LoginHandler)
+	router.APIv1.POST("/refresh_token", authMiddleware.Jwt().RefreshHandler)
+
 }
 
 // @Summary ping

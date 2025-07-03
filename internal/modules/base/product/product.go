@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 )
 
 type productModule struct {
@@ -39,8 +40,8 @@ func (p *productModule) query(c *gin.Context) {
 	p.router.ResponseOk(c, nil)
 }
 
-// @Summary product detail
-// @Description get product detail
+// @Summary 交易对详情
+// @Description 交易对详情
 // @ID v1.product
 // @Tags product
 // @Accept json
@@ -50,5 +51,13 @@ func (p *productModule) query(c *gin.Context) {
 // @Router /api/v1/product/:symbol [get]
 func (p *productModule) detail(c *gin.Context) {
 	//TODO implement
-	p.router.ResponseOk(c, nil)
+	symbol := c.Param("symbol")
+
+	product, err := p.productRepo.Get(symbol)
+	if err != nil {
+		p.router.ResponseError(c, types.ErrInternalError)
+		return
+	}
+
+	p.router.ResponseOk(c, product)
 }

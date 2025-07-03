@@ -9,6 +9,9 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/example"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/notification"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/quote"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/usercenter"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,9 +24,9 @@ var Invoke = fx.Module(
 	),
 	base.Module,
 	usercenter.Module,
-	// tradingcore.Module,
-	// quote.Module,
-	// notification.Module,
+	tradingcore.Module,
+	quote.Module,
+	notification.Module,
 	example.Module,
 	fx.Invoke(run),
 )

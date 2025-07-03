@@ -58,10 +58,10 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                         return JSON.stringify(data)
                     }(),
                     success: function (d) {
-                        if(d.ok){
+                        if(d.code == 0){
                             layer.msg("已提交")
                         }else{
-                            layer.msg(d.reason);
+                            layer.msg(d.msg);
                         }
                     }
                 });
@@ -74,10 +74,10 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     },
                     contentType: "application/json",
                     success: function (d) {
-                        if(d.ok){
+                        if(d.code ==0){
                             me.load_assets();
                         }else{
-                            layer.msg(d.reason);
+                            layer.msg(d.msg);
                         }
                     }
                 });
@@ -90,7 +90,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 var mtype = $("input[name='mtype']:checked").val();
                 
                 $.ajax({
-                    url: "/api/v1/order/create",
+                    url: "/api/v1/order",
                     type: "post",
                     dataType: "json",
                     contentType: "application/json",
@@ -116,13 +116,13 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                         return JSON.stringify(data)
                     }(),
                     success: function (d) {
-                        if(d.ok){
+                        if(d.code == 0 ){
                             layer.msg("下单成功");
                             
                             me.load_assets();
                             me.load_order_unfinished();
                         }else{
-                            layer.msg(d.reason);
+                            layer.msg(d.msg);
                         }
                     }
                 });
@@ -130,15 +130,15 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         },
 
         load_depth_data: function(){
-            $.get("/api/v1/market/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
-                if(d.ok){
+            $.get("/api/v1/depth?symbol="+CURRENT_SYMBOL+"&limit=10", function(d){
+                if(d.code == 0){
                     utils.renderdepth(d.data);
                 }
             });
         },
         load_tradelog_data: function(){
-            $.get("/api/v1/market/trades?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
-                if (d.ok) {
+            $.get("/api/v1/trades?symbol="+CURRENT_SYMBOL+"&limit=10", function (d) {
+                if (d.code == 0) {
                     var data = d.data.reverse();
                     for(var i=0; i<data.length; i++){
                         utils.rendertradelog(data[i]);
@@ -148,13 +148,12 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
             });
         },
         load_system_info: function(){
-            $.get("/api/v1/quote/system", function(d){
+            $.get("/api/v1/version", function(d){
                 $(".version").html(d.version);
                 $(".build").html(d.build);
             });
         },
         load_assets: function(){
-            console.log('info:', baseinfo.cfg_info);
             $.ajax({
                 url: "/api/v1/user/asset/query",
                 type: "get",
@@ -163,9 +162,9 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                     t: Date.now()
                 },
                 success: function (d) {
-                    console.log("load_assets: ", d);
-                    if(!d.ok) {
-                        layer.msg(d.reason);
+                    console.log("load_assets response: ", d);
+                    if(d.code != 0 ) {
+                        layer.msg(d.msg);
                         return;
                     }
 
@@ -193,7 +192,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 },
                 success: function (d) {
                     console.log("load_order_unfinished: ", d);
-                    if(d.ok){
+                    if(d.code == 0){
                         $(".myorder-item").remove();
                         if(d.data.length > 0){
                             var data = d.data.reverse();
@@ -211,7 +210,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 type: "get",
                 success: function (d) {
                     console.log("/trading/varieties: ", d);
-                    if(d.ok){
+                    if(d.code == 0){
                         var data = d.data;
                         if(data.length > 0){
                             var html = [];

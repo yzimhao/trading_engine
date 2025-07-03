@@ -5,17 +5,20 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
 )
 
 type Router struct {
 	APIv1 *gin.RouterGroup
 	*gin.Engine
+	v *viper.Viper
 }
 
-func NewRouter(engine *gin.Engine) *Router {
+func NewRouter(engine *gin.Engine, v *viper.Viper) *Router {
 	return &Router{
 		Engine: engine,
+		v:      v,
 		APIv1:  engine.Group("/api/v1"),
 	}
 }
@@ -37,6 +40,10 @@ func (r *Router) ResponseError(c *gin.Context, code types.ErrorCode) {
 
 // 从jwt认证中获取用户ID
 func (r *Router) ParseUserID(c *gin.Context) string {
+	if r.v.GetString("run_mode") == "dev" {
+		return "devuser"
+	}
+
 	claims := jwt.ExtractClaims(c)
 	return claims["userId"].(string)
 }

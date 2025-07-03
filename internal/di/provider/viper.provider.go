@@ -24,6 +24,8 @@ func NewViper(logger *zap.Logger) *viper.Viper {
 		v.AddConfigPath(root)
 	}
 
+	setDefaultSetting(v)
+
 	logger.Sugar().Infof("config file: %s", v.ConfigFileUsed())
 	return v
 }
@@ -43,4 +45,9 @@ func IsDevelopment() bool {
 		return true
 	}
 	return strings.Contains(exe, os.TempDir())
+}
+
+func setDefaultSetting(v *viper.Viper) {
+	// run_mode: dev, debug, prod
+	v.SetDefault("run_mode", "prod")
 }
