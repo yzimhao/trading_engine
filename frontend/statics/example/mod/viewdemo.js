@@ -1,7 +1,5 @@
-layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], function(exports){
-    var baseinfo = layui.baseinfo;
+layui.define(['form', 'utils', 'kchart', 'websocket','login'], function(exports){
     var login = layui.login;
-
     var layer = layui.layer //弹层
         , form = layui.form
         , utils = layui.utils
@@ -9,6 +7,7 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         
 
     var obj = {
+        product: {},
         bind: function(){
             var me = this;
             form.on('select(order_type)', function (data) {
@@ -153,12 +152,34 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
                 $(".build").html(d.build);
             });
         },
+
+        load_product: function(){
+            var me = this;
+            $.ajax({
+                url: "/api/v1/product/" + CURRENT_SYMBOL,
+                type: "get",
+                data: {
+                    t: Date.now()
+                },
+                dataType: "json",
+                contentType: "application/json",
+                success: function (d) {
+                    console.log("product:", d);
+                    if(d.code==0){
+                        me.product = d.data;
+                        //改掉这个前端吧
+                        me.load_assets();
+                    }
+                }
+            });
+        },
         load_assets: function(){
+            console.log("this.product: ", this.product);
             $.ajax({
                 url: "/api/v1/user/asset/query",
                 type: "get",
                 data:{
-                    symbols: baseinfo.cfg_info.target.symbol+ "," + baseinfo.cfg_info.base.symbol,
+                    symbols: this.product.target.symbol+ "," + this.product.base.symbol,
                     t: Date.now()
                 },
                 success: function (d) {
@@ -226,13 +247,14 @@ layui.define(['form',"baseinfo", 'utils', 'kchart', 'websocket','login'], functi
         init: function(){
             login.init();
             this.bind();
-            // this.load_system_info();
-            // this.load_all_tsymbols();
-            this.load_depth_data();
-            this.load_tradelog_data();
+
+            this.load_product();
             this.load_assets();
+            
             this.load_order_unfinished();
-            // websocket.init();
+            this.load_depth_data();
+            this.load_tradelog_data();            
+            websocket.init();
         }
     };
     

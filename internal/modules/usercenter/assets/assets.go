@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
@@ -20,28 +21,39 @@ type userAssetsModule struct {
 	router         *provider.Router
 	logger         *zap.Logger
 	userAssetsRepo persistence.UserAssetRepository
+	auth           *middlewares.AuthMiddleware
 }
 
 func newUserAssetsModule(
 	router *provider.Router,
 	logger *zap.Logger,
+	auth *middlewares.AuthMiddleware,
 	userAssetsRepo persistence.UserAssetRepository,
 ) {
 	asset := userAssetsModule{
 		router:         router,
 		logger:         logger,
 		userAssetsRepo: userAssetsRepo,
+		auth:           auth,
 	}
 	asset.registerRouter()
 }
 
 func (a *userAssetsModule) registerRouter() {
 	ua := a.router.APIv1.Group("/user/asset")
-	//TODO 权限认证
+	//权限认证
+	ua.Use(a.auth.Auth())
+
+	//内部接口，充值接口
 	ua.POST("/despoit", a.despoit)
+	//内部接口，提现接口
 	ua.POST("/withdraw", a.withdraw)
+
+	//用户资产查询接口
 	ua.GET("/query", a.query)
+	//用户某个资产的历史记录
 	ua.GET("/:symbol/history", a.queryAssetHistory)
+	//用户资产转移接口
 	ua.POST("/transfer/:symbol", a.assetTransfer)
 }
 

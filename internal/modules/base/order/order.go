@@ -9,6 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
@@ -27,25 +28,30 @@ type orderModule struct {
 	logger    *zap.Logger
 	orderRepo persistence.OrderRepository
 	broker    broker.Broker
+	auth      *middlewares.AuthMiddleware
 }
 
 func newOrderModule(
 	router *provider.Router,
 	logger *zap.Logger,
 	broker broker.Broker,
+	auth *middlewares.AuthMiddleware,
 	orderRepo persistence.OrderRepository) {
 	o := orderModule{
 		router:    router,
 		logger:    logger,
 		orderRepo: orderRepo,
 		broker:    broker,
+		auth:      auth,
 	}
 	o.registerRouter()
 }
 
 func (o *orderModule) registerRouter() {
 	orderGroup := o.router.APIv1.Group("/order")
-	//TODO 权限认证
+	// 权限认证
+	orderGroup.Use(o.auth.Auth())
+	// 创建交易订单
 	orderGroup.POST("/", o.create)
 }
 

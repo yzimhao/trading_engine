@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
@@ -20,24 +21,28 @@ type userOrderModule struct {
 	router    *provider.Router
 	logger    *zap.Logger
 	orderRepo persistence.OrderRepository
+	auth      *middlewares.AuthMiddleware
 }
 
 func newUserOrdersModule(
 	router *provider.Router,
 	logger *zap.Logger,
+	auth *middlewares.AuthMiddleware,
 	orderRepo persistence.OrderRepository,
 ) {
 	uo := userOrderModule{
 		router:    router,
 		logger:    logger,
 		orderRepo: orderRepo,
+		auth:      auth,
 	}
 	uo.registerRouter()
 }
 
 func (u *userOrderModule) registerRouter() {
 	uo := u.router.APIv1.Group("/user/order")
-	//TODO 权限认证
+	// 权限认证
+	uo.Use(u.auth.Auth())
 
 	// 未完成订单接口
 	uo.GET("/unfinished", u.unfinishedList)

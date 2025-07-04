@@ -40,10 +40,9 @@ func (r *Router) ResponseError(c *gin.Context, code types.ErrorCode) {
 
 // 从jwt认证中获取用户ID
 func (r *Router) ParseUserID(c *gin.Context) string {
-	if r.v.GetString("run_mode") == "dev" {
-		return "devuser"
-	}
-
 	claims := jwt.ExtractClaims(c)
-	return claims["userId"].(string)
+	if userId, ok := claims["userId"].(string); ok {
+		return userId
+	}
+	return ""
 }
