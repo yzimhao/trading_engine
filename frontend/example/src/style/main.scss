@@ -1,5 +1,17 @@
 .mtop10 {margin-top: 10px;}
 .bold {font-weight: bolder;}
+.line1 {
+    display: flex; 
+    // vertical-align: middle;
+    height: 30px;
+    line-height: 30px;
+    padding: 5px 0px;
+}
+.align-left {
+    text-align: left;
+}
+
+
 
 .content {
   display: flex;
@@ -9,12 +21,39 @@
     flex: 1;
     .kline-chart {
         min-height: 500px;
-        background-color: red;
+        background-color: rgb(206, 213, 213);
+        border-radius: 5px 5px;
     }
     .user-form{
         height: 200px;
-        background-color: red;
-        
+        background-color: rgb(206, 213, 213);
+        display: flex;
+        .user-assets {
+            padding: 0 10px;
+            width: 300px;
+            height: 100%;
+            background-color: rgb(152, 214, 152);
+        }
+        .user-area { 
+            flex: 1;
+            display: flex;
+            .item-title {
+                margin: 0 5px;
+            }
+
+            .sell {
+                background-color: rgb(154, 243, 154);
+                width: 350px;
+                height: 100%;
+                padding: 0 10px;
+            }
+            .buy {
+                background-color: rgb(195, 240, 105);
+                width: 350px;
+                height: 100%;
+                padding: 0 10px;
+            }
+        }
     }
   }
   .right{
@@ -23,7 +62,7 @@
     min-width: 500px;
     .orderbook{
         min-height: 500px;
-        background-color: aqua;
+        background-color: rgb(206, 213, 213);
 
         .orderbook-title {
             display: block;
@@ -36,9 +75,12 @@
         
         .ask {
             height: 225px;
-            background-color: gray;
+            background-color: rgb(190, 185, 185);
             display: flex;
             flex-direction: column-reverse;
+            font-size: 16px;
+            padding: 0px 10px;
+            border-radius: 5px 5px;
         }
         .latest-price{
             display: block;
@@ -46,13 +88,18 @@
             height: 30px;
         }
         .bid {
-            background-color: gray;
+            background-color:  rgb(190, 185, 185);
             height: 225px;
+            font-size: 16px;
+            padding: 0 10px;
+            border-radius: 5px 5px;
         }
     }
     .tradehistory{
-        background-color: aqua;
+        background-color: rgb(222, 230, 230);
         height: 200px;
+        overflow-y: hidden;
+        padding: 0 5px
     }
   }
 }
