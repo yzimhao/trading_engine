@@ -52,7 +52,7 @@ func MigrateDown(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 
 func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 	//TODO  justfor development
-	tables := []any{
+	needDroptables := []any{
 		&entities.Asset{},
 		&entities.Product{},
 		&entities.UserAssetFreeze{},
@@ -69,20 +69,24 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 		logger.Debug("get tables failed", zap.Error(err))
 		return err
 	}
+	logger.Sugar().Debugf("all tables %v", allTables)
 
-	for _, table := range tables {
-		var dropTable any
-		switch t := table.(type) {
-		case string:
-			for _, tt := range allTables {
+	var dropTables []any
+	for _, tt := range allTables {
+		for _, needDrop := range needDroptables {
+			switch t := needDrop.(type) {
+			case string:
 				if strings.HasPrefix(tt, t) {
-					dropTable = tt
+					dropTables = append(dropTables, tt)
 				}
+			default:
+				dropTables = append(dropTables, needDrop)
 			}
-		default:
-			dropTable = table
 		}
+	}
 
+	logger.Sugar().Debugf("dropTables: %#v", dropTables)
+	for _, dropTable := range dropTables {
 		indexes, err := db.Migrator().GetIndexes(dropTable)
 		if err != nil {
 			logger.Debug("get indexes failed", zap.Error(err))

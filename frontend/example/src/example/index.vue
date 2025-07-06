@@ -64,7 +64,7 @@
                         
                     </view>
                     <view class="line1">
-                        <text>{{ current.targetSymbol }} 可用: {{ user.targetAsset.avail }}</text>
+                        <text>{{ current.targetSymbol.toUpperCase() }} 可用: {{ user.targetAsset.avail }}</text>
                         <text style="margin-left: 10px;">冻结: {{ user.targetAsset.freeze }}</text>
                         <text style="margin-left: 10px;">总数: {{ user.targetAsset.total }}</text>
                     </view>
@@ -94,7 +94,7 @@
                         <button type="primary" size="mini" @click="actionBuyOrder">买入</button>
                     </view>
                     <view class="line1">
-                        <text>{{ current.baseSymbol }} 可用: {{ user.baseAsset.avail }}</text>
+                        <text>{{ current.baseSymbol.toUpperCase() }} 可用: {{ user.baseAsset.avail }}</text>
                         <text style="margin-left: 10px;">冻结: {{ user.baseAsset.freeze }}</text>
                         <text style="margin-left: 10px;">总数: {{ user.baseAsset.total }}</text>
                     </view>
@@ -204,6 +204,7 @@
 import {
     request
 } from '@/common/request.js'
+import { socket } from '@/common/websocket.js'; 
 
 export default {
   data() {
@@ -264,14 +265,38 @@ export default {
         this.user = user;
     }
 
-    this.current.symbol = options.symbol.toUpperCase();
+    this.current.symbol = options.symbol;
     console.log(this.current);
     if(this.current.symbol){
         this.loadCurrentSymbol();
         this.loadDepth();
     }
+    
+    this.iniWebsocket();
   },
   methods: {
+    iniWebsocket(){
+        const me = this;
+        socket.onclose = (evt) => {};
+        socket.onopen = () => {
+            var msg = {
+                "subscribe": [
+                    "depth."+ me.current.symbol,
+                    "trade." + me.current.symbol,
+                    "price."+me.current.symbol,
+                    "kline.m1."+me.current.symbol,
+                    "market.24h."+me.current.symbol,
+                    "market.28h."+me.current.symbol,
+                    // "token."+ Cookies.get("jwt"),
+                ],
+                "unsubscribe":[
+                    "market.28h."+me.current.symbol,
+                ]
+            };
+            console.log(JSON.stringify(msg));
+            socket.send(JSON.stringify(msg));
+        };
+    },
     actionLogin () {
         const me = this;
         console.log(me.user);
@@ -371,8 +396,8 @@ export default {
         const me = this;
         request("/api/v1/product/"+this.current.symbol, {},  "GET").then(res=>{
             console.log("product info: ", res);
-            me.current.baseSymbol = res.data.base.symbol.toUpperCase();
-            me.current.targetSymbol = res.data.target.symbol.toUpperCase();
+            me.current.baseSymbol = res.data.base.symbol;
+            me.current.targetSymbol = res.data.target.symbol;
             me.range.assetType = [];
             
             me.recharge.asset = me.current.targetSymbol;
@@ -407,14 +432,14 @@ export default {
             console.log("/api/v1/user/asset/query ", res);
             const assets = res.data;
             for(var i=0; i<assets.length; i++) {
-                if(me.current.baseSymbol == assets[i].symbol.toUpperCase()){
+                if(me.current.baseSymbol == assets[i].symbol){
                     me.user.baseAsset = {
                         avail: assets[i].avail_balance,
                         freeze: assets[i].freeze_balance,
                         total: assets[i].total_balance
                     };
                 }
-                if(me.current.targetSymbol == assets[i].symbol.toUpperCase()){
+                if(me.current.targetSymbol == assets[i].symbol){
                     me.user.targetAsset = {
                         avail: assets[i].avail_balance,
                         freeze: assets[i].freeze_balance,
