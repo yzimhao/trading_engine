@@ -43,7 +43,7 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.sellOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.sellOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" placeholder="1.00" style="width: 200px;" />
                     </view>
@@ -61,7 +61,7 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.buyOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.buyOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" placeholder="1.00" />
                     </view>
