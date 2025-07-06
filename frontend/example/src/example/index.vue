@@ -295,6 +295,57 @@ export default {
             };
             console.log(JSON.stringify(msg));
             socket.send(JSON.stringify(msg));
+
+            
+        };
+
+        socket.onmessage = (e) => {
+            const msg = e.data.split('\n');
+            for (var i = 0; i < msg.length; i++) {
+                var data = JSON.parse(msg[i]);
+                console.log("websocket message: " ,data);
+
+                if (data.type == "depth."+ me.current.symbol) {
+                    me.depth.asks = data.body.asks;
+                    me.depth.bids = data.body.bids;
+                } else if (data.type == "trade." + me.current.symbol) {
+                    // utils.rendertradelog(data.body);
+                } else if (data.type == "new_order."+ me.current.symbol) {
+                    // var myorderView = $(".myorder"),
+                    //     myorderTpl = $("#myorder-tpl").html();
+                    
+                    // var data = msg.body;
+                    // data['create_time'] = utils.formatTime(data.create_time);
+                    // laytpl(myorderTpl).render(data, function (html) {
+                    //     if ($(".order-item").length > 30) {
+                    //         $(".order-item").last().remove();
+                    //     }
+                    //     myorderView.after(html);
+                    // });
+                } else if (data.type == "price."+me.current.symbol) {
+                    $(".latest-price").html(msg.body.latest_price);
+                } else if (data.type =="kline.m1."+me.current.symbol) {
+                    // var data = msg.body;
+                    // kchart.updateData({
+                    //     timestamp: new Date(data[0]).getTime(),
+                    //     open: +data[1],
+                    //     high: +data[2],
+                    //     low: +data[3],
+                    //     close: +data[4],
+                    //     volume: Math.ceil(+data[5]),
+                    // });
+                }else if(data.type=="market.24h."+me.current.symbol) {
+                    // $(".price_p").html(msg.body.price_change_percent);
+                }else if(data.type =="order.cancel." +me.current.symbol) {
+                    // var order_id = msg.body.order_id;
+                    // layer.msg("订单 "+ order_id +" 取消成功");
+                    // $(".myorder-item").each(function(){
+                    //     if ($(this).attr("order-id")== order_id){
+                    //         $(this).remove();
+                    //     }
+                    // })
+                }
+            }
         };
     },
     actionLogin () {
