@@ -63,7 +63,7 @@
                         <button type="primary" size="mini" @click="actionSellOrder">卖出</button>
                         
                     </view>
-                    <view class="line1">
+                    <view class="line1 asset-info">
                         <text>{{ current.targetSymbol.toUpperCase() }} 可用: {{ user.targetAsset.avail }}</text>
                         <text style="margin-left: 10px;">冻结: {{ user.targetAsset.freeze }}</text>
                         <text style="margin-left: 10px;">总数: {{ user.targetAsset.total }}</text>
@@ -93,7 +93,7 @@
                     <view class="line1">
                         <button type="primary" size="mini" @click="actionBuyOrder">买入</button>
                     </view>
-                    <view class="line1">
+                    <view class="line1 asset-info">
                         <text>{{ current.baseSymbol.toUpperCase() }} 可用: {{ user.baseAsset.avail }}</text>
                         <text style="margin-left: 10px;">冻结: {{ user.baseAsset.freeze }}</text>
                         <text style="margin-left: 10px;">总数: {{ user.baseAsset.total }}</text>
@@ -204,7 +204,7 @@
 import {
     request
 } from '@/common/request.js'
-import { socket } from '@/common/websocket.js'; 
+import { socketInit } from '@/common/websocket.js'; 
 
 export default {
   data() {
@@ -277,7 +277,14 @@ export default {
   methods: {
     iniWebsocket(){
         const me = this;
-        socket.onclose = (evt) => {};
+        const socket = socketInit();
+
+        socket.onclose = (evt) => {
+            console.log("websocket close.");
+            setTimeout(() => {
+                me.iniWebsocket();
+            }, 3e3);
+        };
         socket.onopen = () => {
             var msg = {
                 "subscribe": [
@@ -295,8 +302,6 @@ export default {
             };
             console.log(JSON.stringify(msg));
             socket.send(JSON.stringify(msg));
-
-            
         };
 
         socket.onmessage = (e) => {
@@ -411,6 +416,7 @@ export default {
             me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/v1/order ", err);
+            uni.showToast({title:err.data.msg, icon: "none"});
         })
     },
     actionBuyOrder(){
@@ -441,6 +447,7 @@ export default {
             me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/v1/order ", err);
+            uni.showToast({title:err.data.msg, icon: "none"});
         })
     },
     loadCurrentSymbol() {

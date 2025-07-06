@@ -1,2 +1,4 @@
 
-export const socket = new WebSocket("/ws");
+export const socketInit = () => {
+    return new WebSocket("/ws");
+};
