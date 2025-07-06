@@ -21,7 +21,7 @@
                 <view v-if="user.isLogin">
                     <view class="line1">
                         <text>Hi, {{user.name}}</text>
-                        <text class="logout">退出</text>
+                        <text class="logout" @click="actionLogout">退出</text>
                     </view>
                     <text>自助充值</text>
                     <view class="line1">
@@ -43,17 +43,30 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.sellOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
+                    <view class="line1">
+                        <text class="item-title">数量/金额</text>
+                        <uni-data-checkbox v-model="range.sellVolOrAmountVal" :localdata='range.volOrAmount'></uni-data-checkbox>
+                    </view>
                     <view class="line1" v-if="range.sellOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
-                        <uni-easyinput type="digit" placeholder="1.00" style="width: 200px;" />
+                        <uni-easyinput type="digit" v-model="order.sellPrice" placeholder="1.00" style="width: 200px;" />
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.sellVolOrAmountVal == 'qty'">
                         <text class="item-title">数量</text>
-                        <uni-easyinput type="digit" placeholder="10" style="width: 200px;"  />
+                        <uni-easyinput type="digit" v-model="order.sellVolume" placeholder="10" style="width: 200px;"  />
+                    </view>
+                    <view class="line1" v-if="range.sellVolOrAmountVal == 'amount'">
+                        <text class="item-title">金额</text>
+                        <uni-easyinput type="digit" v-model="order.sellAmount" placeholder="10" style="width: 200px;"  />
                     </view>
                     <view class="line1">
-                        <button type="primary" size="mini">卖出</button>
-                        <text>可用{{ current.targetSymbol }}: {{ user.targetAsset }}</text>
+                        <button type="primary" size="mini" @click="actionSellOrder">卖出</button>
+                        
+                    </view>
+                    <view class="line1">
+                        <text>{{ current.targetSymbol }} 可用: {{ user.targetAsset.avail }}</text>
+                        <text style="margin-left: 10px;">冻结: {{ user.targetAsset.freeze }}</text>
+                        <text style="margin-left: 10px;">总数: {{ user.targetAsset.total }}</text>
                     </view>
                 </view>
                 <view class="buy">
@@ -61,17 +74,29 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.buyOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
+                    <view class="line1">
+                        <text class="item-title">数量/金额</text>
+                        <uni-data-checkbox v-model="range.buyVolOrAmountVal" :localdata='range.volOrAmount'></uni-data-checkbox>
+                    </view>
                     <view class="line1" v-if="range.buyOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
-                        <uni-easyinput type="digit" placeholder="1.00" />
+                        <uni-easyinput type="digit" placeholder="1.00" v-model="order.buyPrice" />
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.buyVolOrAmountVal == 'qty'">
                         <text class="item-title">数量</text>
-                        <uni-easyinput type="digit" placeholder="10" />
+                        <uni-easyinput type="digit" placeholder="10" v-model="order.buyVolume" />
+                    </view>
+                    <view class="line1" v-if="range.buyVolOrAmountVal == 'amount'">
+                        <text class="item-title">金额</text>
+                        <uni-easyinput type="digit" placeholder="10" v-model="order.buyAmount" />
                     </view>
                     <view class="line1">
-                        <button type="primary" size="mini">买入</button>
-                        <text>可用{{ current.baseSymbol }}: {{ user.baseAsset }}</text>
+                        <button type="primary" size="mini" @click="actionBuyOrder">买入</button>
+                    </view>
+                    <view class="line1">
+                        <text>{{ current.baseSymbol }} 可用: {{ user.baseAsset.avail }}</text>
+                        <text style="margin-left: 10px;">冻结: {{ user.baseAsset.freeze }}</text>
+                        <text style="margin-left: 10px;">总数: {{ user.baseAsset.total }}</text>
                     </view>
                 </view>
             </view>
@@ -258,6 +283,9 @@ export default {
     return {
         range: {
             orderType: [{"value": "limit","text": "限价"	},{"value": "market","text": "市价"}],
+            volOrAmount: [{"value": "qty", "text": "数量"}, {"value": "amount", "text": "金额"}],
+            sellVolOrAmountVal: "qty",
+            buyVolOrAmountVal: "qty",
             sellOrderTypeVal: "limit",
             buyOrderTypeVal: "limit",
             assetType:[{"value":"BTC", "text": "BTC"}],
@@ -271,12 +299,28 @@ export default {
             asset: "",
             volume: ""
         },
+        order:{
+            sellPrice: "",
+            sellVolume: "",
+            sellAmount: "",
+            buyPrice: "",
+            buyVolume:"",
+            buyAmount:""
+        },
         user: {
             name: "",
             isLogin: false,
             token: "",
-            targetAsset: 0,
-            baseAsset: 0
+            targetAsset: {
+                avail: 0,
+                freeze: 0,
+                total: 0
+            },
+            baseAsset: {
+                avail: 0,
+                freeze: 0,
+                total: 0
+            }
         },
         data: {
             
@@ -315,12 +359,38 @@ export default {
             console.log("/api/v1/login ", err);
         })
     },
+    actionLogout(){
+        uni.removeStorageSync('user');
+        window.location.reload();
+    },
     actionRecharge(){
         const me = this;
         request("/api/example/deposit", {"asset": me.recharge.asset, "volume": me.recharge.volume},  "GET").then(res=>{
-            console.log("/api/example/deposit info: ", res);
+            me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/example/deposit ", err);
+        })
+    },
+    actionSellOrder(){
+        let data = {
+            "side": "sell"
+        };
+        if(this.range.sellOrderTypeVal == "limit") {
+            data['order_type'] = "limit";
+            data['price'] = this.order.sellPrice;
+            data['qty'] = this.order.sellVolume;
+        }
+        request("/api/v1/order", data, "POST").then(res=>{
+            console.log("/api/v1/order ", data, res);
+        }).catch(err=>{
+            console.log("/api/v1/order ", err);
+        })
+    },
+    actionBuyOrder(){
+        request("/api/v1/order", {}, "POST").then(res=>{
+            console.log("/api/v1/order ", data, res);
+        }).catch(err=>{
+            console.log("/api/v1/order ", err);
         })
     },
     loadCurrentSymbol() {
@@ -350,10 +420,18 @@ export default {
             const assets = res.data;
             for(var i=0; i<assets.length; i++) {
                 if(me.current.baseSymbol == assets[i].symbol.toUpperCase()){
-                    me.user.baseAsset = assets[i].avail_balance;
+                    me.user.baseAsset = {
+                        avail: assets[i].avail_balance,
+                        freeze: assets[i].freeze_balance,
+                        total: assets[i].total_balance
+                    };
                 }
                 if(me.current.targetSymbol == assets[i].symbol.toUpperCase()){
-                    me.user.targetAsset = assets[i].avail_balance;
+                    me.user.targetAsset = {
+                        avail: assets[i].avail_balance,
+                        freeze: assets[i].freeze_balance,
+                        total: assets[i].total_balance
+                    };
                 }
             }
         }).catch(err=>{

@@ -1,7 +1,6 @@
 package example
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
@@ -44,23 +43,8 @@ func newExample(in inContext) {
 
 func (exa *exampleModule) registerRoutes() {
 	exampleGroup := exa.router.Group("api/example")
-	exampleGroup.GET("/", exa.example)
-	exampleGroup.GET("/:symbol", exa.example)
 	exampleGroup.Use(exa.auth.Auth())
 	exampleGroup.GET("/deposit", exa.deposit)
-}
-
-func (exa *exampleModule) example(ctx *gin.Context) {
-	support := []string{"btcusdt"}
-	symbol := strings.ToLower(ctx.Param("symbol"))
-	if !lo.Contains(support, symbol) {
-		ctx.Redirect(301, "/example/"+support[0])
-		return
-	}
-
-	ctx.HTML(http.StatusOK, "example/index.html", gin.H{
-		"symbol": symbol,
-	})
 }
 
 type depositReq struct {
@@ -79,6 +63,7 @@ func (exa *exampleModule) deposit(ctx *gin.Context) {
 		return
 	}
 
+	req.Asset = strings.ToLower(req.Asset)
 	if !lo.Contains(allowSymbols, req.Asset) {
 		exa.router.ResponseError(ctx, types.ErrInvalidParam)
 		return
