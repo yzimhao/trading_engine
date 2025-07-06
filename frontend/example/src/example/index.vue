@@ -308,8 +308,9 @@ export default {
         })
     },
     actionSellOrder(){
+        const me = this;
         let data = {
-            "side": "sell",
+            "side": "ask",
             "symbol": this.current.symbol
         };
         if(this.range.sellOrderTypeVal == "limit") {
@@ -331,13 +332,15 @@ export default {
                 title: "挂单成功",
                 icon: "none"
             });
+            me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/v1/order ", err);
         })
     },
     actionBuyOrder(){
+        const me = this;
         let data = {
-            "side": "buy",
+            "side": "bid",
             "symbol": this.current.symbol
         };
         if(this.range.buyOrderTypeVal == "limit") {
@@ -359,6 +362,7 @@ export default {
                 title: "挂单成功",
                 icon: "none"
             });
+            me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/v1/order ", err);
         })

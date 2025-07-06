@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
@@ -89,6 +90,7 @@ func (o *orderModule) create(c *gin.Context) {
 		event types.EventOrderNew
 	)
 
+	req.Symbol = strings.ToLower(req.Symbol)
 	if req.OrderType == matching_types.OrderTypeLimit {
 		if req.Price == nil || req.Quantity == nil {
 			o.logger.Sugar().Warnf("price or quantity is required")
