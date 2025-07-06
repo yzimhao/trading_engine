@@ -45,17 +45,17 @@
                     </view>
                     <view class="line1">
                         <text class="item-title">数量/金额</text>
-                        <uni-data-checkbox v-model="range.sellVolOrAmountVal" :localdata='range.volOrAmount'></uni-data-checkbox>
+                        <uni-data-checkbox v-model="range.sellQtyOrAmountVal" :localdata='range.qtyOrAmount'></uni-data-checkbox>
                     </view>
                     <view class="line1" v-if="range.sellOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" v-model="order.sellPrice" placeholder="1.00" style="width: 200px;" />
                     </view>
-                    <view class="line1" v-if="range.sellVolOrAmountVal == 'qty'">
+                    <view class="line1" v-if="range.sellQtyOrAmountVal == 'qty'">
                         <text class="item-title">数量</text>
-                        <uni-easyinput type="digit" v-model="order.sellVolume" placeholder="10" style="width: 200px;"  />
+                        <uni-easyinput type="digit" v-model="order.sellQty" placeholder="10" style="width: 200px;"  />
                     </view>
-                    <view class="line1" v-if="range.sellVolOrAmountVal == 'amount'">
+                    <view class="line1" v-if="range.sellQtyOrAmountVal == 'amount'">
                         <text class="item-title">金额</text>
                         <uni-easyinput type="digit" v-model="order.sellAmount" placeholder="10" style="width: 200px;"  />
                     </view>
@@ -76,17 +76,17 @@
                     </view>
                     <view class="line1">
                         <text class="item-title">数量/金额</text>
-                        <uni-data-checkbox v-model="range.buyVolOrAmountVal" :localdata='range.volOrAmount'></uni-data-checkbox>
+                        <uni-data-checkbox v-model="range.buyQtyOrAmountVal" :localdata='range.qtyOrAmount'></uni-data-checkbox>
                     </view>
                     <view class="line1" v-if="range.buyOrderTypeVal == 'limit'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" placeholder="1.00" v-model="order.buyPrice" />
                     </view>
-                    <view class="line1" v-if="range.buyVolOrAmountVal == 'qty'">
+                    <view class="line1" v-if="range.buyQtyOrAmountVal == 'qty'">
                         <text class="item-title">数量</text>
-                        <uni-easyinput type="digit" placeholder="10" v-model="order.buyVolume" />
+                        <uni-easyinput type="digit" placeholder="10" v-model="order.buyQty" />
                     </view>
-                    <view class="line1" v-if="range.buyVolOrAmountVal == 'amount'">
+                    <view class="line1" v-if="range.buyQtyOrAmountVal == 'amount'">
                         <text class="item-title">金额</text>
                         <uni-easyinput type="digit" placeholder="10" v-model="order.buyAmount" />
                     </view>
@@ -283,9 +283,9 @@ export default {
     return {
         range: {
             orderType: [{"value": "limit","text": "限价"	},{"value": "market","text": "市价"}],
-            volOrAmount: [{"value": "qty", "text": "数量"}, {"value": "amount", "text": "金额"}],
-            sellVolOrAmountVal: "qty",
-            buyVolOrAmountVal: "qty",
+            qtyOrAmount: [{"value": "qty", "text": "数量"}, {"value": "amount", "text": "金额"}],
+            sellQtyOrAmountVal: "qty",
+            buyQtyOrAmountVal: "qty",
             sellOrderTypeVal: "limit",
             buyOrderTypeVal: "limit",
             assetType:[{"value":"BTC", "text": "BTC"}],
@@ -301,11 +301,15 @@ export default {
         },
         order:{
             sellPrice: "",
-            sellVolume: "",
+            sellQty: "",
             sellAmount: "",
             buyPrice: "",
-            buyVolume:"",
+            buyQty:"",
             buyAmount:""
+        },
+        depth: {
+            asks: [],
+            bids:[]
         },
         user: {
             name: "",
@@ -337,6 +341,7 @@ export default {
     console.log(this.current);
     if(this.current.symbol){
         this.loadCurrentSymbol();
+        this.loadDepth();
     }
   },
   methods: {
@@ -378,8 +383,15 @@ export default {
         if(this.range.sellOrderTypeVal == "limit") {
             data['order_type'] = "limit";
             data['price'] = this.order.sellPrice;
-            data['qty'] = this.order.sellVolume;
+        }else{
+            data['order_type'] = "market";
         }
+        if(this.order.sellQtyOrAmountVal == "qty"){
+            data['qty'] = this.order.sellQty;
+        }else if(this.order.sellQtyOrAmountVal == "amount") {
+            data['amount'] = this.order.sellAmount;
+        }
+
         request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
         }).catch(err=>{
@@ -387,7 +399,21 @@ export default {
         })
     },
     actionBuyOrder(){
-        request("/api/v1/order", {}, "POST").then(res=>{
+        let data = {
+            "side": "buy"
+        };
+        if(this.range.buyOrderTypeVal == "limit") {
+            data['order_type'] = "limit";
+            data['price'] = this.order.buyPrice;
+        }else{
+            data['order_type'] = "market";
+        }
+        if(this.order.buyQtyOrAmountVal == "qty"){
+            data['qty'] = this.order.buyQty;
+        }else if(this.order.buyQtyOrAmountVal == "amount") {
+            data['amount'] = this.order.buyAmount;
+        }
+        request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
         }).catch(err=>{
             console.log("/api/v1/order ", err);
@@ -411,6 +437,16 @@ export default {
             }
         }).catch(err=>{
             console.log("api/v1/product ", err);
+        })
+    },
+    loadDepth(){
+        const me = this;
+        request("/api/v1/depth", {"symobl": me.current.symbol},  "GET").then(res=>{
+            console.log("/api/v1/depth ", res);
+            const assets = res.data;
+            
+        }).catch(err=>{
+            console.log("/api/v1/depth ", err);
         })
     },
     loadUserAssets() {
