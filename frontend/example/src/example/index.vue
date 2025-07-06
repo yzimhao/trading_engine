@@ -26,14 +26,14 @@
                     <text>自助充值</text>
                     <view class="line1">
                         <text>Asset:</text> 
-                        <uni-easyinput type="text" placeholder="usdt" />
+                        <uni-data-checkbox v-model="recharge.asset" :localdata='range.assetType'></uni-data-checkbox>
                     </view>
                     <view class="line1">
                         <text>Volume:</text> 
-                        <uni-easyinput type="digit" placeholder="1000" />
+                        <uni-easyinput type="digit" v-model="recharge.volume" placeholder="1000" />
                     </view>
                     <view class="line1">
-                        <button type="primary" size="mini">充值</button>
+                        <button type="primary" size="mini" @click="actionRecharge">充值</button>
                     </view>
                 </view>
             </view>
@@ -258,13 +258,18 @@ export default {
     return {
         range: {
             orderType: [{"value": "limit","text": "限价"	},{"value": "market","text": "市价"}],
-            sellOrderTypeVal: 0,
-            buyOrderTypeVal: 0
+            sellOrderTypeVal: "limit",
+            buyOrderTypeVal: "limit",
+            assetType:[{"value":"BTC", "text": "BTC"}],
         },
         current: {
             symbol: "",
             baseSymbol: "",
             targetSymbol: ""
+        },
+        recharge: {
+            asset: "",
+            volume: ""
         },
         user: {
             name: "",
@@ -278,19 +283,26 @@ export default {
   },
   onLoad(options) {
     const user = uni.getStorageSync("user");
-    this.user = user;
+    if(user){
+        this.user = user;
+    }
 
     this.current.symbol = options.symbol.toUpperCase();
     console.log(this.current);
+    if(this.current.symbol){
+        this.loadCurrentSymbol();
+    }
   },
   methods: {
     actionLogin () {
         const me = this;
+        console.log(me.user);
         request("/api/v1/login", {
-            "username": this.user.name,
+            "username": me.user.name,
             "password": "123456"
         }, "POST").then(res=>{
             console.log("token: ", res.data.token);
+            console.log("expire: ", res.data.expire);
             if(res.data.token){
                 me.user.token = res.data.token;
                 me.user.isLogin  = true;
@@ -299,6 +311,30 @@ export default {
             
         }).catch(err=>{
             console.log("/api/v1/login ", err);
+        })
+    },
+    actionRecharge(){
+        const me = this;
+        request("/api/example/deposit", {"asset": me.recharge.asset, "volume": me.recharge.volume},  "GET").then(res=>{
+            console.log("/api/example/deposit info: ", res);
+        }).catch(err=>{
+            console.log("/api/example/deposit ", err);
+        })
+    },
+    loadCurrentSymbol() {
+        const me = this;
+        request("/api/v1/product/"+this.current.symbol, {},  "GET").then(res=>{
+            console.log("product info: ", res);
+            me.current.baseSymbol = res.data.base.symbol;
+            me.current.targetSymbol = res.data.target.symbol;
+            me.range.assetType = [];
+            
+            me.recharge.asset = me.current.targetSymbol;
+            me.recharge.volume = 1000;
+            me.range.assetType.push({"value":me.current.targetSymbol, "text": me.current.targetSymbol.toUpperCase()});
+            me.range.assetType.push({"value":me.current.baseSymbol, "text": me.current.baseSymbol.toUpperCase()});
+        }).catch(err=>{
+            console.log("api/v1/product ", err);
         })
     }
   },

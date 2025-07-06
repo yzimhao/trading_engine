@@ -43,6 +43,9 @@ export const request = (url, data = {}, method = 'GET') => {
         if (res.statusCode === 200 && res.data.code==0) {
           resolve(res.data);
         } else {
+          if(res.data.code == 1000){
+            uni.removeStorageSync('user');
+          }
           reject(res);
         }
       },

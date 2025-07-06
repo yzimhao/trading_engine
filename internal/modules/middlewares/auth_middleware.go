@@ -56,7 +56,7 @@ func (m *AuthMiddleware) Jwt() *jwt.GinJWTMiddleware {
 func (m *AuthMiddleware) initJwt() {
 	m.viper.SetDefault("jwt.secret_key", "secret key for dex")
 	m.viper.SetDefault("jwt.realm", "trading engine auth")
-	m.viper.SetDefault("jwt.timeout", time.Hour)
+	m.viper.SetDefault("jwt.timeout", time.Duration(24)*time.Hour)
 	m.viper.SetDefault("jwt.max_refresh", time.Hour)
 
 	realm := m.viper.GetString("jwt.realm")

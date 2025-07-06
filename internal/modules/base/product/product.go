@@ -1,6 +1,8 @@
 package product
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -51,7 +53,7 @@ func (p *productModule) query(c *gin.Context) {
 // @Router /api/v1/product/:symbol [get]
 func (p *productModule) detail(c *gin.Context) {
 	//TODO implement
-	symbol := c.Param("symbol")
+	symbol := strings.ToLower(c.Param("symbol"))
 
 	product, err := p.productRepo.Get(symbol)
 	if err != nil {

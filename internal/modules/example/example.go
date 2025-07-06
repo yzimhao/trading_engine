@@ -43,7 +43,7 @@ func newExample(in inContext) {
 }
 
 func (exa *exampleModule) registerRoutes() {
-	exampleGroup := exa.router.Group("example")
+	exampleGroup := exa.router.Group("api/example")
 	exampleGroup.GET("/", exa.example)
 	exampleGroup.GET("/:symbol", exa.example)
 	exampleGroup.Use(exa.auth.Auth())
@@ -51,10 +51,8 @@ func (exa *exampleModule) registerRoutes() {
 }
 
 func (exa *exampleModule) example(ctx *gin.Context) {
-
 	support := []string{"btcusdt"}
 	symbol := strings.ToLower(ctx.Param("symbol"))
-
 	if !lo.Contains(support, symbol) {
 		ctx.Redirect(301, "/example/"+support[0])
 		return
@@ -65,19 +63,32 @@ func (exa *exampleModule) example(ctx *gin.Context) {
 	})
 }
 
+type depositReq struct {
+	Asset  string          `json:"asset" binding:"required" example:"btc" form:"asset"`
+	Volume decimal.Decimal `json:"volume" binding:"required" example:"btc" form:"volume"`
+}
+
 func (exa *exampleModule) deposit(ctx *gin.Context) {
 	userId := exa.router.ParseUserID(ctx)
 
-	symbols := []string{"usdt", "jpy", "eur", "btc"}
+	allowSymbols := []string{"usdt", "jpy", "eur", "btc"}
 
-	for _, symbol := range symbols {
-		transId := time.Now().Format("20060102")
-		if err := exa.userAsset.Despoit("deposit."+symbol+"."+transId, userId, symbol, decimal.NewFromFloat(1000)); err != nil {
-			exa.logger.Error("deposit error", zap.Error(err))
-			exa.router.ResponseError(ctx, types.ErrInternalError)
-			return
-		}
+	var req depositReq
+	if err := ctx.BindQuery(&req); err != nil {
+		exa.router.ResponseError(ctx, types.ErrInvalidParam)
+		return
 	}
 
-	exa.router.ResponseOk(ctx, "success")
+	if !lo.Contains(allowSymbols, req.Asset) {
+		exa.router.ResponseError(ctx, types.ErrInvalidParam)
+		return
+	}
+
+	transId := time.Now().Format("20060102")
+	if err := exa.userAsset.Despoit("auto.deposit."+req.Asset+"."+transId, userId, req.Asset, req.Volume); err != nil {
+		exa.logger.Error("deposit error", zap.Error(err))
+		exa.router.ResponseError(ctx, types.ErrInternalError)
+		return
+	}
+	exa.router.ResponseOk(ctx, "")
 }
