@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/spf13/viper"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
@@ -28,7 +28,8 @@ const (
 
 type inContext struct {
 	fx.In
-	Broker      broker.Broker
+	Produce     *provider.Produce
+	Consume     *provider.Consume
 	Logger      *zap.Logger
 	ProductRepo persistence.ProductRepository
 	Viper       *viper.Viper
@@ -38,7 +39,8 @@ type inContext struct {
 }
 
 type Matching struct {
-	broker      broker.Broker
+	produce     *provider.Produce
+	consume     *provider.Consume
 	logger      *zap.Logger
 	productRepo persistence.ProductRepository
 	tradePairs  sync.Map
@@ -50,7 +52,8 @@ type Matching struct {
 
 func NewMatching(in inContext) *Matching {
 	return &Matching{
-		broker:      in.Broker,
+		produce:     in.Produce,
+		consume:     in.Consume,
 		logger:      in.Logger,
 		productRepo: in.ProductRepo,
 		viper:       in.Viper,
@@ -110,16 +113,23 @@ func (s *Matching) InitEngine() {
 }
 
 func (s *Matching) Subscribe() {
-	s.broker.Subscribe(models_types.TOPIC_ORDER_NEW, s.OnNewOrder)
-	s.broker.Subscribe(models_types.TOPIC_NOTIFY_ORDER_CANCEL, s.OnNotifyCancelOrder)
+	// s.broker.Subscribe(models_types.TOPIC_ORDER_NEW, s.OnNewOrder)
+	// s.broker.Subscribe(models_types.TOPIC_NOTIFY_ORDER_CANCEL, s.OnNotifyCancelOrder)
+
+	s.consume.Subscribe(models_types.TOPIC_ORDER_NEW, func(ctx context.Context, data []byte) {
+		s.OnNewOrder(ctx, data)
+	})
+	s.consume.Subscribe(models_types.TOPIC_NOTIFY_ORDER_CANCEL, func(ctx context.Context, data []byte) {
+		s.OnNotifyCancelOrder(ctx, data)
+	})
 }
 
-func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
-	s.logger.Sugar().Debugf("listen new order %s", event.Message().Body)
+func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
+	s.logger.Sugar().Debugf("listen new order %s", msg)
 
 	var order models_types.EventOrderNew
-	if err := json.Unmarshal(event.Message().Body, &order); err != nil {
-		s.logger.Sugar().Errorf("matching new order unmarshal error: %v body: %s", err, string(event.Message().Body))
+	if err := json.Unmarshal(msg, &order); err != nil {
+		s.logger.Sugar().Errorf("matching new order unmarshal error: %v body: %s", err, msg)
 		return err
 	}
 
@@ -155,10 +165,10 @@ func (s *Matching) OnNewOrder(ctx context.Context, event broker.Event) error {
 	return nil
 }
 
-func (s *Matching) OnNotifyCancelOrder(ctx context.Context, event broker.Event) error {
+func (s *Matching) OnNotifyCancelOrder(ctx context.Context, msg []byte) error {
 	var data models_types.EventNotifyCancelOrder
-	if err := json.Unmarshal(event.Message().Body, &data); err != nil {
-		s.logger.Sugar().Errorf("matching notify cancel order unmarshal error: %v body: %s", err, string(event.Message().Body))
+	if err := json.Unmarshal(msg, &data); err != nil {
+		s.logger.Sugar().Errorf("matching notify cancel order unmarshal error: %v body: %s", err, msg)
 		return err
 	}
 
@@ -188,9 +198,11 @@ func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) 
 		s.logger.Sugar().Errorf("matching process cancel order result marshal error: %v", err)
 		return
 	}
-	err = s.broker.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, &broker.Message{
-		Body: body,
-	})
+	// err = s.broker.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, &broker.Message{
+	// 	Body: body,
+	// })
+
+	err = s.produce.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, body)
 	if err != nil {
 		s.logger.Sugar().Errorf("matching process cancel order result publish error: %v", err)
 	}
@@ -202,9 +214,10 @@ func (s *Matching) processTradeResult(result matching_types.TradeResult) {
 		s.logger.Sugar().Errorf("matching process trade result marshal error: %v", err)
 		return
 	}
-	err = s.broker.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, &broker.Message{
-		Body: body,
-	})
+	// err = s.broker.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, &broker.Message{
+	// 	Body: body,
+	// })
+	err = s.produce.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, body)
 	if err != nil {
 		s.logger.Sugar().Errorf("matching process trade result publish error: %v", err)
 	}

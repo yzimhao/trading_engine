@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/duolacloud/crud-core/cache"
 	"github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
@@ -27,7 +27,7 @@ type SettleProcessor struct {
 	// cache            cache.Cache
 	productRepo   persistence.ProductRepository
 	userAssetRepo persistence.UserAssetRepository
-	broker        broker.Broker
+	produce       *provider.Produce
 	redis         *redis.Client
 	locker        *SettleLocker
 	ws            *notification_ws.WsManager
@@ -40,7 +40,7 @@ type inSettleContext struct {
 	Cache         cache.Cache
 	ProductRepo   persistence.ProductRepository
 	UserAssetRepo persistence.UserAssetRepository
-	Broker        broker.Broker
+	Produce       *provider.Produce
 	Redis         *redis.Client
 	Locker        *SettleLocker
 	Ws            *notification_ws.WsManager
@@ -48,12 +48,11 @@ type inSettleContext struct {
 
 func NewSettleProcessor(in inSettleContext) *SettleProcessor {
 	return &SettleProcessor{
-		db:     in.DB,
-		logger: in.Logger,
-		// cache:            in.Cache,
+		db:            in.DB,
+		logger:        in.Logger,
 		productRepo:   in.ProductRepo,
 		userAssetRepo: in.UserAssetRepo,
-		broker:        in.Broker,
+		produce:       in.Produce,
 		redis:         in.Redis,
 		locker:        in.Locker,
 		ws:            in.Ws,
@@ -120,9 +119,14 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		if err != nil {
 			return err
 		}
-		if err := s.broker.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, &broker.Message{
-			Body: body,
-		}, broker.WithShardingKey(tradeResult.Symbol)); err != nil {
+
+		// if err := s.broker.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, &broker.Message{
+		// 	Body: body,
+		// }, broker.WithShardingKey(tradeResult.Symbol)); err != nil {
+		// 	return err
+		// }
+
+		if err := s.produce.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, body); err != nil {
 			return err
 		}
 
@@ -156,13 +160,14 @@ func (s *SettleProcessor) checkOrder(tx *gorm.DB, tradeResult matching_types.Tra
 		return nil, nil, err
 	}
 
-	if askOrder.Status != models_types.OrderStatusNew {
-		return nil, nil, fmt.Errorf("invalid ask order status")
-	}
+	// TODO 检查订单状态，未处理完成才可以继续成交
+	// if askOrder.Status != models_types.OrderStatusNew {
+	// 	return nil, nil, fmt.Errorf("invalid ask order status")
+	// }
 
-	if bidOrder.Status != models_types.OrderStatusNew {
-		return nil, nil, fmt.Errorf("invalid bid order status")
-	}
+	// if bidOrder.Status != models_types.OrderStatusNew {
+	// 	return nil, nil, fmt.Errorf("invalid bid order status")
+	// }
 	return askOrder, bidOrder, nil
 }
 

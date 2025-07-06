@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/fx"
@@ -16,7 +16,7 @@ import (
 
 type inCancelOrderContext struct {
 	fx.In
-	Broker    broker.Broker
+	Consume   *provider.Consume
 	Logger    *zap.Logger
 	OrderRepo persistence.OrderRepository
 	Redis     *redis.Client
@@ -24,7 +24,7 @@ type inCancelOrderContext struct {
 }
 
 type CancelOrderSubscriber struct {
-	broker    broker.Broker
+	consume   *provider.Consume
 	logger    *zap.Logger
 	orderRepo persistence.OrderRepository
 	redis     *redis.Client
@@ -34,7 +34,7 @@ type CancelOrderSubscriber struct {
 
 func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 	return &CancelOrderSubscriber{
-		broker:    in.Broker,
+		consume:   in.Consume,
 		logger:    in.Logger,
 		orderRepo: in.OrderRepo,
 		redis:     in.Redis,
@@ -44,15 +44,18 @@ func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 }
 
 func (s *CancelOrderSubscriber) Subscribe() {
-	s.broker.Subscribe(types.TOPIC_PROCESS_ORDER_CANCEL, s.On)
+	// s.broker.Subscribe(types.TOPIC_PROCESS_ORDER_CANCEL, s.On)
+	s.consume.Subscribe(types.TOPIC_PROCESS_ORDER_CANCEL, func(ctx context.Context, data []byte) {
+		s.On(ctx, data)
+	})
 }
 
-func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) error {
-	s.logger.Sugar().Debugf("cancel order %+v", event)
+func (s *CancelOrderSubscriber) On(ctx context.Context, msg []byte) error {
+	s.logger.Sugar().Debugf("cancel order %s", msg)
 
 	var data types.EventCancelOrder
-	if err := json.Unmarshal(event.Message().Body, &data); err != nil {
-		s.logger.Sugar().Errorf("unmarshal cancel order event error: %v, event: %v", err, event)
+	if err := json.Unmarshal(msg, &data); err != nil {
+		s.logger.Sugar().Errorf("unmarshal cancel order event error: %v, event: %s", err, msg)
 		return err
 	}
 	return s.process(ctx, data, 0)

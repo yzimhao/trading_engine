@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"go.uber.org/zap"
 )
 
@@ -22,12 +22,16 @@ func init() {
 
 	go func() {
 		logger, _ := zap.NewDevelopment()
-		manager = NewWsManager(logger, broker.NewNoopBroker())
-		r := gin.New()
-		r.Any("/ws", func(ctx *gin.Context) {
+		v := provider.NewViper(logger)
+		r := provider.NewRedis(v, logger)
+		produce := provider.NewProduce(r)
+		consume := provider.NewConsume(r)
+		manager = NewWsManager(logger, produce, consume)
+		router := gin.New()
+		router.Any("/ws", func(ctx *gin.Context) {
 			manager.Listen(ctx.Writer, ctx.Request, ctx.Request.Header)
 		})
-		r.Run(":8090")
+		router.Run(":8090")
 	}()
 }
 

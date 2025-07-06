@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/redis/go-redis/v9"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
@@ -18,7 +18,7 @@ import (
 
 type Quote struct {
 	logger      *zap.Logger
-	broker      broker.Broker
+	consume     *provider.Consume
 	redis       *redis.Client
 	repo        persistence.KlineRepository
 	ws          *notification_ws.WsManager
@@ -28,7 +28,7 @@ type Quote struct {
 type inContext struct {
 	fx.In
 	Logger      *zap.Logger
-	Broker      broker.Broker
+	Consume     *provider.Consume
 	Redis       *redis.Client
 	Repo        persistence.KlineRepository
 	Ws          *notification_ws.WsManager
@@ -38,7 +38,7 @@ type inContext struct {
 func NewQuote(in inContext) *Quote {
 	return &Quote{
 		logger:      in.Logger,
-		broker:      in.Broker,
+		consume:     in.Consume,
 		redis:       in.Redis,
 		repo:        in.Repo,
 		ws:          in.Ws,
@@ -47,13 +47,16 @@ func NewQuote(in inContext) *Quote {
 }
 
 func (q *Quote) Subscribe() {
-	q.broker.Subscribe(models_types.TOPIC_NOTIFY_QUOTE, q.OnNotifyQuote)
+	// q.broker.Subscribe(models_types.TOPIC_NOTIFY_QUOTE, q.OnNotifyQuote)
+	q.consume.Subscribe(models_types.TOPIC_NOTIFY_QUOTE, func(ctx context.Context, msg []byte) {
+		q.OnNotifyQuote(ctx, msg)
+	})
 }
 
-func (q *Quote) OnNotifyQuote(ctx context.Context, event broker.Event) error {
-	q.logger.Sugar().Debugf("on notify quote: %v", event)
+func (q *Quote) OnNotifyQuote(ctx context.Context, msg []byte) error {
+	q.logger.Sugar().Debugf("on notify quote: %v", msg)
 	var notifyQuote models_types.EventNotifyQuote
-	if err := json.Unmarshal(event.Message().Body, &notifyQuote); err != nil {
+	if err := json.Unmarshal(msg, &notifyQuote); err != nil {
 		q.logger.Sugar().Errorf("unmarshal notify quote error: %v", err)
 		return err
 	}

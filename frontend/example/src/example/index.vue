@@ -148,10 +148,36 @@
   </view>
 </template>
 
+<script setup>
+const formatTimestamp = (value) => {
+  // 1. 强制转换为字符串并处理空值
+  const strValue = String(value ?? '0').padEnd(19, '0'); // 确保至少19位
+  
+  // 2. 安全提取毫秒部分（兼容不足19位的情况）
+  const msPart = strValue.length >= 6 
+    ? strValue.slice(-6, -3) 
+    : '000';
+  const milliseconds = msPart.padStart(3, '0');
+
+  // 3. 转换时间戳
+  const timestamp = parseInt(strValue) / 1e6;
+  const date = new Date(timestamp);
+  
+  // 4. 格式化日期
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
+</script>
+
 <script>
 import { request } from '@/common/request.js';
 import { socketInit } from '@/common/websocket.js'; 
-import { formatTimestamp } from '@/common/utils.js';
 
 export default {
   data() {

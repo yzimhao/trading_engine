@@ -30,6 +30,8 @@ func App() *fx.App {
 			provider.NewGorm,
 			provider.NewBroker,
 			provider.NewRouter,
+			provider.NewProduce,
+			provider.NewConsume,
 		),
 
 		database.Module,

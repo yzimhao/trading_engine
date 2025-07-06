@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/duolacloud/broker-core"
+	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"go.uber.org/zap"
 )
 
@@ -23,11 +23,12 @@ type WsManager struct {
 	unregister chan *client
 	membersMap map[*client]bool
 	mx         sync.Mutex
-	broker     broker.Broker
+	produce    *provider.Produce
+	consume    *provider.Consume
 	debug      bool
 }
 
-func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
+func NewWsManager(logger *zap.Logger, produce *provider.Produce, consume *provider.Consume) *WsManager {
 	m := WsManager{
 		broadcast:  make(chan Message),
 		logger:     logger,
@@ -35,7 +36,8 @@ func NewWsManager(logger *zap.Logger, broker broker.Broker) *WsManager {
 		register:   make(chan *client),
 		unregister: make(chan *client),
 		membersMap: make(map[*client]bool),
-		broker:     broker,
+		produce:    produce,
+		consume:    consume,
 	}
 
 	go m.run()
@@ -73,10 +75,11 @@ func (m *WsManager) send(ctx context.Context, to string, _type string, body any)
 		return err
 	}
 
-	err = m.broker.Publish(ctx, websocketMsg, &broker.Message{
-		Body: _body,
-	})
+	// err = m.broker.Publish(ctx, websocketMsg, &broker.Message{
+	// 	Body: _body,
+	// })
 
+	err = m.produce.Publish(ctx, websocketMsg, _body)
 	if err != nil {
 		return err
 	}
@@ -99,20 +102,37 @@ func (m *WsManager) Listen(writer http.ResponseWriter, req *http.Request, respon
 
 // TODO 多个websocket节点的时候，订阅模式要修改
 func (m *WsManager) subscribe() {
-	m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
+
+	// m.broker.Subscribe(websocketMsg, func(ctx context.Context, event broker.Event) error {
+	// 	if m.debug {
+	// 		m.logger.Sugar().Debugf("[ws] broker subscribe message: %s", event.Message().Body)
+	// 	}
+
+	// 	var msg Message
+	// 	err := json.Unmarshal(event.Message().Body, &msg)
+	// 	if err != nil {
+	// 		m.logger.Sugar().Errorf("[ws] websocket message unmarshal error: %v", err)
+	// 		return err
+	// 	}
+
+	// 	m.broadcast <- msg
+	// 	return nil
+	// })
+
+	m.consume.Subscribe(websocketMsg, func(ctx context.Context, data []byte) {
 		if m.debug {
-			m.logger.Sugar().Debugf("[ws] broker subscribe message: %s", event.Message().Body)
+			m.logger.Sugar().Debugf("[ws] broker subscribe message: %s", data)
 		}
 
 		var msg Message
-		err := json.Unmarshal(event.Message().Body, &msg)
+		err := json.Unmarshal(data, &msg)
 		if err != nil {
 			m.logger.Sugar().Errorf("[ws] websocket message unmarshal error: %v", err)
-			return err
+			return
 		}
 
 		m.broadcast <- msg
-		return nil
+		return
 	})
 }
 

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 
@@ -28,21 +27,21 @@ type orderModule struct {
 	router    *provider.Router
 	logger    *zap.Logger
 	orderRepo persistence.OrderRepository
-	broker    broker.Broker
+	produce   *provider.Produce
 	auth      *middlewares.AuthMiddleware
 }
 
 func newOrderModule(
 	router *provider.Router,
 	logger *zap.Logger,
-	broker broker.Broker,
+	produce *provider.Produce,
 	auth *middlewares.AuthMiddleware,
 	orderRepo persistence.OrderRepository) {
 	o := orderModule{
 		router:    router,
 		logger:    logger,
 		orderRepo: orderRepo,
-		broker:    broker,
+		produce:   produce,
 		auth:      auth,
 	}
 	o.registerRouter()
@@ -169,10 +168,11 @@ func (o *orderModule) create(c *gin.Context) {
 		return
 	}
 
-	err = o.broker.Publish(context.Background(), types.TOPIC_ORDER_NEW, &broker.Message{
-		Body: body,
-	}, broker.WithShardingKey(event.Symbol))
+	// err = o.broker.Publish(context.Background(), types.TOPIC_ORDER_NEW, &broker.Message{
+	// 	Body: body,
+	// }, broker.WithShardingKey(event.Symbol))
 
+	err = o.produce.Publish(context.Background(), types.TOPIC_ORDER_NEW, body)
 	if err != nil {
 		o.logger.Error("publish order created event error", zap.Error(err))
 		o.router.ResponseError(c, types.ErrInternalError)
