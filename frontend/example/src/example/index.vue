@@ -327,8 +327,8 @@ export default {
         const me = this;
         request("/api/v1/product/"+this.current.symbol, {},  "GET").then(res=>{
             console.log("product info: ", res);
-            me.current.baseSymbol = res.data.base.symbol;
-            me.current.targetSymbol = res.data.target.symbol;
+            me.current.baseSymbol = res.data.base.symbol.toUpperCase();
+            me.current.targetSymbol = res.data.target.symbol.toUpperCase();
             me.range.assetType = [];
             
             me.recharge.asset = me.current.targetSymbol;
@@ -349,10 +349,10 @@ export default {
             console.log("/api/v1/user/asset/query ", res);
             const assets = res.data;
             for(var i=0; i<assets.length; i++) {
-                if(me.current.baseSymbol == assets[i].symbol){
+                if(me.current.baseSymbol == assets[i].symbol.toUpperCase()){
                     me.user.baseAsset = assets[i].avail_balance;
                 }
-                if(me.current.targetSymbol == assets[i].symbol){
+                if(me.current.targetSymbol == assets[i].symbol.toUpperCase()){
                     me.user.targetAsset = assets[i].avail_balance;
                 }
             }

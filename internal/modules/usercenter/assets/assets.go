@@ -77,7 +77,7 @@ func (a *userAssetsModule) withdraw(c *gin.Context) {
 func (a *userAssetsModule) query(c *gin.Context) {
 	userId := a.router.ParseUserID(c)
 
-	symbols := c.Query("symbols")
+	symbols := strings.ToLower(c.Query("symbols"))
 	symbolsSlice := strings.Split(symbols, ",")
 
 	assets, err := a.userAssetsRepo.QueryUserAssets(userId, symbolsSlice...)
