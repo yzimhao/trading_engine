@@ -1,23 +1,32 @@
 package quote
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/duolacloud/crud-core/cache"
 	"github.com/gin-gonic/gin"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore/matching"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	"go.uber.org/zap"
 )
 
 type quoteApi struct {
 	router *provider.Router
 	logger *zap.Logger
+	cache  cache.Cache
 }
 
 func newQuoteApi(
 	router *provider.Router,
 	logger *zap.Logger,
+	cache cache.Cache,
 ) {
 	q := quoteApi{
 		router: router,
 		logger: logger,
+		cache:  cache,
 	}
 	q.registerRouter()
 }
@@ -42,7 +51,17 @@ func (q *quoteApi) registerRouter() {
 }
 
 // TODO
-func (q *quoteApi) depth(c *gin.Context) {}
+func (q *quoteApi) depth(c *gin.Context) {
+	symbol := strings.ToLower(c.Query("symbol"))
+	var orderbook map[string]any
+	err := q.cache.Get(c, fmt.Sprintf(matching.CacheKeyOrderbook, symbol), &orderbook)
+	if err != nil {
+		q.logger.Sugar().Errorf("depth: ", err)
+		q.router.ResponseError(c, types.ErrInternalError)
+		return
+	}
+	q.router.ResponseOk(c, orderbook)
+}
 
 // TODO
 func (q *quoteApi) trades(c *gin.Context) {}

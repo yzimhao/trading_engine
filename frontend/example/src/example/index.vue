@@ -107,45 +107,9 @@
             <text class="orderbook-title">orderbook</text>
             
             <view class="ask">
-                <uni-row>
-                    <uni-col :span="12">1.03</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.04</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.01</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.02</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.03</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.04</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.01</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.02</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.03</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">1.04</uni-col>
-                    <uni-col :span="12">1000</uni-col>
+                <uni-row v-for="(item,i) in depth.asks">
+                    <uni-col :span="12">{{ item[0] }}</uni-col>
+                    <uni-col :span="12">{{ item[1] }}</uni-col>
                 </uni-row>
             </view>
         
@@ -155,47 +119,10 @@
             </view>
 
             <view class="bid">
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
+                <uni-row v-for="(item, i) in depth.bids">
+                    <uni-col :span="12">{{ item[0] }}</uni-col>
+                    <uni-col :span="12">{{ item[1] }}</uni-col>
                 </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">0.99</uni-col>
-                    <uni-col :span="12">1000</uni-col>
-                </uni-row>
-                
             </view>
         </view>
         <view class="tradehistory mtop10">
@@ -378,7 +305,8 @@ export default {
     },
     actionSellOrder(){
         let data = {
-            "side": "sell"
+            "side": "sell",
+            "symbol": this.current.symbol
         };
         if(this.range.sellOrderTypeVal == "limit") {
             data['order_type'] = "limit";
@@ -401,7 +329,8 @@ export default {
     },
     actionBuyOrder(){
         let data = {
-            "side": "buy"
+            "side": "buy",
+            "symbol": this.current.symbol
         };
         if(this.range.buyOrderTypeVal == "limit") {
             data['order_type'] = "limit";
@@ -444,10 +373,14 @@ export default {
     },
     loadDepth(){
         const me = this;
-        request("/api/v1/depth", {"symobl": me.current.symbol},  "GET").then(res=>{
+        request("/api/v1/depth", {
+            "symbol": me.current.symbol,
+            "limit": 10
+        },  "GET").then(res=>{
             console.log("/api/v1/depth ", res);
-            const assets = res.data;
-            
+            const depth = res.data;
+            me.depth.asks = depth.asks;
+            me.depth.bids = depth.bids;
         }).catch(err=>{
             console.log("/api/v1/depth ", err);
         })
