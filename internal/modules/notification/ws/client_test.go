@@ -24,8 +24,8 @@ func init() {
 		logger, _ := zap.NewDevelopment()
 		v := provider.NewViper(logger)
 		r := provider.NewRedis(v, logger)
-		produce := provider.NewProduce(r)
-		consume := provider.NewConsume(r)
+		produce := provider.NewProduce(r, logger)
+		consume := provider.NewConsume(r, logger)
 		manager = NewWsManager(logger, produce, consume)
 		router := gin.New()
 		router.Any("/ws", func(ctx *gin.Context) {

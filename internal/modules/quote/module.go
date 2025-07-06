@@ -9,9 +9,13 @@ import (
 
 var Module = fx.Module(
 	"quote",
+	fx.Provide(
+		NewQuote,
+	),
 	fx.Invoke(run),
 )
 
-func run(router *provider.Router, logger *zap.Logger, c cache.Cache) {
+func run(router *provider.Router, logger *zap.Logger, c cache.Cache, quote *Quote) {
+	quote.Subscribe()
 	newQuoteApi(router, logger, c)
 }

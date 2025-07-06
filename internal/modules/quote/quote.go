@@ -49,7 +49,9 @@ func NewQuote(in inContext) *Quote {
 func (q *Quote) Subscribe() {
 	// q.broker.Subscribe(models_types.TOPIC_NOTIFY_QUOTE, q.OnNotifyQuote)
 	q.consume.Subscribe(models_types.TOPIC_NOTIFY_QUOTE, func(ctx context.Context, msg []byte) {
-		q.OnNotifyQuote(ctx, msg)
+		if err := q.OnNotifyQuote(ctx, msg); err != nil {
+			q.logger.Sugar().Errorf("quote subscribe msg: %s err: %s", msg, err)
+		}
 	})
 }
 
