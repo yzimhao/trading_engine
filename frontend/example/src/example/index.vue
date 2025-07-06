@@ -298,6 +298,10 @@ export default {
     actionRecharge(){
         const me = this;
         request("/api/example/deposit", {"asset": me.recharge.asset, "volume": me.recharge.volume},  "GET").then(res=>{
+            uni.showToast({
+                title: "充值成功",
+                icon: "none"
+            });
             me.loadUserAssets();
         }).catch(err=>{
             console.log("/api/example/deposit ", err);
@@ -323,6 +327,10 @@ export default {
         console.log("actionSellOrder: ", data);
         request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
+            uni.showToast({
+                title: "挂单成功",
+                icon: "none"
+            });
         }).catch(err=>{
             console.log("/api/v1/order ", err);
         })
@@ -347,6 +355,10 @@ export default {
         console.log("actionBuyOrder: ", data);
         request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
+            uni.showToast({
+                title: "挂单成功",
+                icon: "none"
+            });
         }).catch(err=>{
             console.log("/api/v1/order ", err);
         })
