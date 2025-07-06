@@ -386,12 +386,13 @@ export default {
         }else{
             data['order_type'] = "market";
         }
-        if(this.order.sellQtyOrAmountVal == "qty"){
+        if(this.range.sellQtyOrAmountVal == "qty"){
             data['qty'] = this.order.sellQty;
-        }else if(this.order.sellQtyOrAmountVal == "amount") {
+        }else if(this.range.sellQtyOrAmountVal == "amount") {
             data['amount'] = this.order.sellAmount;
         }
 
+        console.log("actionSellOrder: ", data);
         request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
         }).catch(err=>{
@@ -408,11 +409,13 @@ export default {
         }else{
             data['order_type'] = "market";
         }
-        if(this.order.buyQtyOrAmountVal == "qty"){
+        if(this.range.buyQtyOrAmountVal == "qty"){
             data['qty'] = this.order.buyQty;
-        }else if(this.order.buyQtyOrAmountVal == "amount") {
+        }else if(this.range.buyQtyOrAmountVal == "amount") {
             data['amount'] = this.order.buyAmount;
         }
+
+        console.log("actionBuyOrder: ", data);
         request("/api/v1/order", data, "POST").then(res=>{
             console.log("/api/v1/order ", data, res);
         }).catch(err=>{
