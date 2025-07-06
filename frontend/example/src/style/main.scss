@@ -16,6 +16,11 @@
 .content {
   display: flex;
   padding: 10px;
+  .logout {
+    margin-left: 30px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
 
   .left{
     flex: 1;

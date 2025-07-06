@@ -40,7 +40,7 @@ export const request = (url, data = {}, method = 'GET') => {
           'X-AppId': appId
 	  },
       success: (res) => {
-        if (res.statusCode === 200) {
+        if (res.statusCode === 200 && res.data.code==0) {
           resolve(res.data);
         } else {
           reject(res);

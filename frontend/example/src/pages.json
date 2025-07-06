@@ -1,7 +1,7 @@
 {
 	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "example/index",
 			"style": {
 				"navigationBarTitleText": "yzimhao/trading_engine example"
 			}

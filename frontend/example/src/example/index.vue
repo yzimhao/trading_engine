@@ -6,21 +6,35 @@
         </view>
         <view class="user-form mtop10">
             <view class="user-assets">
-                <view  class="notlogin">
+                <view v-if="!user.isLogin" class="notlogin">
                     <view>
                         <text>游客，请登陆</text>
                     </view>
                     <view class="line1">
                         <text>用户名</text>
-                        <uni-easyinput type="text" placeholder="随便输入一串字符串" style="width: 200px;" />
+                        <uni-easyinput type="text" v-model="user.name" placeholder="随便输入一串字符串" />
                     </view>
                     <view class="line1">
-                        <button type="primary" size="mini">登陆</button>
+                        <button type="primary" size="mini" @click="actionLogin">登陆</button>
                     </view>
                 </view>
-                <view v-if="false" class="line1">
-                    <text>Hi, 132</text>
-                    <text> [退出] </text>
+                <view v-if="user.isLogin">
+                    <view class="line1">
+                        <text>Hi, {{user.name}}</text>
+                        <text class="logout">退出</text>
+                    </view>
+                    <text>自助充值</text>
+                    <view class="line1">
+                        <text>Asset:</text> 
+                        <uni-easyinput type="text" placeholder="usdt" />
+                    </view>
+                    <view class="line1">
+                        <text>Volume:</text> 
+                        <uni-easyinput type="digit" placeholder="1000" />
+                    </view>
+                    <view class="line1">
+                        <button type="primary" size="mini">充值</button>
+                    </view>
                 </view>
             </view>
             <view class="user-area">
@@ -235,21 +249,58 @@
 </template>
 
 <script>
+import {
+    request
+} from '@/common/request.js'
+
 export default {
   data() {
     return {
         range: {
-            orderType: [{"value": 0,"text": "限价"	},{"value": 1,"text": "市价"}],
+            orderType: [{"value": "limit","text": "限价"	},{"value": "market","text": "市价"}],
             sellOrderTypeVal: 0,
             buyOrderTypeVal: 0
+        },
+        current: {
+            symbol: "",
+            baseSymbol: "",
+            targetSymbol: ""
+        },
+        user: {
+            name: "",
+            isLogin: false,
+            token: ""
         },
         data: {
             
         }
     }
   },
-  onLoad() {},
-  methods: {},
+  onLoad(options) {
+    const user = uni.getStorageSync("user");
+    this.user = user;
+
+    console.log(options);
+  },
+  methods: {
+    actionLogin () {
+        const me = this;
+        request("/api/v1/login", {
+            "username": this.user.name,
+            "password": "123456"
+        }, "POST").then(res=>{
+            console.log("token: ", res.data.token);
+            if(res.data.token){
+                me.user.token = res.data.token;
+                me.user.isLogin  = true;
+                uni.setStorageSync("user", me.user);
+            }
+            
+        }).catch(err=>{
+            console.log("/api/v1/login ", err);
+        })
+    }
+  },
 }
 </script>
 
