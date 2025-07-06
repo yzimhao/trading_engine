@@ -53,7 +53,7 @@
                     </view>
                     <view class="line1">
                         <button type="primary" size="mini">卖出</button>
-                        <text>可用BTC: 1000.00</text>
+                        <text>可用{{ current.targetSymbol }}: {{ user.targetAsset }}</text>
                     </view>
                 </view>
                 <view class="buy">
@@ -71,7 +71,7 @@
                     </view>
                     <view class="line1">
                         <button type="primary" size="mini">买入</button>
-                        <text>可用USDT: 98.00</text>
+                        <text>可用{{ current.baseSymbol }}: {{ user.baseAsset }}</text>
                     </view>
                 </view>
             </view>
@@ -274,7 +274,9 @@ export default {
         user: {
             name: "",
             isLogin: false,
-            token: ""
+            token: "",
+            targetAsset: 0,
+            baseAsset: 0
         },
         data: {
             
@@ -333,10 +335,31 @@ export default {
             me.recharge.volume = 1000;
             me.range.assetType.push({"value":me.current.targetSymbol, "text": me.current.targetSymbol.toUpperCase()});
             me.range.assetType.push({"value":me.current.baseSymbol, "text": me.current.baseSymbol.toUpperCase()});
+
+            if(me.user.isLogin) {
+                me.loadUserAssets();
+            }
         }).catch(err=>{
             console.log("api/v1/product ", err);
         })
-    }
+    },
+    loadUserAssets() {
+        const me = this;
+        request("/api/v1/user/asset/query", {"symbols": me.current.baseSymbol + "," +me.current.targetSymbol},  "GET").then(res=>{
+            console.log("/api/v1/user/asset/query ", res);
+            const assets = res.data;
+            for(var i=0; i<assets.length; i++) {
+                if(me.current.baseSymbol == assets[i].symbol){
+                    me.user.baseAsset = assets[i].avail_balance;
+                }
+                if(me.current.targetSymbol == assets[i].symbol){
+                    me.user.targetAsset = assets[i].avail_balance;
+                }
+            }
+        }).catch(err=>{
+            console.log("/api/v1/user/asset/query ", err);
+        })
+    },
   },
 }
 </script>
