@@ -280,7 +280,8 @@ export default {
     const user = uni.getStorageSync("user");
     this.user = user;
 
-    console.log(options);
+    this.current.symbol = options.symbol.toUpperCase();
+    console.log(this.current);
   },
   methods: {
     actionLogin () {
