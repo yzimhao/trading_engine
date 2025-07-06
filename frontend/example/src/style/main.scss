@@ -109,7 +109,11 @@
         background-color: rgb(222, 230, 230);
         height: 250px;
         overflow-y: hidden;
-        padding: 0 5px
+        padding: 0 5px;
+        .tradeRecord{
+            flex-direction: column-reverse;
+            display: flex;
+        }
     }
   }
 }

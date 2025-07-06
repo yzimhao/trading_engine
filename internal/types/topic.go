@@ -44,13 +44,6 @@ type EventOrderSettle struct {
 
 type EventNotifyQuote struct {
 	matching_types.TradeResult
-	// Symbol        string                 `json:"symbol,omitempty"`
-	// AskOrderId    string                 `json:"ask,omitempty"`
-	// BidOrderId    string                 `json:"bid,omitempty"`
-	// TradeQuantity decimal.Decimal        `json:"trade_quantity,omitempty"`
-	// TradePrice    decimal.Decimal        `json:"trade_price,omitempty"`
-	// TradeBy       matching_types.TradeBy `json:"trade_by,omitempty"`
-	// TradeTime     int64                  `json:"trade_time,omitempty"`
 }
 
 type EventCancelOrder struct {

@@ -14,6 +14,7 @@ import (
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
+	"github.com/yzimhao/trading_engine/v2/internal/types"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
@@ -178,7 +179,11 @@ func (s *Matching) engine(symbol string) *matching.Engine {
 }
 
 func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) {
-	body, err := json.Marshal(result)
+	data := types.EventCancelOrder{
+		Symbol:  result.Symbol,
+		OrderId: result.UniqueId,
+	}
+	body, err := json.Marshal(data)
 	if err != nil {
 		s.logger.Sugar().Errorf("matching process cancel order result marshal error: %v", err)
 		return

@@ -48,7 +48,7 @@ func (s *CancelOrderSubscriber) Subscribe() {
 }
 
 func (s *CancelOrderSubscriber) On(ctx context.Context, event broker.Event) error {
-	s.logger.Info("cancel order", zap.Any("event", event))
+	s.logger.Sugar().Debugf("cancel order %+v", event)
 
 	var data types.EventCancelOrder
 	if err := json.Unmarshal(event.Message().Body, &data); err != nil {

@@ -126,72 +126,20 @@
             </view>
         </view>
         <view class="tradehistory mtop10">
-            <view>
-                <uni-row>
-                    <uni-col :span="12">成交时间</uni-col>
-                    <uni-col :span="6">成交价格</uni-col>
-                    <uni-col :span="6">成交量</uni-col>
+            <uni-row>
+                <uni-col :span="12">成交时间</uni-col>
+                <uni-col :span="4">价格</uni-col>
+                <uni-col :span="4">数量</uni-col>
+                <uni-col :span="4">成交量</uni-col>
+            </uni-row>
+            <view class="tradeRecord">
+                <uni-row v-for="(item, i) in tradeRecords">
+                    <uni-col :span="12">{{ formatTimestamp(item.trade_at) }}</uni-col>
+                    <uni-col :span="4">{{ item.price }}</uni-col>
+                    <uni-col :span="4">{{ item.qty }}</uni-col>
+                    <uni-col :span="4">{{ item.amount }}</uni-col>
                 </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
-                <uni-row>
-                    <uni-col :span="12">2025-07-05 20:11:56.789</uni-col>
-                    <uni-col :span="6">10.00</uni-col>
-                    <uni-col :span="6">100</uni-col>
-                </uni-row>
+                
             </view>
         </view>
     </view>
@@ -239,6 +187,7 @@ export default {
             asks: [],
             bids:[]
         },
+        tradeRecords: [],
         user: {
             name: "",
             isLogin: false,
@@ -259,6 +208,7 @@ export default {
         }
     }
   },
+  
   onLoad(options) {
     const user = uni.getStorageSync("user");
     if(user){
@@ -315,6 +265,12 @@ export default {
                     me.depth.bids = data.body.bids;
                 } else if (data.type == "trade." + me.current.symbol) {
                     // utils.rendertradelog(data.body);
+                    me.tradeRecords.push({
+                        amount: data.body.amount,
+                        price: data.body.price,
+                        qty: data.body.qty,
+                        trade_at: data.body.trade_at
+                    })
                 } else if (data.type == "new_order."+ me.current.symbol) {
                     // var myorderView = $(".myorder"),
                     //     myorderTpl = $("#myorder-tpl").html();
@@ -352,6 +308,20 @@ export default {
                 }
             }
         };
+    },
+    formatTimestamp(value){
+        const timestamp = parseInt(value) / 1e6;
+        const date = new Date(timestamp);
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const milliseconds = String(parseInt(value.slice(-6, -3))).padStart(3, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
     },
     actionLogin () {
         const me = this;
