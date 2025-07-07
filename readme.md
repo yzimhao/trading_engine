@@ -83,7 +83,7 @@ graph TD
 
  
   #### 交流
-<img src="https://github.com/yzimhao/trading_engine/blob/main/docs/images/wechat.jpg?raw=true" width = "150"/>
+<img src="https://github.com/yzimhao/trading_engine/blob/main/generated/docs/images/wechat.jpg?raw=true" width = "150"/>
 
   #### Star History
 

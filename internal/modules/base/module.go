@@ -7,7 +7,7 @@ import (
 	pkgVersion "github.com/qvcloud/gopkg/version"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github.com/yzimhao/trading_engine/v2/docs"
+	_ "github.com/yzimhao/trading_engine/v2/generated/docs"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/asset"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/base/order"
