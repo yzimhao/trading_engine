@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js";
 const appId = "1";
 const baseUrl = "";
 
-export const request = (url, data = {}, method = 'GET') => {
+export const request = (url, data = {}, method = 'GET', parseBody=true) => {
   return new Promise((resolve, reject) => {
 	let query = {};
 	let nonce = Math.random().toString(36).slice(-8);
@@ -40,8 +40,13 @@ export const request = (url, data = {}, method = 'GET') => {
           'X-AppId': appId
 	  },
       success: (res) => {
-        if (res.statusCode === 200 && res.data.code==0) {
-          resolve(res.data);
+        if (res.statusCode === 200) {
+          if(parseBody && res.data.code == 0){
+            resolve(res.data);
+          }
+          if(!parseBody){
+            resolve(res);
+          }
         } else {
           if(res.data.code == 1000){
             uni.removeStorageSync('user');

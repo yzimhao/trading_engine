@@ -146,6 +146,17 @@
 
     
   </view>
+
+  <view class="footer">
+    <view class="version">
+        <uni-col>
+            <text>version: {{ version.version }} build: {{ version.build }}</text>
+        </uni-col>
+        <uni-col>
+            <text v-if="version.go.length > 0">go: {{ version.go }} commit: {{ version.commit }}</text>
+        </uni-col>
+    </view>
+  </view>
 </template>
 
 <script setup>
@@ -229,13 +240,17 @@ export default {
                 total: 0
             }
         },
-        data: {
-            
+        version: {
+            build: "",
+            go:"",
+            version:"",
+            commit:""
         }
     }
   },
   
   onLoad(options) {
+    const me = this;
     const user = uni.getStorageSync("user");
     if(user){
         this.user = user;
@@ -250,6 +265,8 @@ export default {
     
     this.iniWebsocket();
     this.loadTradesRecord();
+    this.loadAppVersion();
+   
   },
   mounted(){
     KChartManager.init("kline", 2, 4);
@@ -435,6 +452,14 @@ export default {
         }).catch(err=>{
             console.log("/api/v1/order ", err);
             uni.showToast({title:err.data.msg, icon: "none"});
+        })
+    },
+    loadAppVersion() {
+        const me = this;
+        request("/api/v1/version", {}, "GET", false)
+        .then(res => {
+            me.version = res.data;
+            console.log(me.version);
         })
     },
     loadCurrentSymbol() {
