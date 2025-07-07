@@ -249,8 +249,7 @@ export default {
     }
     
     this.iniWebsocket();
-
-    
+    this.loadTradesRecord();
   },
   mounted(){
     KChartManager.init("kline", 2, 4);
@@ -470,6 +469,18 @@ export default {
             me.depth.bids = depth.bids;
         }).catch(err=>{
             console.log("/api/v1/depth ", err);
+        })
+    },
+    loadTradesRecord(){
+        const me = this;
+        request("/api/v1/trades", {
+            "symbol": me.current.symbol,
+            "limit": 10
+        },  "GET").then(res=>{
+            console.log("/api/v1/trades ", res);
+            me.tradeRecords = res.data;
+        }).catch(err=>{
+            console.log("/api/v1/trades ", err);
         })
     },
     loadUserAssets() {

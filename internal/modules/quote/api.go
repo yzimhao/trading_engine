@@ -22,6 +22,7 @@ type QuoteApi struct {
 	cache       cache.Cache
 	klineRepo   persistence.KlineRepository
 	productRepo persistence.ProductRepository
+	tradeRepo   persistence.TradeRecordRepository
 }
 
 func newQuoteApi(
@@ -30,6 +31,7 @@ func newQuoteApi(
 	cache cache.Cache,
 	kline persistence.KlineRepository,
 	product persistence.ProductRepository,
+	tradeRepo persistence.TradeRecordRepository,
 ) *QuoteApi {
 	q := QuoteApi{
 		router:      router,
@@ -37,6 +39,7 @@ func newQuoteApi(
 		cache:       cache,
 		klineRepo:   kline,
 		productRepo: product,
+		tradeRepo:   tradeRepo,
 	}
 	return &q
 }
@@ -86,8 +89,51 @@ func (q *QuoteApi) depth(c *gin.Context) {
 	q.router.ResponseOk(c, orderbook)
 }
 
-// TODO
-func (q *QuoteApi) trades(c *gin.Context) {}
+// @Summary 近期成交记录
+// @Description 获取近期成交记录
+// @ID v1.trades
+// @Tags market
+// @Accept json
+// @Produce json
+// @Param symbol query string true "symbol"
+// @Param limit query int false "limit"
+// @Success 200 {string} any
+// @Router /api/v1/trades [get]
+func (q *QuoteApi) trades(c *gin.Context) {
+	symbol := c.DefaultQuery("symbol", "")
+	limit := c.DefaultQuery("limit", "1000")
+
+	product, err := q.productRepo.Get(symbol)
+	if err != nil {
+		q.router.ResponseError(c, types.ErrInternalError)
+		return
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		q.router.ResponseError(c, types.ErrInternalError)
+		return
+	}
+
+	data, err := q.tradeRepo.Find(c, symbol, limitInt)
+	if err != nil {
+		q.router.ResponseError(c, types.ErrInternalError)
+		return
+	}
+
+	var response []map[string]any
+	for _, v := range data {
+		response = append(response, map[string]any{
+			"id":       v.Id,
+			"price":    v.Price.Truncate(int32(product.PriceDecimals)).String(),
+			"qty":      v.Quantity.Truncate(int32(product.QtyDecimals)).String(),
+			"amount":   v.Amount.Truncate(int32(product.PriceDecimals)).String(),
+			"trade_at": v.CreatedAt.UnixNano(),
+		})
+	}
+
+	q.router.ResponseOk(c, response)
+}
 
 // TODO
 func (q *QuoteApi) historicalTrades(c *gin.Context) {}
