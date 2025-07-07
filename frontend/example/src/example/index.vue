@@ -1,8 +1,8 @@
 <template>
   <view class="content">
     <view class="left">
-        <view class="kline-chart">
-            <text>chart loading...</text>
+        <view class="kline-chart" >
+            <div id="kline" style="height: 500px;"></div>
         </view>
         <view class="user-form mtop10">
             <view class="user-assets">
@@ -178,6 +178,7 @@ const formatTimestamp = (value) => {
 <script>
 import { request } from '@/common/request.js';
 import { socketInit } from '@/common/websocket.js'; 
+import { KChartManager } from '@/common/chart.js'; 
 
 export default {
   data() {
@@ -248,6 +249,11 @@ export default {
     }
     
     this.iniWebsocket();
+
+    
+  },
+  mounted(){
+    KChartManager.init("kline");
   },
   methods: {
     iniWebsocket(){
