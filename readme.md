@@ -45,6 +45,24 @@ graph TD
 ```
 
 ---
+### 参与开发
+```
+git clone https://github.com/yzimhao/trading_engine.git
+cd trading_engine/
+#启动依赖的docker服务
+docker-compose up -d
+#启动服务端程序
+make run
+
+#启动前端调试example(需要单独新开一个terminal)
+cd frontend/example/
+npm run dev:h5 #执行完成之后，浏览器打开 http://127.0.0.1:5174/example/?symbol=btcusdt
+```
+
+
+
+
+---
 
 #### 撮合引擎
 > 只集成撮合引擎部分
