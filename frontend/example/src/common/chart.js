@@ -1,44 +1,73 @@
-import Highcharts from 'highcharts/highstock'; 
+import { request } from '@/common/request.js';
+import "@/common/klinecharts.min.js";
 
+
+const upColor = '#00da3c';
+const downColor = '#ec0000';
 
 export const KChartManager = {
-    chart: null,
-    title: "K线",
-    period: "d1",
-    data: {
-        "d1": [
-            [Date.UTC(2023, 0, 1), 29.9, 71.5, 30.0, 50.0],
-            [Date.UTC(2023, 0, 2), 71.5, 105.0, 60.0, 80.0],
-            [Date.UTC(2023, 0, 3), 106.4, 129.2, 90.0, 120.0],
-            [Date.UTC(2023, 0, 4), 129.2, 144.0, 100.0, 130.0],
-            [Date.UTC(2023, 0, 5), 144.0, 176.0, 130.0, 150.0]
-        ]
+    period: "1m",  // 使用标准周期格式
+    kchart: null,
+    dataMap: {},
+    
+    init(id, price_precision, qty_precision) {
+        const kchart = klinecharts.init(document.getElementById(id));
+        // 初始化图表
+        // 创建一个主图技术指标
+        kchart.createIndicator('MA', false, { id: 'candle_pane' })
+        // 创建一个副图技术指标VOL
+        kchart.createIndicator('VOL')
+        // 创建一个副图技术指标MACD
+        kchart.setPriceVolumePrecision(price_precision, qty_precision);
+        kchart.setBarSpace(10);
+
+        kchart.setStyles({
+            grid: {
+                show: true,
+                horizontal: {
+                show: true,
+                size: 1,
+                color: '#EDEDED',
+                style: 'dashed',
+                dashedValue: [2, 2]
+                },
+                vertical: {
+                show: true,
+                size: 1,
+                color: '#EDEDED',
+                style: 'dashed',
+                dashedValue: [2, 2]
+                }
+            }
+        });
+        this.kchart = kchart;
     },
-    init(id) {
+
+    addData(point) {
+        this.kchart.updateData(point);
+    },
+
+    loadPeriodData(symbol, period) {
         const me = this;
-        
-        this.chart = Highcharts.stockChart(id, {
-            title: {
-                text: me.title
-            },
-            colors: ['#ff3232', '#00aa00'], // 红涨绿跌
-            plotOptions: {
-                candlestick: {
-                    color: '#ff3232',    // 阴线（跌）颜色
-                    upColor: '#00aa00',  // 阳线（涨）颜色
-                    lineColor: '#333',   // K线边框颜色
-                    lineWidth: 1
+        this.period = period;
+        request("/api/v1/klines", {
+            "symbol": symbol,
+            "period": period
+        }, "GET").then(res => {
+            const items = res.data.reverse();
+            const chartDataList = items.map(function (data) {
+                return {
+                    timestamp: new Date(data[0]).getTime(),
+                    open: +data[1],
+                    high: +data[2],
+                    low: +data[3],
+                    close: +data[4],
+                    volume: Math.ceil(+data[5]),
                 }
-            },
-            series: [{
-                type: 'candlestick',
-                name: '示例数据',
-                data: me.data[me.period],
-                tooltip: {
-                    valueDecimals: 2
-                }
-            }]
+            })
+            me.kchart.applyNewData(chartDataList)
+        }).catch(err => {
+            console.error("加载K线数据失败:", err);
         });
     }
-    
 };

@@ -1,63 +1,4 @@
 definitions:
-  controllers.DespoitRequest:
-    properties:
-      amount:
-        type: number
-      symbol:
-        type: string
-      user_id:
-        type: string
-    type: object
-  controllers.LoginRequest:
-    properties:
-      captcha:
-        type: string
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  controllers.RegisterRequest:
-    properties:
-      captcha:
-        type: string
-      email:
-        type: string
-      password:
-        type: string
-      repeat_password:
-        type: string
-      username:
-        type: string
-    required:
-    - email
-    - password
-    - repeat_password
-    - username
-    type: object
-  controllers.TransferRequest:
-    properties:
-      amount:
-        type: number
-      from:
-        type: string
-      symbol:
-        type: string
-      to:
-        type: string
-    type: object
-  controllers.WithdrawRequest:
-    properties:
-      amount:
-        type: number
-      symbol:
-        type: string
-      user_id:
-        type: string
-    type: object
   github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide:
     enum:
     - bid
@@ -107,102 +48,12 @@ definitions:
 info:
   contact: {}
 paths:
-  /api/v1/asset/{symbol}/history:
-    get:
-      consumes:
-      - application/json
-      description: get an asset history
-      operationId: v1.asset.history
-      parameters:
-      - description: symbol
-        in: path
-        name: symbol
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: get asset history
-      tags:
-      - asset
-  /api/v1/asset/despoit:
-    post:
-      consumes:
-      - application/json
-      description: despoit an asset
-      operationId: v1.asset.despoit
-      parameters:
-      - description: despoit request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.DespoitRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: asset despoit
-      tags:
-      - asset
-  /api/v1/asset/transfer/{symbol}:
-    post:
-      consumes:
-      - application/json
-      description: transfer an asset
-      operationId: v1.asset.transfer
-      parameters:
-      - description: symbol
-        in: path
-        name: symbol
-        required: true
-        type: string
-      - description: transfer request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.TransferRequest'
-      produces:
-      - application/json
-      responses: {}
-      summary: asset transfer
-      tags:
-      - asset
-  /api/v1/asset/withdraw:
-    post:
-      consumes:
-      - application/json
-      description: withdraw an asset
-      operationId: v1.asset.withdraw
-      parameters:
-      - description: withdraw request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.WithdrawRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: asset withdraw
-      tags:
-      - asset
-  /api/v1/market/depth:
+  /api/v1/depth:
     get:
       consumes:
       - application/json
       description: get depth
-      operationId: v1.market.depth
+      operationId: v1.depth
       parameters:
       - description: symbol
         in: query
@@ -223,12 +74,12 @@ paths:
       summary: depth
       tags:
       - market
-  /api/v1/market/klines:
+  /api/v1/klines:
     get:
       consumes:
       - application/json
       description: 获取K线数据
-      operationId: v1.market.klines
+      operationId: v1.klines
       parameters:
       - description: symbol
         in: query
@@ -274,33 +125,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: klines
-      tags:
-      - market
-  /api/v1/market/trades:
-    get:
-      consumes:
-      - application/json
-      description: 获取近期成交记录
-      operationId: v1.market.trades
-      parameters:
-      - description: symbol
-        in: query
-        name: symbol
-        required: true
-        type: string
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: trades
+      summary: K线数据
       tags:
       - market
   /api/v1/order:
@@ -396,7 +221,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get product detail
+      description: 交易对详情
       operationId: v1.product
       produces:
       - application/json
@@ -405,22 +230,21 @@ paths:
           description: OK
           schema:
             type: string
-      summary: product detail
+      summary: 交易对详情
       tags:
       - product
-  /api/v1/user/login:
+  /api/v1/user/assets/query:
     post:
       consumes:
       - application/json
-      description: user login
-      operationId: v1.user.login
+      description: 获取用户持仓资产接口
+      operationId: v1.user.assets.query
       parameters:
-      - description: args
-        in: body
-        name: args
+      - description: symbols
+        in: query
+        name: symbols
         required: true
-        schema:
-          $ref: '#/definitions/controllers.LoginRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -428,9 +252,9 @@ paths:
           description: OK
           schema:
             type: string
-      summary: user login
+      summary: 用户持仓资产
       tags:
-      - user
+      - 用户中心
   /api/v1/user/order/trade/history:
     get:
       consumes:
@@ -469,29 +293,6 @@ paths:
       summary: 未成交的订单
       tags:
       - 用户中心
-  /api/v1/user/register:
-    post:
-      consumes:
-      - application/json
-      description: user register
-      operationId: v1.user.register
-      parameters:
-      - description: args
-        in: body
-        name: args
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: user register
-      tags:
-      - user
   /api/v1/version:
     get:
       consumes:

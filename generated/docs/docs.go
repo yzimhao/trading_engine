@@ -16,142 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/asset/despoit": {
-            "post": {
-                "description": "despoit an asset",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "asset despoit",
-                "operationId": "v1.asset.despoit",
-                "parameters": [
-                    {
-                        "description": "despoit request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.DespoitRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/asset/transfer/{symbol}": {
-            "post": {
-                "description": "transfer an asset",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "asset transfer",
-                "operationId": "v1.asset.transfer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "symbol",
-                        "name": "symbol",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "transfer request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.TransferRequest"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/v1/asset/withdraw": {
-            "post": {
-                "description": "withdraw an asset",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "asset withdraw",
-                "operationId": "v1.asset.withdraw",
-                "parameters": [
-                    {
-                        "description": "withdraw request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.WithdrawRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/asset/{symbol}/history": {
-            "get": {
-                "description": "get an asset history",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "get asset history",
-                "operationId": "v1.asset.history",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "symbol",
-                        "name": "symbol",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
-        "/api/v1/market/depth": {
+        "/api/v1/depth": {
             "get": {
                 "description": "get depth",
                 "consumes": [
@@ -164,7 +29,7 @@ const docTemplate = `{
                     "market"
                 ],
                 "summary": "depth",
-                "operationId": "v1.market.depth",
+                "operationId": "v1.depth",
                 "parameters": [
                     {
                         "type": "string",
@@ -190,7 +55,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/market/klines": {
+        "/api/v1/klines": {
             "get": {
                 "description": "获取K线数据",
                 "consumes": [
@@ -202,8 +67,8 @@ const docTemplate = `{
                 "tags": [
                     "market"
                 ],
-                "summary": "klines",
-                "operationId": "v1.market.klines",
+                "summary": "K线数据",
+                "operationId": "v1.klines",
                 "parameters": [
                     {
                         "type": "string",
@@ -246,45 +111,6 @@ const docTemplate = `{
                         "description": "end",
                         "name": "end",
                         "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/market/trades": {
-            "get": {
-                "description": "获取近期成交记录",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "market"
-                ],
-                "summary": "trades",
-                "operationId": "v1.market.trades",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "symbol",
-                        "name": "symbol",
-                        "in": "query",
-                        "required": true
                     },
                     {
                         "type": "integer",
@@ -438,7 +264,7 @@ const docTemplate = `{
         },
         "/api/v1/product/:symbol": {
             "get": {
-                "description": "get product detail",
+                "description": "交易对详情",
                 "consumes": [
                     "application/json"
                 ],
@@ -448,7 +274,7 @@ const docTemplate = `{
                 "tags": [
                     "product"
                 ],
-                "summary": "product detail",
+                "summary": "交易对详情",
                 "operationId": "v1.product",
                 "responses": {
                     "200": {
@@ -460,9 +286,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/login": {
+        "/api/v1/user/assets/query": {
             "post": {
-                "description": "user login",
+                "description": "获取用户持仓资产接口",
                 "consumes": [
                     "application/json"
                 ],
@@ -470,19 +296,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "用户中心"
                 ],
-                "summary": "user login",
-                "operationId": "v1.user.login",
+                "summary": "用户持仓资产",
+                "operationId": "v1.user.assets.query",
                 "parameters": [
                     {
-                        "description": "args",
-                        "name": "args",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.LoginRequest"
-                        }
+                        "type": "string",
+                        "description": "symbols",
+                        "name": "symbols",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -552,41 +376,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user/register": {
-            "post": {
-                "description": "user register",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "user register",
-                "operationId": "v1.user.register",
-                "parameters": [
-                    {
-                        "description": "args",
-                        "name": "args",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.RegisterRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/version": {
             "get": {
                 "description": "程序版本号和编译相关信息",
@@ -613,95 +402,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.DespoitRequest": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "symbol": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.LoginRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "username"
-            ],
-            "properties": {
-                "captcha": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.RegisterRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password",
-                "repeat_password",
-                "username"
-            ],
-            "properties": {
-                "captcha": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "repeat_password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.TransferRequest": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "symbol": {
-                    "type": "string"
-                },
-                "to": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.WithdrawRequest": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "symbol": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "github_com_yzimhao_trading_engine_v2_pkg_matching_types.OrderSide": {
             "type": "string",
             "enum": [

@@ -253,7 +253,8 @@ export default {
     
   },
   mounted(){
-    KChartManager.init("kline");
+    KChartManager.init("kline", 2, 4);
+    KChartManager.loadPeriodData(this.current.symbol, "m1");
   },
   methods: {
     iniWebsocket(){
@@ -286,23 +287,22 @@ export default {
         };
 
         socket.onmessage = (e) => {
-            const msg = e.data.split('\n');
-            for (var i = 0; i < msg.length; i++) {
-                var data = JSON.parse(msg[i]);
-                console.log("websocket message: " ,data);
+            const msgs = e.data.split('\n');
+            for (var i = 0; i < msgs.length; i++) {
+                var msg = JSON.parse(msgs[i]);
+                console.log("websocket message: " , msg);
 
-                if (data.type == "depth."+ me.current.symbol) {
-                    me.depth.asks = data.body.asks;
-                    me.depth.bids = data.body.bids;
-                } else if (data.type == "trade." + me.current.symbol) {
-                    // utils.rendertradelog(data.body);
+                if (msg.type == "depth."+ me.current.symbol) {
+                    me.depth.asks = msg.body.asks;
+                    me.depth.bids = msg.body.bids;
+                } else if (msg.type == "trade." + me.current.symbol) {
                     me.tradeRecords.push({
-                        amount: data.body.amount,
-                        price: data.body.price,
-                        qty: data.body.qty,
-                        trade_at: data.body.trade_at
+                        amount: msg.body.amount,
+                        price: msg.body.price,
+                        qty: msg.body.qty,
+                        trade_at: msg.body.trade_at
                     })
-                } else if (data.type == "new_order."+ me.current.symbol) {
+                } else if (msg.type == "new_order."+ me.current.symbol) {
                     // var myorderView = $(".myorder"),
                     //     myorderTpl = $("#myorder-tpl").html();
                     
@@ -314,21 +314,21 @@ export default {
                     //     }
                     //     myorderView.after(html);
                     // });
-                } else if (data.type == "price."+me.current.symbol) {
+                } else if (msg.type == "price."+me.current.symbol) {
                     $(".latest-price").html(msg.body.latest_price);
-                } else if (data.type =="kline.m1."+me.current.symbol) {
-                    // var data = msg.body;
-                    // kchart.updateData({
-                    //     timestamp: new Date(data[0]).getTime(),
-                    //     open: +data[1],
-                    //     high: +data[2],
-                    //     low: +data[3],
-                    //     close: +data[4],
-                    //     volume: Math.ceil(+data[5]),
-                    // });
-                }else if(data.type=="market.24h."+me.current.symbol) {
+                } else if (msg.type =="kline.m1."+me.current.symbol) {
+                    var data = msg.body;
+                    KChartManager.addData({
+                        timestamp: new Date(data[0]).getTime(),
+                        open: +data[1],
+                        high: +data[2],
+                        low: +data[3],
+                        close: +data[4],
+                        volume: Math.ceil(+data[5]),
+                    });
+                }else if(msg.type=="market.24h."+me.current.symbol) {
                     // $(".price_p").html(msg.body.price_change_percent);
-                }else if(data.type =="order.cancel." +me.current.symbol) {
+                }else if(msg.type =="order.cancel." +me.current.symbol) {
                     // var order_id = msg.body.order_id;
                     // layer.msg("订单 "+ order_id +" 取消成功");
                     // $(".myorder-item").each(function(){

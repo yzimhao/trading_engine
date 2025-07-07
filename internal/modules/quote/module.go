@@ -11,11 +11,12 @@ var Module = fx.Module(
 	"quote",
 	fx.Provide(
 		NewQuote,
+		newQuoteApi,
 	),
 	fx.Invoke(run),
 )
 
-func run(router *provider.Router, logger *zap.Logger, c cache.Cache, quote *Quote) {
+func run(router *provider.Router, logger *zap.Logger, c cache.Cache, quote *Quote, quoteApi *QuoteApi) {
 	quote.Subscribe()
-	newQuoteApi(router, logger, c)
+	quoteApi.Run()
 }
