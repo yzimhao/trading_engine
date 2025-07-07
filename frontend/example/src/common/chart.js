@@ -21,6 +21,15 @@ export const KChartManager = {
             title: {
                 text: me.title
             },
+            colors: ['#ff3232', '#00aa00'], // 红涨绿跌
+            plotOptions: {
+                candlestick: {
+                    color: '#ff3232',    // 阴线（跌）颜色
+                    upColor: '#00aa00',  // 阳线（涨）颜色
+                    lineColor: '#333',   // K线边框颜色
+                    lineWidth: 1
+                }
+            },
             series: [{
                 type: 'candlestick',
                 name: '示例数据',
