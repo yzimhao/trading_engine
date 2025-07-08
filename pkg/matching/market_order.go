@@ -127,11 +127,15 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 		}()
 
 		if !ok {
-			e.removeNotify <- types.RemoveResult{
-				Symbol:   e.symbol,
-				UniqueId: item.GetUniqueId(),
-				Type:     types.RemoveTypeBySystem,
-			}
+			//TODO 市价订单，需要触发一个自动取消订单操作 这里的取消可能会比成交记录先到到处理端
+			go func() {
+				time.Sleep(time.Second)
+				e.removeNotify <- types.RemoveResult{
+					Symbol:   e.symbol,
+					UniqueId: item.GetUniqueId(),
+					Type:     types.RemoveItemTypeByMarket,
+				}
+			}()
 			break
 		} else {
 			trade_cnt++
@@ -232,11 +236,14 @@ func (e *Engine) processMarketSell(item QueueItem) {
 
 		if !ok {
 			//市价单都需要触发一个成交后取消剩余部分的信号
-			e.removeNotify <- types.RemoveResult{
-				Symbol:   e.symbol,
-				UniqueId: item.GetUniqueId(),
-				Type:     types.RemoveTypeBySystem,
-			}
+			go func() {
+				time.Sleep(time.Second)
+				e.removeNotify <- types.RemoveResult{
+					Symbol:   e.symbol,
+					UniqueId: item.GetUniqueId(),
+					Type:     types.RemoveItemTypeByMarket,
+				}
+			}()
 			break
 		} else {
 			trade_cnt++

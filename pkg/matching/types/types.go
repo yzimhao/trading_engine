@@ -52,7 +52,7 @@ func (t *TradeResult) UnmarshalBinary(data []byte) error {
 }
 
 type RemoveResult struct {
-	Symbol   string     `json:"symbol"`
-	UniqueId string     `json:"unique_id"`
-	Type     RemoveType `json:"type"`
+	Symbol   string         `json:"symbol"`
+	UniqueId string         `json:"unique_id"`
+	Type     RemoveItemType `json:"type"`
 }

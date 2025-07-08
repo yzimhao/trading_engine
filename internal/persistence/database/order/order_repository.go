@@ -241,7 +241,7 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 	return &data, nil
 }
 
-func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, cancelType types.CancelType) error {
+func (o *orderRepository) Cancel(ctx context.Context, symbol, order_id string, cancelType matching_types.RemoveItemType) error {
 	o.logger.Sugar().Infof("cancel order: %s, %s, %d", symbol, order_id, cancelType)
 
 	product, err := o.productRepo.Get(symbol)

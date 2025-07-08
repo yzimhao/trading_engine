@@ -64,12 +64,9 @@ func (s *CancelOrderSubscriber) On(ctx context.Context, msg []byte) error {
 func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCancelOrder, retryCount int) error {
 	s.logger.Sugar().Infof("order cancel %s, retry count: %d", data.OrderId, retryCount)
 	//锁等待结算那边全部结束才能取消
-	ok, err := s.locker.IsLocked(ctx, data.OrderId)
-	if err != nil {
-		return err
-	}
+	locked, _ := s.locker.IsLocked(ctx, data.OrderId)
 
-	if ok {
+	if locked {
 		s.logger.Sugar().Debugf("order cancel %s is locked, retry count: %d", data.OrderId, retryCount)
 
 		if retryCount <= s.maxRetry {
@@ -78,7 +75,7 @@ func (s *CancelOrderSubscriber) process(ctx context.Context, data types.EventCan
 		}
 		s.logger.Sugar().Errorf("order cancel %s is locked, retry over max retry", data.OrderId)
 		return errors.New("retry over max retry")
+	} else {
+		return s.orderRepo.Cancel(ctx, data.Symbol, data.OrderId, data.Type)
 	}
-
-	return s.orderRepo.Cancel(ctx, data.Symbol, data.OrderId, types.CancelTypeUser)
 }

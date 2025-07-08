@@ -182,7 +182,7 @@ func (s *Matching) OnNotifyCancelOrder(ctx context.Context, msg []byte) error {
 		s.logger.Sugar().Errorf("matching engine not found for symbol: %s", data.Symbol)
 		return nil
 	}
-	engine.RemoveItem(data.OrderSide, data.OrderId, matching_types.RemoveTypeByUser)
+	engine.RemoveItem(data.OrderSide, data.OrderId, data.Type)
 	return nil
 }
 

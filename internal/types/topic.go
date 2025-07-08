@@ -28,10 +28,10 @@ type EventOrderNew struct {
 }
 
 type EventNotifyCancelOrder struct {
-	Symbol    string                    `json:"symbol,omitempty"`
-	OrderSide matching_types.OrderSide  `json:"order_side,omitempty"`
-	OrderId   string                    `json:"order_id,omitempty"`
-	Type      matching_types.RemoveType `json:"type,omitempty"`
+	Symbol    string                        `json:"symbol,omitempty"`
+	OrderSide matching_types.OrderSide      `json:"order_side,omitempty"`
+	OrderId   string                        `json:"order_id,omitempty"`
+	Type      matching_types.RemoveItemType `json:"type,omitempty"`
 }
 
 type EventOrderTrade struct {
@@ -47,6 +47,7 @@ type EventNotifyQuote struct {
 }
 
 type EventCancelOrder struct {
-	Symbol  string `json:"symbol,omitempty"`
-	OrderId string `json:"order_id,omitempty"`
+	Symbol  string                        `json:"symbol,omitempty"`
+	OrderId string                        `json:"order_id,omitempty"`
+	Type    matching_types.RemoveItemType `json:"type"`
 }

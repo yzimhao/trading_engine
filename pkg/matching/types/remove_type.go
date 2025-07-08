@@ -1,9 +1,12 @@
 package types
 
-type RemoveType int
+type RemoveItemType int
 
 const (
-	RemoveTypeBySystem  RemoveType = iota + 1 //系统自动取消
-	RemoveTypeByUser                          //用户主动取消
-	RemoveTypeByPartial                       //部分成交
+	RemoveItemTypeByUser    RemoveItemType = iota + 1 //用户主动取消
+	RemoveItemTypeBySystem                            //系统取消
+	RemoveItemTypeByExpired                           //超时取消
+	RemoveItemTypeByMarket                            //市场取消
+	RemoveItemTypeByForce                             //强平取消
+	RemoveItemTypeByOther                             //其他
 )

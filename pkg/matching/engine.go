@@ -149,7 +149,7 @@ func (e *Engine) AddItem(item QueueItem) error {
 
 	return nil
 }
-func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType types.RemoveType) {
+func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType types.RemoveItemType) {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 

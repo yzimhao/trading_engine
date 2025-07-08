@@ -325,7 +325,7 @@ func (s *SettleProcessor) orderDelivery(
 	amount := tradeLog.Amount
 	err = s.userAssetRepo.UnFreeze(tx, tradeLog.Bid, bid.UserId, product.Base.Symbol, amount.Add(tradeLog.BidFee))
 	if err != nil {
-		s.logger.Sugar().Errorf("order delivery base asset unFreeze: %s", err.Error())
+		s.logger.Sugar().Errorf("order delivery base asset unFreeze: %s err: %s", tradeLog.Bid, err.Error())
 		return err
 	}
 
