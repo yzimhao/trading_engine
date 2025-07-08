@@ -43,11 +43,11 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.sellOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.sellOrderTypeVal == 'MARKET'">
                         <text class="item-title">数量/金额</text>
                         <uni-data-checkbox v-model="range.sellQtyOrAmountVal" :localdata='range.qtyOrAmount'></uni-data-checkbox>
                     </view>
-                    <view class="line1" v-if="range.sellOrderTypeVal == 'limit'">
+                    <view class="line1" v-if="range.sellOrderTypeVal == 'LIMIT'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" v-model="order.sellPrice" placeholder="1.00" style="width: 200px;" />
                     </view>
@@ -74,11 +74,11 @@
                         <text class="item-title">类型</text>
                         <uni-data-checkbox v-model="range.buyOrderTypeVal" :localdata='range.orderType'></uni-data-checkbox>
                     </view>
-                    <view class="line1">
+                    <view class="line1" v-if="range.buyOrderTypeVal == 'MARKET'">
                         <text class="item-title">数量/金额</text>
                         <uni-data-checkbox v-model="range.buyQtyOrAmountVal" :localdata='range.qtyOrAmount'></uni-data-checkbox>
                     </view>
-                    <view class="line1" v-if="range.buyOrderTypeVal == 'limit'">
+                    <view class="line1" v-if="range.buyOrderTypeVal == 'LIMIT'">
                         <text class="item-title">价格</text>
                         <uni-easyinput type="digit" placeholder="1.00" v-model="order.buyPrice" />
                     </view>
@@ -195,12 +195,12 @@ export default {
   data() {
     return {
         range: {
-            orderType: [{"value": "limit","text": "限价"	},{"value": "market","text": "市价"}],
+            orderType: [{"value": "LIMIT","text": "限价"	},{"value": "MARKET","text": "市价"}],
             qtyOrAmount: [{"value": "qty", "text": "数量"}, {"value": "amount", "text": "金额"}],
             sellQtyOrAmountVal: "qty",
             buyQtyOrAmountVal: "qty",
-            sellOrderTypeVal: "limit",
-            buyOrderTypeVal: "limit",
+            sellOrderTypeVal: "LIMIT",
+            buyOrderTypeVal: "LIMIT",
             assetType:[{"value":"BTC", "text": "BTC"}],
         },
         current: {
@@ -295,7 +295,7 @@ export default {
                     // "token."+ Cookies.get("jwt"),
                 ],
                 "unsubscribe":[
-                    "market.28h."+me.current.symbol,
+                    "MARKET.28h."+me.current.symbol,
                 ]
             };
             console.log(JSON.stringify(msg));
@@ -395,14 +395,14 @@ export default {
     actionSellOrder(){
         const me = this;
         let data = {
-            "side": "ask",
+            "side": "SELL",
             "symbol": this.current.symbol
         };
-        if(this.range.sellOrderTypeVal == "limit") {
-            data['order_type'] = "limit";
+        if(this.range.sellOrderTypeVal == "LIMIT") {
+            data['order_type'] = "LIMIT";
             data['price'] = this.order.sellPrice;
         }else{
-            data['order_type'] = "market";
+            data['order_type'] = "MARKET";
         }
         if(this.range.sellQtyOrAmountVal == "qty"){
             data['qty'] = this.order.sellQty;
@@ -426,14 +426,14 @@ export default {
     actionBuyOrder(){
         const me = this;
         let data = {
-            "side": "bid",
+            "side": "BUY",
             "symbol": this.current.symbol
         };
-        if(this.range.buyOrderTypeVal == "limit") {
-            data['order_type'] = "limit";
+        if(this.range.buyOrderTypeVal == "LIMIT") {
+            data['order_type'] = "LIMIT";
             data['price'] = this.order.buyPrice;
         }else{
-            data['order_type'] = "market";
+            data['order_type'] = "MARKET";
         }
         if(this.range.buyQtyOrAmountVal == "qty"){
             data['qty'] = this.order.buyQty;

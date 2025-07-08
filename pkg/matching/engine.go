@@ -127,7 +127,7 @@ func (e *Engine) AddItem(item QueueItem) error {
 	e.mx.Lock()
 	defer e.mx.Unlock()
 
-	e.logger.Sugar().Debugf("[matching] AddItem %v", item)
+	e.logger.Sugar().Debugf("[matching] AddItem %s", item.Marshal())
 
 	if e.opts.pauseAcceptItem {
 		return errors.New("engine is paused")

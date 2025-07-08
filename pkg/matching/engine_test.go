@@ -226,6 +226,33 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 
 }
 
+func TestTradeFunc_ex1(t *testing.T) {
+	Convey("市价买入 指定金额, 买单完全成交", t, func() {
+		btcusdt.Clean()
+
+		tradeCh := make(chan types.TradeResult)
+		btcusdt.OnTradeResult(func(result types.TradeResult) {
+			tradeCh <- result
+		})
+
+		btcusdt.AddItem(matching.NewAskLimitItem("id111", d(10.00), d(100), 1112))
+		btcusdt.AddItem(matching.NewBidMarketAmountItem("id211", d(50), 1113))
+
+		select {
+		case trade := <-tradeCh:
+			So(trade.AskOrderId, ShouldEqual, "id111")
+			So(trade.BidOrderId, ShouldEqual, "id211")
+			So(trade.TradePrice, ShouldEqual, d(10.00))
+			So(trade.TradeQuantity.String(), ShouldEqual, d(5).String())
+
+			So(trade.RemainderMarketOrderId, ShouldEqual, "id211")
+			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
+		case <-time.After(time.Second * 2):
+			So(true, ShouldEqual, false)
+		}
+	})
+}
+
 func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 
 	Convey("市价买入 按数量买入, 金额足够买单完全成交", t, func() {
@@ -302,31 +329,6 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 		}
 	})
 
-	Convey("市价买入 指定金额, 买单完全成交", t, func() {
-		btcusdt.Clean()
-
-		tradeCh := make(chan types.TradeResult)
-		btcusdt.OnTradeResult(func(result types.TradeResult) {
-			tradeCh <- result
-		})
-
-		btcusdt.AddItem(matching.NewAskLimitItem("id111", d(10.00), d(100), 1112))
-		btcusdt.AddItem(matching.NewBidMarketAmountItem("id211", d(50), 1113))
-
-		select {
-		case trade := <-tradeCh:
-			So(trade.AskOrderId, ShouldEqual, "id111")
-			So(trade.BidOrderId, ShouldEqual, "id211")
-			So(trade.TradePrice, ShouldEqual, d(10.00))
-			So(trade.TradeQuantity.String(), ShouldEqual, d(5).String())
-
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id211")
-			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
-		case <-time.After(time.Second * 2):
-			So(true, ShouldEqual, false)
-		}
-	})
-
 	Convey("市价买入 指定金额, 买单部分成交", t, func() {
 		btcusdt.Clean()
 
@@ -348,6 +350,35 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.RemainderMarketOrderId, ShouldEqual, "id212")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
+		case <-time.After(time.Second * 2):
+			So(true, ShouldEqual, false)
+		}
+	})
+}
+
+func TestTradeFunc_ex2(t *testing.T) {
+	Convey("市价卖出 指定金额，持仓足够完全成交", t, func() {
+		btcusdt.Clean()
+
+		tradeCh := make(chan types.TradeResult)
+		btcusdt.OnTradeResult(func(result types.TradeResult) {
+			tradeCh <- result
+		})
+
+		btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112))
+		btcusdt.AddItem(matching.NewAskMarketAmountItem("id215", d(6000), d(1000000), 1113))
+		time.Sleep(time.Second)
+
+		select {
+		case trade := <-tradeCh:
+			So(trade.AskOrderId, ShouldEqual, "id215")
+			So(trade.BidOrderId, ShouldEqual, "id115")
+			So(trade.TradePrice, ShouldEqual, d(10.00))
+			So(trade.TradeQuantity.String(), ShouldEqual, d(600).String())
+
+			So(trade.RemainderMarketOrderId, ShouldEqual, "id215")
+			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
+			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}
@@ -404,33 +435,6 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.RemainderMarketOrderId, ShouldEqual, "id214")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
-		case <-time.After(time.Second * 2):
-			So(true, ShouldEqual, false)
-		}
-	})
-
-	Convey("市价卖出 指定金额，持仓足够完全成交", t, func() {
-		btcusdt.Clean()
-
-		tradeCh := make(chan types.TradeResult)
-		btcusdt.OnTradeResult(func(result types.TradeResult) {
-			tradeCh <- result
-		})
-
-		btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112))
-		btcusdt.AddItem(matching.NewAskMarketAmountItem("id215", d(6000), d(1000000), 1113))
-		time.Sleep(time.Second)
-
-		select {
-		case trade := <-tradeCh:
-			So(trade.AskOrderId, ShouldEqual, "id215")
-			So(trade.BidOrderId, ShouldEqual, "id115")
-			So(trade.TradePrice, ShouldEqual, d(10.00))
-			So(trade.TradeQuantity.String(), ShouldEqual, d(600).String())
-
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id215")
-			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
-			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}

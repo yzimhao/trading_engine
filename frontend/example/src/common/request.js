@@ -41,12 +41,20 @@ export const request = (url, data = {}, method = 'GET', parseBody=true) => {
 	  },
       success: (res) => {
         if (res.statusCode === 200) {
-          if(parseBody && res.data.code == 0){
-            resolve(res.data);
+          if(parseBody){
+            if(res.data.code == 0) {
+                resolve(res.data);
+            }else{
+                uni.showToast({
+                    title: res.data.msg,
+                    icon: "none"
+                });
+            }
           }
           if(!parseBody){
             resolve(res);
           }
+
         } else {
           if(res.data.code == 1000){
             uni.removeStorageSync('user');

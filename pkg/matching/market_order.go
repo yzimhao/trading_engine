@@ -27,7 +27,10 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 					qty := remainAmount.Div(marketPrice)
 					return decimal.Min(qty, needQty).Truncate(e.opts.quantityDecimals)
 				}
-				maxTradeQty := maxQty(item.GetAmount(), ask.GetPrice(), item.GetQuantity())
+
+				e.logger.Sugar().Debugf("[matching] processMarketBuy item: %s", item.Marshal())
+
+				maxTradeQty := maxQty(item.GetHoldAmount(), ask.GetPrice(), item.GetQuantity())
 
 				curTradeQty := decimal.Zero
 
@@ -54,7 +57,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				}
 
 				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
-				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
+				item.SetHoldAmount(item.GetHoldAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
 
 				//检查本次循环撮合是否是该订单最后一次撮合
 				//如果是则标记该市价订单已经完成了
@@ -63,7 +66,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// b.已经达到了用户需要的数量
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
-					maxQty(item.GetAmount(), e.asks.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
+					maxQty(item.GetHoldAmount(), e.asks.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
@@ -78,16 +81,18 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 					return false
 				}
 
-				maxQty := func(amount, price decimal.Decimal) decimal.Decimal {
-					return amount.Div(price).Truncate(e.opts.quantityDecimals)
+				// 持有的金额/卖家报价=最大可以买入的数量
+				maxQty := func(holdAmount, price decimal.Decimal) decimal.Decimal {
+					return holdAmount.Div(price).Truncate(e.opts.quantityDecimals)
 				}
 
-				maxTradeQty := maxQty(item.GetAmount(), ask.GetPrice())
+				maxTradeQty := maxQty(item.GetHoldAmount(), ask.GetPrice())
 				curTradeQty := decimal.Zero
 
 				if maxTradeQty.Cmp(e.opts.minTradeQuantity) < 0 {
 					return false
 				}
+
 				if ask.GetQuantity().Cmp(maxTradeQty) <= 0 {
 					curTradeQty = ask.GetQuantity()
 					e.asks.Remove(ask.GetUniqueId())
@@ -101,7 +106,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				}
 
 				//部分成交了，需要更新这个单的剩余可成交金额，用于下一轮重新计算最大成交量
-				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
+				item.SetHoldAmount(item.GetHoldAmount().Sub(curTradeQty.Mul(ask.GetPrice())))
 				item.SetQuantity(item.GetQuantity().Add(curTradeQty))
 
 				//检查本次循环撮合是否是该订单最后一次撮合
@@ -110,7 +115,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// b.已经达到了用户需要的数量
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
-					maxQty(item.GetAmount(), e.asks.Top().GetPrice()).Cmp(e.opts.minTradeQuantity) <= 0 {
+					maxQty(item.GetHoldAmount(), e.asks.Top().GetPrice()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), "")
@@ -180,11 +185,12 @@ func (e *Engine) processMarketSell(item QueueItem) {
 					return false
 				}
 
+				//计算最大需要卖出的数量
 				maxQty := func(amount, price, needQty decimal.Decimal) decimal.Decimal {
 					a := amount.Div(price).Truncate(e.opts.quantityDecimals)
 					return decimal.Min(a, needQty).Truncate(e.opts.quantityDecimals)
 				}
-				maxTradeQty := maxQty(item.GetAmount(), bid.GetPrice(), item.GetQuantity())
+				maxTradeQty := maxQty(item.GetAmount(), bid.GetPrice(), item.GetHoldQty())
 
 				curTradeQty := decimal.Zero
 				if maxTradeQty.Cmp(e.opts.minTradeQuantity) < 0 {
@@ -205,14 +211,14 @@ func (e *Engine) processMarketSell(item QueueItem) {
 
 				item.SetAmount(item.GetAmount().Sub(curTradeQty.Mul(bid.GetPrice())))
 				//市价 按成交额卖出时，需要用户持有的资产数量来进行限制
-				item.SetQuantity(item.GetQuantity().Sub(curTradeQty))
+				item.SetHoldQty(item.GetHoldQty().Sub(curTradeQty))
 
 				//退出条件
 				// a.对面订单空了
 				// b.金额完全成交
 				// c.剩余资金不满足最小成交量
 				if e.bids.Len() == 0 ||
-					maxQty(item.GetAmount(), e.bids.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
+					maxQty(item.GetAmount(), e.bids.Top().GetPrice(), item.GetHoldQty()).Cmp(e.opts.minTradeQuantity) <= 0 {
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), item.GetUniqueId())
 				} else {
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), "")

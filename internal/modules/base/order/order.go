@@ -57,8 +57,8 @@ func (o *orderModule) registerRouter() {
 
 type CreateOrderRequest struct {
 	Symbol    string                   `json:"symbol" binding:"required" example:"btcusdt"`
-	Side      matching_types.OrderSide `json:"side" binding:"required" example:"buy"`
-	OrderType matching_types.OrderType `json:"order_type" binding:"required" example:"limit"`
+	Side      matching_types.OrderSide `json:"side" binding:"required" example:"SELL/BUY"`
+	OrderType matching_types.OrderType `json:"order_type" binding:"required" example: "LIMIT/MARKET"`
 	Price     *decimal.Decimal         `json:"price,omitempty" example:"1.00"`
 	Quantity  *decimal.Decimal         `json:"qty,omitempty" example:"12"`
 	Amount    *decimal.Decimal         `json:"amount,omitempty"`
@@ -103,14 +103,14 @@ func (o *orderModule) create(c *gin.Context) {
 			return
 		}
 
-		event.Price = func() *decimal.Decimal {
+		event.Price = func() decimal.Decimal {
 			p := order.Price
-			return &p
+			return p
 		}()
 
-		event.Quantity = func() *decimal.Decimal {
+		event.Quantity = func() decimal.Decimal {
 			q := order.Quantity
-			return &q
+			return q
 		}()
 
 	} else {
@@ -128,13 +128,13 @@ func (o *orderModule) create(c *gin.Context) {
 				return
 			}
 
-			event.Amount = func() *decimal.Decimal {
+			event.Amount = func() decimal.Decimal {
 				a := order.Amount
-				return &a
+				return a
 			}()
-			event.MaxAmount = func() *decimal.Decimal {
+			event.MaxAmount = func() decimal.Decimal {
 				a := order.FreezeAmount
-				return &a
+				return a
 			}()
 		} else {
 			order, err = o.orderRepo.CreateMarketByQty(context.Background(), userId, req.Symbol, req.Side, *req.Quantity)
@@ -144,14 +144,13 @@ func (o *orderModule) create(c *gin.Context) {
 				return
 			}
 
-			event.Quantity = func() *decimal.Decimal {
-				q := order.Quantity
-				return &q
-			}()
-			event.MaxQty = func() *decimal.Decimal {
-				q := order.FreezeQty
-				return &q
-			}()
+			//市价单根据返回的冻结信息，创建event参数
+			if order.FreezeAmount.Cmp(decimal.Zero) > 0 {
+				event.MaxAmount = order.FreezeAmount
+			}
+			if order.FreezeQty.Cmp(decimal.Zero) > 0 {
+				event.MaxQty = order.FreezeQty
+			}
 		}
 	}
 
@@ -167,6 +166,8 @@ func (o *orderModule) create(c *gin.Context) {
 		o.router.ResponseError(c, types.ErrInternalError)
 		return
 	}
+
+	o.logger.Sugar().Debugf("create order event: %s", body)
 
 	// err = o.broker.Publish(context.Background(), types.TOPIC_ORDER_NEW, &broker.Message{
 	// 	Body: body,

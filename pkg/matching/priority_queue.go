@@ -12,6 +12,8 @@ type QueueItem interface {
 	SetIndex(index int)
 	SetQuantity(quantity decimal.Decimal)
 	SetAmount(amount decimal.Decimal)
+	SetHoldAmount(a decimal.Decimal)
+	SetHoldQty(q decimal.Decimal)
 	Less(item QueueItem) bool
 	GetIndex() int
 	GetUniqueId() string
@@ -21,7 +23,10 @@ type QueueItem interface {
 	GetOrderSide() types.OrderSide
 	GetOrderType() types.OrderType
 	GetSubOrderType() types.SubOrderType
-	GetAmount() decimal.Decimal //订单金额，在市价订单的时候生效，限价单不需要这个字段
+	GetAmount() decimal.Decimal
+	GetHoldAmount() decimal.Decimal //订单持有的金额
+	GetHoldQty() decimal.Decimal    //用户持有的数量
+	Marshal() []byte
 }
 
 type PriorityQueue []QueueItem

@@ -65,8 +65,6 @@ func TestAskQueue(t *testing.T) {
 		Convey("更新队列顶元素", func() {
 			top := askQueue.Top()
 			top.SetQuantity(d(10.01))
-			top.SetAmount(d(102))
-			So(top.GetAmount(), ShouldEqual, d(102))
 			So(top.GetQuantity(), ShouldEqual, d(10.01))
 		})
 
@@ -107,8 +105,6 @@ func TestBidQueue(t *testing.T) {
 		Convey("更新队列顶元素", func() {
 			top := bidQueue.Top()
 			top.SetQuantity(d(10.01))
-			top.SetAmount(d(102))
-			So(top.GetAmount(), ShouldEqual, d(102))
 			So(top.GetQuantity(), ShouldEqual, d(10.01))
 		})
 
