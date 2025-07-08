@@ -149,12 +149,12 @@
 
   <view class="footer">
     <view class="version">
-        <uni-col>
+        <uni-row>
             <text>version: {{ version.version }} build: {{ version.build }}</text>
-        </uni-col>
-        <uni-col>
+        </uni-row>
+        <uni-row>
             <text v-if="version.go.length > 0">go: {{ version.go }} commit: {{ version.commit }}</text>
-        </uni-col>
+        </uni-row>
     </view>
   </view>
 </template>
