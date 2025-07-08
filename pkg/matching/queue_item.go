@@ -6,14 +6,14 @@ import (
 )
 
 type Order struct {
-	orderId    string
-	price      decimal.Decimal
-	quantity   decimal.Decimal
-	createTime int64
-	index      int
-
-	orderType types.OrderType
-	amount    decimal.Decimal
+	orderId      string
+	price        decimal.Decimal
+	quantity     decimal.Decimal
+	createTime   int64
+	index        int
+	orderType    types.OrderType
+	subOrderType types.SubOrderType
+	amount       decimal.Decimal
 }
 
 func (o *Order) GetIndex() int {
@@ -51,6 +51,11 @@ func (o *Order) GetCreateTime() int64 {
 func (o *Order) GetOrderType() types.OrderType {
 	return o.orderType
 }
+
+func (o *Order) GetSubOrderType() types.SubOrderType {
+	return o.subOrderType
+}
+
 func (o *Order) GetAmount() decimal.Decimal {
 	return o.amount
 }
@@ -86,52 +91,54 @@ func (a *BidItem) GetOrderSide() types.OrderSide {
 	return types.OrderSideBuy
 }
 
-func NewAskItem(pt types.OrderType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *AskItem {
+func newAskItem(pt types.OrderType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64, subT types.SubOrderType) *AskItem {
 	return &AskItem{
 		Order: Order{
-			orderId:    uniqId,
-			price:      price,
-			quantity:   quantity,
-			createTime: createTime,
-			orderType:  pt,
-			amount:     amount,
+			orderId:      uniqId,
+			price:        price,
+			quantity:     quantity,
+			createTime:   createTime,
+			orderType:    pt,
+			subOrderType: subT,
+			amount:       amount,
 		},
 	}
 }
 
 func NewAskLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *AskItem {
-	return NewAskItem(types.OrderTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+	return newAskItem(types.OrderTypeLimit, uniq, price, quantity, decimal.Zero, createTime, types.SubOrderTypeUnknown)
 }
 
 func NewAskMarketQtyItem(uniq string, quantity decimal.Decimal, createTime int64) *AskItem {
-	return NewAskItem(types.OrderTypeMarketQuantity, uniq, decimal.Zero, quantity, decimal.Zero, createTime)
+	return newAskItem(types.OrderTypeMarket, uniq, decimal.Zero, quantity, decimal.Zero, createTime, types.SubOrderTypeMarketByQty)
 }
 
 // 市价 按金额卖出订单时，需要用户持有交易物的数量，在撮合时候防止超卖
 func NewAskMarketAmountItem(uniq string, amount, maxHoldQty decimal.Decimal, createTime int64) *AskItem {
-	return NewAskItem(types.OrderTypeMarketAmount, uniq, decimal.Zero, maxHoldQty, amount, createTime)
+	return newAskItem(types.OrderTypeMarket, uniq, decimal.Zero, maxHoldQty, amount, createTime, types.SubOrderTypeMarketByAmount)
 }
 
-func NewBidItem(pt types.OrderType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64) *BidItem {
+func newBidItem(pt types.OrderType, uniqId string, price, quantity, amount decimal.Decimal, createTime int64, subT types.SubOrderType) *BidItem {
 	return &BidItem{
 		Order: Order{
-			orderId:    uniqId,
-			price:      price,
-			quantity:   quantity,
-			createTime: createTime,
-			orderType:  pt,
-			amount:     amount,
+			orderId:      uniqId,
+			price:        price,
+			quantity:     quantity,
+			createTime:   createTime,
+			orderType:    pt,
+			subOrderType: subT,
+			amount:       amount,
 		}}
 }
 
 func NewBidLimitItem(uniq string, price, quantity decimal.Decimal, createTime int64) *BidItem {
-	return NewBidItem(types.OrderTypeLimit, uniq, price, quantity, decimal.Zero, createTime)
+	return newBidItem(types.OrderTypeLimit, uniq, price, quantity, decimal.Zero, createTime, types.SubOrderTypeUnknown)
 }
 
 func NewBidMarketQtyItem(uniq string, quantity, maxAmount decimal.Decimal, createTime int64) *BidItem {
-	return NewBidItem(types.OrderTypeMarketQuantity, uniq, decimal.Zero, quantity, maxAmount, createTime)
+	return newBidItem(types.OrderTypeMarket, uniq, decimal.Zero, quantity, maxAmount, createTime, types.SubOrderTypeMarketByQty)
 }
 
 func NewBidMarketAmountItem(uniq string, amount decimal.Decimal, createTime int64) *BidItem {
-	return NewBidItem(types.OrderTypeMarketAmount, uniq, decimal.Zero, decimal.Zero, amount, createTime)
+	return newBidItem(types.OrderTypeMarket, uniq, decimal.Zero, decimal.Zero, amount, createTime, types.SubOrderTypeMarketByAmount)
 }

@@ -22,7 +22,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 
 			ask := e.asks.Top()
 
-			if item.GetOrderType() == types.OrderTypeMarketQuantity {
+			if item.GetSubOrderType() == types.SubOrderTypeMarketByQty {
 				maxQty := func(remainAmount, marketPrice, needQty decimal.Decimal) decimal.Decimal {
 					qty := remainAmount.Div(marketPrice)
 					return decimal.Min(qty, needQty).Truncate(e.opts.quantityDecimals)
@@ -70,7 +70,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				}
 
 				return true
-			} else if item.GetOrderType() == types.OrderTypeMarketAmount {
+			} else if item.GetSubOrderType() == types.SubOrderTypeMarketByAmount {
 				//市价-按成交金额
 				//成交金额不包含手续费，手续费应该由上层系统计算提前预留
 				//撮合会针对这个金额最大限度的买入
@@ -147,7 +147,7 @@ func (e *Engine) processMarketSell(item QueueItem) {
 			}
 
 			bid := e.bids.Top()
-			if item.GetOrderType() == types.OrderTypeMarketQuantity {
+			if item.GetSubOrderType() == types.SubOrderTypeMarketByQty {
 
 				curTradeQuantity := decimal.Zero
 				//市价按买入数量
@@ -174,7 +174,7 @@ func (e *Engine) processMarketSell(item QueueItem) {
 					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), "")
 				}
 				return true
-			} else if item.GetOrderType() == types.OrderTypeMarketAmount {
+			} else if item.GetSubOrderType() == types.SubOrderTypeMarketByAmount {
 				//市价-按成交金额成交
 				if bid.GetPrice().Cmp(decimal.Zero) <= 0 {
 					return false

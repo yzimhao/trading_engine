@@ -9,6 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
+	"github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 )
 
 var askQueue *matching.OrderQueue
@@ -21,6 +22,20 @@ func init() {
 
 func d(v float64) decimal.Decimal {
 	return decimal.NewFromFloat(v)
+}
+
+func TestMarketSubOrderType(t *testing.T) {
+	Convey("市价订单", t, func() {
+		Convey("按金额卖出", func() {
+			item := matching.NewAskMarketAmountItem("1", d(1), d(100), 1)
+			So(item.GetSubOrderType(), ShouldEqual, types.SubOrderTypeMarketByAmount)
+		})
+
+		Convey("按数量卖出", func() {
+			item := matching.NewAskMarketQtyItem("1", d(2), 2)
+			So(item.GetSubOrderType(), ShouldEqual, types.SubOrderTypeMarketByQty)
+		})
+	})
 }
 
 func TestAskQueue(t *testing.T) {

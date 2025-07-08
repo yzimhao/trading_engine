@@ -8,37 +8,27 @@ import (
 
 type OrderType string
 type OrderSide string
-type TradeBy int
+type SubOrderType string
+type TradeBy string
 
 const (
-	OrderTypeLimit          OrderType = "limit"
-	OrderTypeMarket         OrderType = "market"
-	OrderTypeMarketQuantity OrderType = "marketQty"
-	OrderTypeMarketAmount   OrderType = "marketAmount"
-	OrderSideBuy            OrderSide = "bid"
-	OrderSideSell           OrderSide = "ask"
-	TradeBySeller           TradeBy   = 1
-	TradeByBuyer            TradeBy   = 2
+	OrderTypeLimit             OrderType    = "LIMIT"
+	OrderTypeMarket            OrderType    = "MARKET"
+	SubOrderTypeMarketByQty    SubOrderType = "marketByQty"
+	SubOrderTypeMarketByAmount SubOrderType = "marketByAmount"
+	SubOrderTypeUnknown        SubOrderType = "unknown"
+	OrderSideBuy               OrderSide    = "BUY"
+	OrderSideSell              OrderSide    = "SELL"
+	TradeBySeller              TradeBy      = "SELLER"
+	TradeByBuyer               TradeBy      = "BUYER"
 )
 
 func (os OrderSide) String() string {
-	if os == OrderSideSell {
-		return "ask"
-	}
-	return "bid"
+	return string(os)
 }
 
 func (ot OrderType) String() string {
-	switch ot {
-	case OrderTypeMarket:
-		return "market"
-	case OrderTypeMarketAmount:
-		return "market_amount"
-	case OrderTypeMarketQuantity:
-		return "market_qty"
-	default:
-		return "limit"
-	}
+	return string(ot)
 }
 
 type TradeResult struct {
