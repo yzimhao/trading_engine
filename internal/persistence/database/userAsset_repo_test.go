@@ -48,12 +48,43 @@ func TestAssetsRepo(t *testing.T) {
 }
 
 func (suite *assetsRepoTest) TearDownTest() {
-	// migrations.MigrateDown(suite.db, suite.v, suite.logger)
+	migrations.MigrateDown(suite.db, suite.v, suite.logger)
+}
+
+func (suite *assetsRepoTest) migrateUp() {
+	err := suite.db.AutoMigrate(
+		&entities.UserAsset{},
+		&entities.UserAssetLog{},
+		&entities.UserAssetFreeze{},
+	)
+	if err != nil {
+		suite.logger.Error("auto migrate error", zap.Error(err))
+	}
+}
+
+func (suite *assetsRepoTest) migrateDown() {
+	tables := []any{
+		&entities.UserAsset{},
+		&entities.UserAssetLog{},
+		&entities.UserAssetFreeze{},
+	}
+
+	for _, table := range tables {
+		indexes, err := suite.db.Migrator().GetIndexes(table)
+		if err != nil {
+			suite.logger.Debug("get indexes failed", zap.Error(err))
+			continue
+		}
+		for _, index := range indexes {
+			suite.db.Migrator().DropIndex(table, index.Name())
+		}
+		suite.db.Migrator().DropTable(table)
+	}
 }
 
 func (suite *assetsRepoTest) TestDespoit() {
-	migrations.MigrateUp(suite.db, suite.v, suite.logger)
-	defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+	suite.migrateUp()
+	defer suite.migrateDown()
 
 	err := suite.userAssetrepo.Despoit(uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("1"))
 	suite.NoError(err)
@@ -85,8 +116,8 @@ func (suite *assetsRepoTest) TestWithdraw() {
 		{
 			name: "提现用户不存在",
 			setup: func() {
-				migrations.MigrateUp(suite.db, suite.v, suite.logger)
-				defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+				suite.migrateUp()
+				defer suite.migrateDown()
 
 				err := suite.userAssetrepo.Withdraw(uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("1000"))
 				suite.Equal(err.Error(), "insufficient balance")
@@ -95,8 +126,8 @@ func (suite *assetsRepoTest) TestWithdraw() {
 		{
 			name: "提现用户余额不足",
 			setup: func() {
-				migrations.MigrateUp(suite.db, suite.v, suite.logger)
-				defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+				suite.migrateUp()
+				defer suite.migrateDown()
 
 				err := suite.userAssetrepo.Despoit(uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("1"))
 				suite.NoError(err)
@@ -108,8 +139,8 @@ func (suite *assetsRepoTest) TestWithdraw() {
 		{
 			name: "提现 余额充足",
 			setup: func() {
-				migrations.MigrateUp(suite.db, suite.v, suite.logger)
-				defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+				suite.migrateUp()
+				defer suite.migrateDown()
 
 				err := suite.userAssetrepo.Despoit(uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("2000"))
 				suite.NoError(err)
@@ -136,8 +167,8 @@ func (suite *assetsRepoTest) TestWithdraw() {
 }
 
 func (suite *assetsRepoTest) TestFreeze() {
-	migrations.MigrateUp(suite.db, suite.v, suite.logger)
-	defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+	suite.migrateUp()
+	defer suite.migrateDown()
 
 	_, err := suite.userAssetrepo.Freeze(suite.db, uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("1000"))
 	suite.Equal(err.Error(), "insufficient balance")
@@ -164,8 +195,8 @@ func (suite *assetsRepoTest) TestFreeze() {
 }
 
 func (suite *assetsRepoTest) TestTransfer() {
-	migrations.MigrateUp(suite.db, suite.v, suite.logger)
-	defer migrations.MigrateDown(suite.db, suite.v, suite.logger)
+	suite.migrateUp()
+	defer suite.migrateDown()
 
 	err := suite.userAssetrepo.Despoit(uuid.New().String(), suite.testUserId, suite.testAssetSymbol, d("1000"))
 	suite.NoError(err)
