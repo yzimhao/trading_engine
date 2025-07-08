@@ -56,7 +56,7 @@ func (q *Quote) Subscribe() {
 }
 
 func (q *Quote) OnNotifyQuote(ctx context.Context, msg []byte) error {
-	q.logger.Sugar().Debugf("on notify quote: %v", msg)
+	q.logger.Sugar().Debugf("notify quote: %s", msg)
 	var notifyQuote models_types.EventNotifyQuote
 	if err := json.Unmarshal(msg, &notifyQuote); err != nil {
 		q.logger.Sugar().Errorf("unmarshal notify quote error: %v", err)

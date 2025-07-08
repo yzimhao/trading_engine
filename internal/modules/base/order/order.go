@@ -128,10 +128,6 @@ func (o *orderModule) create(c *gin.Context) {
 				return
 			}
 
-			event.Amount = func() decimal.Decimal {
-				a := order.Amount
-				return a
-			}()
 			event.MaxAmount = func() decimal.Decimal {
 				a := order.FreezeAmount
 				return a
@@ -143,22 +139,19 @@ func (o *orderModule) create(c *gin.Context) {
 				o.router.ResponseError(c, types.ErrInternalError)
 				return
 			}
-
-			//市价单根据返回的冻结信息，创建event参数
-			if order.FreezeAmount.Cmp(decimal.Zero) > 0 {
-				event.MaxAmount = order.FreezeAmount
-			}
-			if order.FreezeQty.Cmp(decimal.Zero) > 0 {
-				event.MaxQty = order.FreezeQty
-			}
 		}
+
 	}
 
 	event.Symbol = order.Symbol
 	event.OrderId = order.OrderId
 	event.OrderSide = order.OrderSide
 	event.OrderType = order.OrderType
+	event.Quantity = order.Quantity
+	event.Amount = order.Amount
 	event.NanoTime = order.NanoTime
+	event.MaxAmount = order.FreezeAmount
+	event.MaxQty = order.FreezeQty
 
 	body, err := json.Marshal(event)
 	if err != nil {

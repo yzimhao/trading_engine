@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"github.com/duolacloud/crud-core/cache"
+	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore/orderlock"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
@@ -36,6 +38,7 @@ type inContext struct {
 	Cache       cache.Cache
 	OrderRepo   persistence.OrderRepository
 	Ws          *notification_ws.WsManager
+	Locker      *orderlock.OrderLock
 }
 
 type Matching struct {
@@ -48,6 +51,7 @@ type Matching struct {
 	cache       cache.Cache
 	orderRepo   persistence.OrderRepository
 	ws          *notification_ws.WsManager
+	locker      *orderlock.OrderLock
 }
 
 func NewMatching(in inContext) *Matching {
@@ -60,6 +64,7 @@ func NewMatching(in inContext) *Matching {
 		cache:       in.Cache,
 		orderRepo:   in.OrderRepo,
 		ws:          in.Ws,
+		locker:      in.Locker,
 	}
 }
 
@@ -88,16 +93,17 @@ func (s *Matching) InitEngine() {
 		opts := []matching.Option{
 			matching.WithPriceDecimals(int32(product.PriceDecimals)),
 			matching.WithQuantityDecimals(int32(product.QtyDecimals)),
-			// matching.WithLogger(s.logger),
+			matching.WithLogger(s.logger),
 		}
 		engine := matching.NewEngine(context.Background(), product.Symbol, opts...)
 
 		engine.OnRemoveResult(func(result matching_types.RemoveResult) {
-			s.logger.Sugar().Infof("symbol: %s remove result: %v", result.Symbol, result)
+			s.logger.Sugar().Infof("symbol: %s remove result: %+v", result.Symbol, result)
+			// time.Sleep(time.Second) //这里如何延迟取消订单的通知？
 			s.processCancelOrderResult(result)
 		})
 		engine.OnTradeResult(func(result matching_types.TradeResult) {
-			s.logger.Sugar().Infof("symbol: %s trade result: %v", result.Symbol, result)
+			s.logger.Sugar().Infof("symbol: %s trade result: %+v", result.Symbol, result)
 			s.processTradeResult(result)
 		})
 
@@ -113,9 +119,6 @@ func (s *Matching) InitEngine() {
 }
 
 func (s *Matching) Subscribe() {
-	// s.broker.Subscribe(models_types.TOPIC_ORDER_NEW, s.OnNewOrder)
-	// s.broker.Subscribe(models_types.TOPIC_NOTIFY_ORDER_CANCEL, s.OnNotifyCancelOrder)
-
 	s.consume.Subscribe(models_types.TOPIC_ORDER_NEW, func(ctx context.Context, data []byte) {
 		s.OnNewOrder(ctx, data)
 	})
@@ -133,27 +136,29 @@ func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
 		return err
 	}
 
+	s.logger.Sugar().Debugf("listen new order: %+v", order)
+
 	var item matching.QueueItem
 	if order.OrderType == matching_types.OrderTypeLimit {
 		if order.OrderSide == matching_types.OrderSideSell {
-			item = matching.NewAskLimitItem(order.OrderId, *order.Price, *order.Quantity, order.NanoTime)
+			item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 		} else {
-			item = matching.NewBidLimitItem(order.OrderId, *order.Price, *order.Quantity, order.NanoTime)
+			item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 		}
 	} else if order.OrderType == matching_types.OrderTypeMarket {
 		// 按成交金额
-		if order.Amount != nil {
+		if order.Amount.Cmp(decimal.Zero) > 0 {
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskMarketAmountItem(order.OrderId, *order.Amount, *order.MaxAmount, order.NanoTime)
+				item = matching.NewAskMarketAmountItem(order.OrderId, order.Amount, order.MaxQty, order.NanoTime)
 			} else {
-				item = matching.NewBidMarketAmountItem(order.OrderId, *order.Amount, order.NanoTime)
+				item = matching.NewBidMarketAmountItem(order.OrderId, order.Amount, order.NanoTime)
 			}
 		} else {
 			// 按成交量
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskMarketQtyItem(order.OrderId, *order.MaxQty, order.NanoTime)
+				item = matching.NewAskMarketQtyItem(order.OrderId, order.MaxQty, order.NanoTime)
 			} else {
-				item = matching.NewBidMarketQtyItem(order.OrderId, *order.Quantity, *order.MaxQty, order.NanoTime)
+				item = matching.NewBidMarketQtyItem(order.OrderId, order.Quantity, order.MaxAmount, order.NanoTime)
 			}
 		}
 	}
@@ -198,9 +203,6 @@ func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) 
 		s.logger.Sugar().Errorf("matching process cancel order result marshal error: %v", err)
 		return
 	}
-	// err = s.broker.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, &broker.Message{
-	// 	Body: body,
-	// })
 
 	err = s.produce.Publish(context.Background(), models_types.TOPIC_PROCESS_ORDER_CANCEL, body)
 	if err != nil {
@@ -214,10 +216,14 @@ func (s *Matching) processTradeResult(result matching_types.TradeResult) {
 		s.logger.Sugar().Errorf("matching process trade result marshal error: %v", err)
 		return
 	}
-	// err = s.broker.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, &broker.Message{
-	// 	Body: body,
-	// })
-	err = s.produce.Publish(context.Background(), models_types.TOPIC_ORDER_SETTLE, body)
+	//处理成交结果之前，对相关订单加锁
+	ctx := context.Background()
+	if err := s.locker.Lock(ctx, result.AskOrderId, result.BidOrderId); err != nil {
+		s.logger.Sugar().Errorf("matching process trade result lock error: %v", err)
+		return
+	}
+
+	err = s.produce.Publish(ctx, models_types.TOPIC_ORDER_SETTLE, body)
 	if err != nil {
 		s.logger.Sugar().Errorf("matching process trade result publish error: %v", err)
 	}
@@ -267,11 +273,10 @@ func (s *Matching) loadUnfinishedOrders(ctx context.Context, symbol string) erro
 	for _, order := range orders {
 		var item matching.QueueItem
 		if order.OrderType == matching_types.OrderTypeLimit {
-
 			if order.OrderSide == matching_types.OrderSideSell {
-				item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
+				item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity.Sub(order.FinishedQty), order.NanoTime)
 			} else {
-				item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
+				item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity.Sub(order.FinishedQty), order.NanoTime)
 			}
 			if engine := s.engine(order.Symbol); engine != nil {
 

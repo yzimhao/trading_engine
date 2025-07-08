@@ -19,11 +19,11 @@ type EventOrderNew struct {
 	OrderId   string                   `json:"order_id,omitempty"`
 	OrderSide matching_types.OrderSide `json:"order_side,omitempty"`
 	OrderType matching_types.OrderType `json:"order_type,omitempty"`
-	Price     *decimal.Decimal         `json:"price,omitempty"`
-	Quantity  *decimal.Decimal         `json:"quantity,omitempty"`
-	Amount    *decimal.Decimal         `json:"amount,omitempty"`
-	MaxAmount *decimal.Decimal         `json:"max_amount,omitempty"`
-	MaxQty    *decimal.Decimal         `json:"max_qty,omitempty"`
+	Price     decimal.Decimal          `json:"price,omitempty"`
+	Quantity  decimal.Decimal          `json:"quantity,omitempty"`
+	Amount    decimal.Decimal          `json:"amount,omitempty"`
+	MaxAmount decimal.Decimal          `json:"max_amount,omitempty"` //market订单有效
+	MaxQty    decimal.Decimal          `json:"max_qty,omitempty"`    //market订单有效
 	NanoTime  int64                    `json:"nano_time,omitempty"`
 }
 

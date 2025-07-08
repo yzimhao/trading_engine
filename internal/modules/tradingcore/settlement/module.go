@@ -9,7 +9,6 @@ var Module = fx.Options(
 		NewSettlementSubscriber,
 		NewCancelOrderSubscriber,
 		NewSettleProcessor,
-		NewSettleLocker,
 	),
 	fx.Invoke(startupSubscriber),
 )

@@ -1,4 +1,4 @@
-package settlement
+package orderlock
 
 import (
 	"context"
@@ -13,17 +13,17 @@ const (
 	lockKey = "settle.lock.%s"
 )
 
-type SettleLocker struct {
+type OrderLock struct {
 	redis  *redis.Client
 	logger *zap.Logger
 	mx     sync.Mutex
 }
 
-func NewSettleLocker(redis *redis.Client, logger *zap.Logger) *SettleLocker {
-	return &SettleLocker{redis: redis, logger: logger}
+func NewOrderLock(redis *redis.Client, logger *zap.Logger) *OrderLock {
+	return &OrderLock{redis: redis, logger: logger}
 }
 
-func (s *SettleLocker) Lock(ctx context.Context, orderIds ...string) error {
+func (s *OrderLock) Lock(ctx context.Context, orderIds ...string) error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
@@ -36,7 +36,7 @@ func (s *SettleLocker) Lock(ctx context.Context, orderIds ...string) error {
 	}
 	return nil
 }
-func (s *SettleLocker) Unlock(ctx context.Context, orderIds ...string) error {
+func (s *OrderLock) Unlock(ctx context.Context, orderIds ...string) error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
@@ -58,7 +58,7 @@ func (s *SettleLocker) Unlock(ctx context.Context, orderIds ...string) error {
 	return nil
 }
 
-func (s *SettleLocker) IsExistLock(ctx context.Context, orderId string) (bool, error) {
+func (s *OrderLock) IsLocked(ctx context.Context, orderId string) (bool, error) {
 	key := fmt.Sprintf(lockKey, orderId)
 	return s.redis.Do(ctx, "EXISTS", key).Bool()
 }

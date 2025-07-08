@@ -203,22 +203,21 @@ func (e *Engine) Clean() {
 func (e *Engine) matching() {
 	e.logger.Debug("[matching] start...")
 	for {
-		e.logger.Debug("[matching] loop ...")
 		select {
 		case <-e.ctx.Done():
 			return
 		case result := <-e.resultNotify:
-			e.logger.Debug("[matching] result", zap.Any("result", result))
+			e.logger.Debug("[matching] trade result", zap.Any("result", result))
 			if e.onTradeResult != nil {
 				e.onTradeResult(result)
 			}
 		case result := <-e.removeNotify:
-			e.logger.Debug("[matching] remove", zap.Any("result", result))
+			e.logger.Debug("[matching] cancel item", zap.Any("result", result))
 			if e.onRemoveResult != nil {
 				e.onRemoveResult(result)
 			}
 		default:
-			e.logger.Debug("[matching] processLimitOrder")
+			// e.logger.Debug("[matching] processLimitOrder")
 			e.processLimitOrder()
 		}
 	}

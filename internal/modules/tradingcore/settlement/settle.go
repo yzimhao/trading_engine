@@ -12,6 +12,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore/orderlock"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
@@ -29,7 +30,7 @@ type SettleProcessor struct {
 	userAssetRepo persistence.UserAssetRepository
 	produce       *provider.Produce
 	redis         *redis.Client
-	locker        *SettleLocker
+	locker        *orderlock.OrderLock
 	ws            *notification_ws.WsManager
 }
 
@@ -42,7 +43,7 @@ type inSettleContext struct {
 	UserAssetRepo persistence.UserAssetRepository
 	Produce       *provider.Produce
 	Redis         *redis.Client
-	Locker        *SettleLocker
+	Locker        *orderlock.OrderLock
 	Ws            *notification_ws.WsManager
 }
 
@@ -67,17 +68,18 @@ func (s *SettleProcessor) Run(ctx context.Context, tradeResult matching_types.Tr
 		return err
 	}
 
-	//创建买卖双方订单标志锁
-	if err := s.locker.Lock(ctx, tradeResult.AskOrderId, tradeResult.BidOrderId); err != nil {
-		return err
-	}
-	defer s.locker.Unlock(ctx, tradeResult.AskOrderId, tradeResult.BidOrderId)
-
 	return s.flow(ctx, tradeResult)
 }
 
 func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.TradeResult) error {
 	return s.db.Transaction(func(tx *gorm.DB) error {
+		defer func() {
+			s.logger.Sugar().Debugf("settle unlock order: [%s, %s]", tradeResult.AskOrderId, tradeResult.BidOrderId)
+			if err := s.locker.Unlock(ctx, tradeResult.AskOrderId, tradeResult.BidOrderId); err != nil {
+				s.logger.Sugar().Debugf("settle unlock err: %s", err)
+			}
+		}()
+
 		//交易对配置
 		product, err := s.productRepo.Get(tradeResult.Symbol)
 		if err != nil {
@@ -119,12 +121,6 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		if err != nil {
 			return err
 		}
-
-		// if err := s.broker.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, &broker.Message{
-		// 	Body: body,
-		// }, broker.WithShardingKey(tradeResult.Symbol)); err != nil {
-		// 	return err
-		// }
 
 		if err := s.produce.Publish(ctx, models_types.TOPIC_NOTIFY_QUOTE, body); err != nil {
 			return err
@@ -313,13 +309,13 @@ func (s *SettleProcessor) orderDelivery(
 	// 2.将解冻的数量转移给买家
 	err := s.userAssetRepo.UnFreeze(tx, tradeLog.Ask, ask.UserId, product.Target.Symbol, tradeLog.Quantity)
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery target variety unFreeze: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery target asset unFreeze: %+v %s", tradeLog, err.Error())
 		return err
 	}
 	err = s.userAssetRepo.TransferWithTx(tx, tradeLog.TradeId, ask.UserId, bid.UserId,
 		product.Target.Symbol, tradeLog.Quantity)
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery target variety transfer: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery target asset transfer: %+v %s", tradeLog, err.Error())
 		return err
 	}
 
@@ -329,27 +325,27 @@ func (s *SettleProcessor) orderDelivery(
 	amount := tradeLog.Amount
 	err = s.userAssetRepo.UnFreeze(tx, tradeLog.Bid, bid.UserId, product.Base.Symbol, amount.Add(tradeLog.BidFee))
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery base variety unFreeze: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery base asset unFreeze: %s", err.Error())
 		return err
 	}
 
 	err = s.userAssetRepo.TransferWithTx(tx, tradeLog.TradeId, bid.UserId, ask.UserId, product.Base.Symbol, amount)
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery base variety transfer: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery base asset transfer: %+v %s", tradeLog, err.Error())
 		return err
 	}
 
 	//ask手续费收入到系统账号里
 	err = s.userAssetRepo.TransferWithTx(tx, tradeLog.TradeId, ask.UserId, entities.SYSTEM_USER_FEE, product.Base.Symbol, tradeLog.AskFee)
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery ask fee transfer: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery ask fee transfer: %+v %s", tradeLog, err.Error())
 		return err
 	}
 
 	//bid的手续费收入到系统账号里
 	err = s.userAssetRepo.TransferWithTx(tx, tradeLog.TradeId, bid.UserId, entities.SYSTEM_USER_FEE, product.Base.Symbol, tradeLog.BidFee)
 	if err != nil {
-		s.logger.Sugar().Errorf("orderDelivery bid fee transfer: %v %s", tradeLog, err.Error())
+		s.logger.Sugar().Errorf("order delivery bid fee transfer: %+v %s", tradeLog, err.Error())
 		return err
 	}
 
@@ -357,14 +353,14 @@ func (s *SettleProcessor) orderDelivery(
 	if ask.OrderType == matching_types.OrderTypeMarket && ask.Status == models_types.OrderStatusFilled {
 		err = s.userAssetRepo.UnFreeze(tx, tradeLog.Ask, ask.UserId, product.Target.Symbol, decimal.Zero)
 		if err != nil {
-			s.logger.Sugar().Errorf("orderDelivery ask unFreeze: %v %s", tradeLog, err.Error())
+			s.logger.Sugar().Errorf("order delivery ask unFreeze: %s %s", tradeLog.Ask, err.Error())
 			return err
 		}
 	}
 	if bid.OrderType == matching_types.OrderTypeMarket && bid.Status == models_types.OrderStatusFilled {
 		err = s.userAssetRepo.UnFreeze(tx, tradeLog.Bid, bid.UserId, product.Base.Symbol, decimal.Zero)
 		if err != nil {
-			s.logger.Sugar().Errorf("orderDelivery bid unFreeze: %v %s", tradeLog, err.Error())
+			s.logger.Sugar().Errorf("order delivery bid unFreeze: %s %s", tradeLog.Bid, err.Error())
 			return err
 		}
 	}
