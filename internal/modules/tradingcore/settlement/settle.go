@@ -33,6 +33,7 @@ type SettleProcessor struct {
 	redis         *redis.Client
 	locker        *orderlock.OrderLock
 	ws            *notification_ws.WsManager
+	productInfo   *entities.Product
 }
 
 type inSettleContext struct {
@@ -86,6 +87,7 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		if err != nil {
 			return err
 		}
+		s.productInfo = product
 
 		//检查订单
 		askOrder, bidOrder, err := s.checkOrder(tx, tradeResult)
@@ -130,9 +132,9 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		//推送交易页面上的最新成交记录
 		s.ws.Broadcast(ctx, notification_ws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
 			map[string]any{
-				"price":    tradeLog.Price,
-				"qty":      tradeLog.Quantity,
-				"amount":   tradeLog.Amount,
+				"price":    tradeLog.Price.StringFixedBank(s.productInfo.PriceDecimals),
+				"qty":      tradeLog.Quantity.StringFixedBank(s.productInfo.QtyDecimals),
+				"amount":   tradeLog.Amount.StringFixedBank(s.productInfo.PriceDecimals),
 				"trade_at": tradeResult.TradeTime,
 			},
 		)

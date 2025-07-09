@@ -12,7 +12,7 @@
   全新重构，希望更多开源爱好者能加入共同开发练手，共同进步，请联系下方wx
 
 #### Example
-<a href="http://157.250.198.95:8080/example/?symbol=btcusdt" target="_blank" rel="noopener noreferrer">Demo Project</a>
+[demo project](http://157.250.198.95:8080/example/?symbol=btcusdt)
 
 
 ### 系统架构
