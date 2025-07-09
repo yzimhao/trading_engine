@@ -27,7 +27,7 @@
     .kline-chart {
         min-height: 500px;
         background-color: rgb(206, 213, 213);
-        border-radius: 5px 5px;
+        // border-radius: 5px 5px;
     }
     .user-form{
         height: 250px;
@@ -90,7 +90,7 @@
             flex-direction: column-reverse;
             font-size: 16px;
             padding: 0px 10px;
-            border-radius: 5px 5px;
+            // border-radius: 5px 5px;
         }
         .latest-price{
             display: block;
@@ -102,7 +102,7 @@
             height: 225px;
             font-size: 16px;
             padding: 0 10px;
-            border-radius: 5px 5px;
+            // border-radius: 5px 5px;
         }
     }
     .tradehistory{
