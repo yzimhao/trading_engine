@@ -5,7 +5,17 @@
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
-    /* 5+App特有相关 */
+    "h5" : {
+        "router" : {
+            "base" : "/example/",
+            "mode" : "history"
+        },
+        "title" : "example",
+        "devServer" : {
+            "https" : false
+        }
+    },
+    
     "app-plus" : {
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
@@ -65,8 +75,8 @@
     "mp-toutiao" : {
         "usingComponents" : true
     },
-    "uniStatistics": {  
-        "enable": false
+    "uniStatistics" : {
+        "enable" : false
     },
     "vueVersion" : "3"
 }

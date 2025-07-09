@@ -86,7 +86,18 @@ func (a *userAssetsModule) query(c *gin.Context) {
 		a.router.ResponseError(c, types.ErrInternalError)
 		return
 	}
-	a.router.ResponseOk(c, assets)
+
+	var response []any
+	for _, item := range assets {
+		response = append(response, gin.H{
+			"symbol":         item.Symbol,
+			"total_balance":  item.TotalBalance.StringFixedBank(4),
+			"freeze_balance": item.FreezeBalance.StringFixedBank(4),
+			"avail_balance":  item.AvailBalance.StringFixedBank(4),
+			"updated_at":     item.UpdatedAt,
+		})
+	}
+	a.router.ResponseOk(c, response)
 }
 
 func (a *userAssetsModule) queryAssetHistory(c *gin.Context) {

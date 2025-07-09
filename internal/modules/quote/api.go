@@ -125,9 +125,9 @@ func (q *QuoteApi) trades(c *gin.Context) {
 	for _, v := range data {
 		response = append(response, map[string]any{
 			"id":       v.Id,
-			"price":    v.Price.Truncate(int32(product.PriceDecimals)).String(),
-			"qty":      v.Quantity.Truncate(int32(product.QtyDecimals)).String(),
-			"amount":   v.Amount.Truncate(int32(product.PriceDecimals)).String(),
+			"price":    v.Price.StringFixedBank(int32(product.PriceDecimals)),
+			"qty":      v.Quantity.StringFixedBank(int32(product.QtyDecimals)),
+			"amount":   v.Amount.StringFixedBank(int32(product.PriceDecimals)),
 			"trade_at": v.CreatedAt.UnixNano(),
 		})
 	}

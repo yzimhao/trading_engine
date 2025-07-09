@@ -59,3 +59,8 @@ docs-gen:
 .PHONY: lint
 lint:
 	golangci-lint run --fix
+
+
+.PHONY: build
+build:
+	@bash scripts/build.sh $(version)

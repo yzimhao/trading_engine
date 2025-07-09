@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/qvcloud/gopkg/version"
 	"github.com/urfave/cli/v3"
 	"github.com/yzimhao/trading_engine/v2/internal/di"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
@@ -15,7 +16,10 @@ import (
 )
 
 const (
-	MainName string = "xExchange"
+	appName      = "tradingEngine"
+	appDesc      = "go开发的证券数字货币交易系统"
+	appAuthor    = "yzimhao"
+	appCopyright = "https://github.com/yzimhao/trading_engine"
 )
 
 func main() {
@@ -70,8 +74,22 @@ func main() {
 		},
 	}
 
+	versionCmd := &cli.Command{
+		Name:    "version",
+		Aliases: []string{"v"},
+		Usage:   "Display version info.",
+		Action: func(ctx context.Context, c *cli.Command) error {
+			version.ShowVersion()
+			return nil
+		},
+	}
+
 	cmd := &cli.Command{
-		Name: MainName,
+		Name:        appName,
+		Description: appDesc,
+		Usage:       "",
+		Authors:     []any{appAuthor},
+		Copyright:   appCopyright,
 		Action: func(_ context.Context, cmd *cli.Command) error {
 			app := di.App()
 			app.Run()
@@ -79,6 +97,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			migrateCmd,
+			versionCmd,
 		},
 	}
 
