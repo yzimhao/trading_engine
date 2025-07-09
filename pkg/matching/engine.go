@@ -223,16 +223,16 @@ func (e *Engine) matching() {
 	}
 }
 
-func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal, tradeAt int64, remainder string) types.TradeResult {
+func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal, tradeAt int64, marketOrder *types.MarketOrderInfo) types.TradeResult {
 
 	tradeResult := types.TradeResult{
-		Symbol:                 e.symbol,
-		AskOrderId:             ask.GetUniqueId(),
-		BidOrderId:             bid.GetUniqueId(),
-		TradeQuantity:          tradeQty,
-		TradePrice:             price,
-		TradeTime:              tradeAt,
-		RemainderMarketOrderId: remainder,
+		Symbol:          e.symbol,
+		AskOrderId:      ask.GetUniqueId(),
+		BidOrderId:      bid.GetUniqueId(),
+		TradeQuantity:   tradeQty,
+		TradePrice:      price,
+		TradeTime:       tradeAt,
+		MarketOrderInfo: marketOrder,
 	}
 
 	if ask.GetCreateTime() < bid.GetCreateTime() {

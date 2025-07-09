@@ -52,7 +52,7 @@ func (e *Engine) processLimitOrder() {
 				curTradePrice = askTop.GetPrice()
 			}
 
-			e.resultNotify <- e.tradeResult(askTop, bidTop, curTradePrice, curTradeQty, time.Now().UnixNano(), "")
+			e.resultNotify <- e.tradeResult(askTop, bidTop, curTradePrice, curTradeQty, time.Now().UnixNano(), nil)
 			return true
 		} else {
 			return false

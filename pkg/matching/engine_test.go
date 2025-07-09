@@ -215,7 +215,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			So(trade.BidOrderId, ShouldEqual, "id37")
 			So(trade.TradePrice, ShouldEqual, d(1.01))
 			So(trade.TradeQuantity, ShouldEqual, d(1.3))
-			So(trade.RemainderMarketOrderId, ShouldEqual, "")
+			So(trade.MarketOrderInfo, ShouldBeNil)
 			So(btcusdt.AskQueue().Top().GetQuantity(), ShouldEqual, d(0.9))
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 2)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
@@ -245,7 +245,8 @@ func TestTradeFunc_ex1(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity.String(), ShouldEqual, d(5).String())
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id211")
+			So(trade.MarketOrderInfo, ShouldNotBeNil)
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id211")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
@@ -272,7 +273,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.BidOrderId, ShouldEqual, "id28")
 			So(trade.TradePrice, ShouldEqual, d(1.01))
 			So(trade.TradeQuantity, ShouldEqual, d(1.1))
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id28")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id28")
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}
@@ -296,7 +297,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.BidOrderId, ShouldEqual, "id29")
 			So(trade.TradePrice, ShouldEqual, d(1.01))
 			So(trade.TradeQuantity, ShouldEqual, d(2.2))
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id29")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id29")
 		case <-time.After(time.Second * 2):
 			So(true, ShouldEqual, false)
 		}
@@ -321,7 +322,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(100))
 			So(trade.TradeQuantity.String(), ShouldEqual, d(1).String())
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id210")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id210")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
 		case <-time.After(time.Second * 2):
@@ -347,7 +348,7 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity, ShouldEqual, d(100))
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id212")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id212")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
 		case <-time.After(time.Second * 2):
@@ -376,7 +377,9 @@ func TestTradeFunc_ex2(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity.String(), ShouldEqual, d(600).String())
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id215")
+			So(trade.MarketOrderInfo, ShouldNotBeNil)
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id215")
+			So(trade.MarketOrderInfo.IsFinalTrade, ShouldBeTrue)
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):
@@ -405,7 +408,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity, ShouldEqual, d(6))
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id213")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id213")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):
@@ -432,7 +435,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity, ShouldEqual, d(100))
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id214")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id214")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
 		case <-time.After(time.Second * 2):
@@ -458,7 +461,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(10.00))
 			So(trade.TradeQuantity, ShouldEqual, d(50))
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id216")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id216")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
 
@@ -489,7 +492,7 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			So(trade.TradePrice, ShouldEqual, d(100))
 			So(trade.TradeQuantity, ShouldEqual, d(3))
 
-			So(trade.RemainderMarketOrderId, ShouldEqual, "id217")
+			So(trade.MarketOrderInfo.OrderId, ShouldEqual, "id217")
 			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 			So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
 		case <-time.After(time.Second * 2):

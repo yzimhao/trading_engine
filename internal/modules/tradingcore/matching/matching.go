@@ -99,8 +99,11 @@ func (s *Matching) InitEngine() {
 
 		engine.OnRemoveResult(func(result matching_types.RemoveResult) {
 			s.logger.Sugar().Infof("symbol: %s remove result: %+v", result.Symbol, result)
-			// time.Sleep(time.Second) //这里如何延迟取消订单的通知？
-			s.processCancelOrderResult(result)
+
+			go func() {
+				time.Sleep(time.Second)
+				s.processCancelOrderResult(result)
+			}()
 		})
 		engine.OnTradeResult(func(result matching_types.TradeResult) {
 			s.logger.Sugar().Infof("symbol: %s trade result: %+v", result.Symbol, result)
@@ -197,6 +200,7 @@ func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) 
 	data := types.EventCancelOrder{
 		Symbol:  result.Symbol,
 		OrderId: result.UniqueId,
+		Type:    result.Type,
 	}
 	body, err := json.Marshal(data)
 	if err != nil {

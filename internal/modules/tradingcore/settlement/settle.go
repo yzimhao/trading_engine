@@ -16,6 +16,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
+	"github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -99,12 +100,12 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}
 
 		//更新ask订单信息
-		if err := s.updateAskOrderInfo(tx, tradeLog, askOrder, tradeResult.RemainderMarketOrderId); err != nil {
+		if err := s.updateAskOrderInfo(tx, tradeLog, askOrder, tradeResult.MarketOrderInfo); err != nil {
 			return err
 		}
 
 		//更新bid订单信息
-		if err := s.updateBidOrderInfo(tx, tradeLog, bidOrder, tradeResult.RemainderMarketOrderId); err != nil {
+		if err := s.updateBidOrderInfo(tx, tradeLog, bidOrder, tradeResult.MarketOrderInfo); err != nil {
 			return err
 		}
 
@@ -194,7 +195,7 @@ func (s *SettleProcessor) writeTradeLog(tx *gorm.DB, tradeResult matching_types.
 	return &tradeLog, nil
 }
 
-func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.TradeRecord, askOrder *entities.Order, remainderMarketOrderId string) error {
+func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.TradeRecord, askOrder *entities.Order, market *types.MarketOrderInfo) error {
 
 	askOrder.Fee = askOrder.Fee.Add(tradeLog.AskFee)
 	askOrder.FinishedQty = askOrder.FinishedQty.Add(tradeLog.Quantity)
@@ -233,7 +234,7 @@ func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 			askOrder.Status = models_types.OrderStatusFilled
 		}
 
-		if remainderMarketOrderId == askOrder.OrderId {
+		if market != nil && market.OrderId == askOrder.OrderId && market.IsFinalTrade {
 			askOrder.Status = models_types.OrderStatusFilled
 		}
 
@@ -245,7 +246,7 @@ func (s *SettleProcessor) updateAskOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 	return nil
 }
 
-func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.TradeRecord, bidOrder *entities.Order, remainderMarketOrderId string) error {
+func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.TradeRecord, bidOrder *entities.Order, market *types.MarketOrderInfo) error {
 
 	bidOrder.Fee = bidOrder.Fee.Add(tradeLog.BidFee)
 	bidOrder.FinishedQty = bidOrder.FinishedQty.Add(tradeLog.Quantity)
@@ -285,7 +286,7 @@ func (s *SettleProcessor) updateBidOrderInfo(tx *gorm.DB, tradeLog *entities.Tra
 			bidOrder.Status = models_types.OrderStatusFilled
 		}
 
-		if remainderMarketOrderId == bidOrder.OrderId {
+		if market != nil && market.OrderId == bidOrder.OrderId && market.IsFinalTrade {
 			bidOrder.Status = models_types.OrderStatusFilled
 		}
 
