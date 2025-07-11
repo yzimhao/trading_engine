@@ -331,7 +331,7 @@ export default {
                     me.depth.asks = msg.body.asks;
                     me.depth.bids = msg.body.bids;
                 } else if (msg.type == "trade." + me.current.symbol) {
-                    me.tradeRecords.push({
+                    me.tradeRecords.unshift({
                         amount: msg.body.amount,
                         price: msg.body.price,
                         qty: msg.body.qty,

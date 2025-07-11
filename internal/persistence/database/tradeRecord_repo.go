@@ -31,7 +31,7 @@ func (t *tradeRecordRepo) Find(ctx context.Context, symbol string, limit int) ([
 	}
 
 	var rows []*entities.TradeRecord
-	query := t.db.Table(entity.TableName()).Order("created_at desc").Find(&rows)
+	query := t.db.Table(entity.TableName()).Limit(limit).Order("created_at desc").Find(&rows)
 	if query.Error != nil {
 		return nil, query.Error
 	}
