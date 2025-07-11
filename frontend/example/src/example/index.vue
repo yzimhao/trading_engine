@@ -117,6 +117,34 @@
                     </view>
                 </view>
             </view>
+
+            <view class="user-order">
+                <view>
+                    <view style="font-size: 8px;">
+                        <uni-row>
+                            <uni-col :span="2">类型</uni-col>
+                            <uni-col :span="6">价格/平均</uni-col>
+                            <uni-col :span="8">数量/已成</uni-col>
+                            <uni-col :span="6">At</uni-col>
+                            <uni-col :span="2"></uni-col>
+                        </uni-row>
+                    </view>
+
+                    <view class="order" v-for="(item, i) in unfinishedOrders">
+                        <uni-row>
+                            <uni-col :span="2">{{ item.order_side }}</uni-col>
+                            <uni-col :span="6">{{ item.price }}/{{ item.avg_price }}</uni-col>
+                            <uni-col :span="8">{{ item.quantity }}/{{ item.finished_qty }}</uni-col>
+                            <uni-col :span="6">7-11 10:23:45 </uni-col>
+                            <uni-col :span="2">
+                                <uni-icons type="trash" class="cancel" @click="actionCancelOrder(item.order_id)"></uni-icons>
+                            </uni-col>
+                        </uni-row>
+                    </view>
+
+                    
+                </view>
+            </view>
         </view>
     </view>
     <view class="right">
@@ -130,7 +158,7 @@
                 </uni-row>
             </view>
         
-            <view class="latest-price">
+            <view class="latest-price" style="color:red;">
                 <text>最新价格: {{ current.latestPrice }}</text>
                 <text style="margin-left: 10px;">24H涨跌幅: {{ current.upRate24h }}%</text>
             </view>
@@ -244,6 +272,7 @@ export default {
             bids:[]
         },
         tradeRecords: [],
+        unfinishedOrders:[],
         user: {
             name: "",
             isLogin: false,
@@ -285,6 +314,7 @@ export default {
     this.iniWebsocket();
     this.loadTradesRecord();
     this.loadAppVersion();
+    this.loadUnfinishedOrder();
    
   },
   mounted(){
@@ -311,7 +341,7 @@ export default {
                     "kline.m1."+me.current.symbol,
                     "market.24h."+me.current.symbol,
                     "market.28h."+me.current.symbol,
-                    // "token."+ Cookies.get("jwt"),
+                    "token."+ me.user.token,
                 ],
                 "unsubscribe":[
                     "MARKET.28h."+me.current.symbol,
@@ -516,6 +546,18 @@ export default {
         }
     },
 
+    actionCancelOrder(id){
+        const me = this;
+        console.log("cancel order id: ",id);
+        request("/api/v1/order/cancel", {
+            "symbol": this.current.symbol,
+            "order_id": id
+        }, "GET")
+        .then(res => {
+            console.log("/api/v1/order/cancel", res, id);
+            me.loadUnfinishedOrder();
+        })
+    },
 
     loadAppVersion() {
         const me = this;
@@ -543,6 +585,18 @@ export default {
             }
         }).catch(err=>{
             console.log("api/v1/product ", err);
+        })
+    },
+    loadUnfinishedOrder(){
+        const me = this;
+        request("/api/v1/user/order/unfinished", {
+            "symbol": me.current.symbol,
+            "limit": 10
+        },  "GET").then(res=>{
+            console.log("/api/v1/user/order/unfinished", res);
+            me.unfinishedOrders = res.data;
+        }).catch(err=>{
+            console.log("/api/v1/user/order/unfinished", err);
         })
     },
     loadDepth(){
@@ -573,6 +627,8 @@ export default {
     },
     loadUserAssets() {
         const me = this;
+        me.loadUnfinishedOrder();
+        
         request("/api/v1/user/asset/query", {"symbols": me.current.baseSymbol + "," +me.current.targetSymbol},  "GET").then(res=>{
             console.log("/api/v1/user/asset/query ", res);
             const assets = res.data;

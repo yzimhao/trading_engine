@@ -268,7 +268,7 @@ func (s *Matching) flushOrderbookToCache(ctx context.Context, symbol string) {
 }
 
 func (s *Matching) loadUnfinishedOrders(ctx context.Context, symbol string) error {
-	orders, err := s.orderRepo.LoadUnfinishedOrders(ctx, symbol)
+	orders, err := s.orderRepo.LoadUnfinishedOrders(ctx, symbol, 0)
 	if err != nil {
 		s.logger.Sugar().Errorf("matching load unfinished orders error: %v", err)
 		return err

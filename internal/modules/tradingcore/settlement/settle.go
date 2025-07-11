@@ -138,6 +138,12 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 				"trade_at": tradeResult.TradeTime,
 			},
 		)
+		s.ws.Broadcast(ctx, notification_ws.MsgLatestPriceTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
+			map[string]any{
+				"latest_price": tradeLog.Price.StringFixedBank(s.productInfo.PriceDecimals),
+				"at":           tradeResult.TradeTime,
+			},
+		)
 		//TODO 推送买卖双方个人结算的成交记录
 
 		return nil

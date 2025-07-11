@@ -64,6 +64,22 @@
                 padding: 0 10px;
             }
         }
+
+        .user-order {
+            padding: 5px;
+            background-color:rgb(212, 240, 157);
+            flex: auto;
+            text-align: center;
+            .order{
+                height: 12px;
+                line-height: 12px;
+                vertical-align: middle;
+                font-size: 10px;
+                .cancel{
+                    cursor: pointer;
+                }
+            }
+        }
     }
   }
   .right{
@@ -121,6 +137,7 @@
 
 
 .footer {
+    margin: 0 20px;
     .version {
         margin-top: 20px;
         text-align: center;

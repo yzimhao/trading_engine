@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/cast"
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -18,10 +19,11 @@ var Module = fx.Module(
 )
 
 type userOrderModule struct {
-	router    *provider.Router
-	logger    *zap.Logger
-	orderRepo persistence.OrderRepository
-	auth      *middlewares.AuthMiddleware
+	router      *provider.Router
+	logger      *zap.Logger
+	orderRepo   persistence.OrderRepository
+	productRepo persistence.ProductRepository
+	auth        *middlewares.AuthMiddleware
 }
 
 func newUserOrdersModule(
@@ -29,12 +31,14 @@ func newUserOrdersModule(
 	logger *zap.Logger,
 	auth *middlewares.AuthMiddleware,
 	orderRepo persistence.OrderRepository,
+	product persistence.ProductRepository,
 ) {
 	uo := userOrderModule{
-		router:    router,
-		logger:    logger,
-		orderRepo: orderRepo,
-		auth:      auth,
+		router:      router,
+		logger:      logger,
+		orderRepo:   orderRepo,
+		productRepo: product,
+		auth:        auth,
 	}
 	uo.registerRouter()
 }
@@ -99,23 +103,41 @@ func (u *userOrderModule) tradeHistory(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param symbol query string true "symbol"
+// @Param limit query string false "limit"
 // @Success 200 {string} any
 // @Router /api/v1/user/order/unfinished [get]
 func (u *userOrderModule) unfinishedList(c *gin.Context) {
 	symbol := c.Query("symbol")
-	// userId := common.GetUserId(c)
+	limit := cast.ToInt(c.Query("limit"))
 
-	// tradeVariety, err := ctrl.tradeVariety.FindBySymbol(c, symbol)
-	// if err != nil {
-	// 	common.ResponseError(c, err)
-	// 	return
-	// }
+	product, err := u.productRepo.Get(symbol)
+	if err != nil {
+		u.router.ResponseError(c, types.ErrInvalidParam)
+		return
+	}
 
-	//TODO 这个未完成订单列表 需要重新写一个方法
-	orders, err := u.orderRepo.LoadUnfinishedOrders(c, symbol)
+	u.logger.Sugar().Debugf("symbol: %s limit: %d", symbol, limit)
+	orders, err := u.orderRepo.LoadUnfinishedOrders(c, symbol, limit)
 	if err != nil {
 		u.router.ResponseError(c, types.ErrDatabaseError)
 		return
 	}
-	u.router.ResponseOk(c, orders)
+
+	var response []gin.H
+	for _, row := range orders {
+		response = append(response, gin.H{
+			"symbol":          row.Symbol,
+			"order_id":        row.OrderId,
+			"order_side":      row.OrderSide,
+			"order_type":      row.OrderType,
+			"price":           row.Price.StringFixedBank(product.PriceDecimals),
+			"quantity":        row.Quantity.StringFixed(product.QtyDecimals),
+			"avg_price":       row.AvgPrice.StringFixedBank(product.PriceDecimals),
+			"finished_qty":    row.FinishedQty.StringFixed(product.QtyDecimals),
+			"finished_amount": row.FinishedAmount.StringFixedBank(product.PriceDecimals),
+			"at":              row.CreatedAt.Unix(),
+		})
+	}
+
+	u.router.ResponseOk(c, response)
 }

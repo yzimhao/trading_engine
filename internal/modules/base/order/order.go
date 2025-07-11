@@ -10,6 +10,8 @@ import (
 
 	"github.com/yzimhao/trading_engine/v2/internal/di/provider"
 	"github.com/yzimhao/trading_engine/v2/internal/modules/middlewares"
+	"github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
+	notification_ws "github.com/yzimhao/trading_engine/v2/internal/modules/notification/ws"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
@@ -29,6 +31,7 @@ type orderModule struct {
 	orderRepo persistence.OrderRepository
 	produce   *provider.Produce
 	auth      *middlewares.AuthMiddleware
+	ws        *notification_ws.WsManager
 }
 
 func newOrderModule(
@@ -36,6 +39,7 @@ func newOrderModule(
 	logger *zap.Logger,
 	produce *provider.Produce,
 	auth *middlewares.AuthMiddleware,
+	ws *notification_ws.WsManager,
 	orderRepo persistence.OrderRepository) {
 	o := orderModule{
 		router:    router,
@@ -43,6 +47,7 @@ func newOrderModule(
 		orderRepo: orderRepo,
 		produce:   produce,
 		auth:      auth,
+		ws:        ws,
 	}
 	o.registerRouter()
 }
@@ -53,6 +58,7 @@ func (o *orderModule) registerRouter() {
 	orderGroup.Use(o.auth.Auth())
 	// 创建交易订单
 	orderGroup.POST("/", o.create)
+	orderGroup.GET("/cancel", o.cancel)
 }
 
 type CreateOrderRequest struct {
@@ -112,6 +118,19 @@ func (o *orderModule) create(c *gin.Context) {
 			q := order.Quantity
 			return q
 		}()
+
+		o.ws.SendTo(c, order.UserId, ws.MsgNewOrderTpl.Format(map[string]string{"symbol": order.Symbol}), map[string]any{
+			"symbol":          order.Symbol,
+			"order_id":        order.OrderId,
+			"order_side":      order.OrderSide,
+			"order_type":      order.OrderType,
+			"price":           order.Price,
+			"quantity":        order.Quantity,
+			"avg_price":       order.AvgPrice,
+			"finished_qty":    order.FinishedQty,
+			"finished_amount": order.FinishedAmount,
+			"at":              order.CreatedAt.Unix(),
+		})
 
 	} else {
 		if req.Amount == nil && req.Quantity == nil {
@@ -173,4 +192,21 @@ func (o *orderModule) create(c *gin.Context) {
 		return
 	}
 	o.router.ResponseOk(c, gin.H{"order_id": order.OrderId})
+}
+
+// @Summary 创建订单
+// @Description
+// @ID v1.order
+// @Tags order
+// @Accept json
+// @Produce json
+// @Param symbol query string true "symbol"
+// @Param order_id query string true "order_id"
+// @Success 200 {string} any
+// @Router /api/v1/order/cancel [get]
+func (o *orderModule) cancel(c *gin.Context) {
+	symbol := c.Query("symbol")
+	orderId := c.Query("order_id")
+	o.orderRepo.Cancel(c, symbol, orderId, matching_types.RemoveItemTypeByUser)
+	o.router.ResponseOk(c, nil)
 }

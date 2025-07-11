@@ -37,10 +37,13 @@ func NewOrderRepo(
 	}
 }
 
-func (o *orderRepository) LoadUnfinishedOrders(ctx context.Context, symbol string) (orders []*entities.Order, err error) {
+func (o *orderRepository) LoadUnfinishedOrders(ctx context.Context, symbol string, limit int) (orders []*entities.Order, err error) {
 	//TODO 分批读取
-	unfinished := entities.UnfinishedOrder{}
-	o.db.Table(unfinished.TableName()).Where("symbol=?", symbol).Order("nano_time asc").Find(&orders)
+	q := o.db.Model(entities.UnfinishedOrder{}).Where("symbol=?", symbol)
+	if limit != 0 {
+		q.Limit(limit)
+	}
+	q.Order("nano_time desc").Find(&orders)
 	return orders, nil
 }
 
@@ -64,8 +67,8 @@ func (o *orderRepository) CreateLimit(ctx context.Context, user_id, symbol strin
 		Symbol:    symbol,
 		OrderSide: side,
 		OrderType: matching_types.OrderTypeLimit,
-		Price:     price,
-		Quantity:  qty,
+		Price:     price.Truncate(product.PriceDecimals),
+		Quantity:  qty.Truncate(product.QtyDecimals),
 		NanoTime:  time.Now().UnixNano(),
 		FeeRate:   product.FeeRate,
 		Status:    types.OrderStatusNew,
@@ -144,7 +147,7 @@ func (o *orderRepository) CreateMarketByAmount(ctx context.Context, user_id, sym
 		OrderSide:    side,
 		OrderType:    matching_types.OrderTypeMarket,
 		FeeRate:      product.FeeRate,
-		FreezeAmount: amount,
+		FreezeAmount: amount.Truncate(product.PriceDecimals),
 		Status:       types.OrderStatusNew,
 		NanoTime:     time.Now().UnixNano(),
 	}
@@ -200,7 +203,7 @@ func (o *orderRepository) CreateMarketByQty(ctx context.Context, user_id, symbol
 		OrderSide: side,
 		OrderType: matching_types.OrderTypeMarket,
 		FeeRate:   product.FeeRate,
-		Quantity:  qty,
+		Quantity:  qty.Truncate(product.QtyDecimals),
 		Status:    types.OrderStatusNew,
 		NanoTime:  time.Now().UnixNano(),
 	}
