@@ -174,6 +174,7 @@ func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
 }
 
 func (s *Matching) OnNotifyCancelOrder(ctx context.Context, msg []byte) error {
+	s.logger.Sugar().Debugf("matching listen cancel order: %s", msg)
 	var data models_types.EventNotifyCancelOrder
 	if err := json.Unmarshal(msg, &data); err != nil {
 		s.logger.Sugar().Errorf("matching notify cancel order unmarshal error: %v body: %s", err, msg)

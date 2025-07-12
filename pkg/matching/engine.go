@@ -155,8 +155,10 @@ func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType type
 
 	if side == types.OrderSideSell {
 		e.asks.Remove(unique)
-	} else {
+	} else if side == types.OrderSideBuy {
 		e.bids.Remove(unique)
+	} else {
+		e.logger.Sugar().Warnf("removeItem %s side: %s unknown", unique, side)
 	}
 
 	e.removeNotify <- types.RemoveResult{

@@ -525,3 +525,28 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 		// So(cinfo.OrderId, ShouldEqual, "id2218")
 	})
 }
+
+func TestTradeFunc_ex3(t *testing.T) {
+	Convey("撤销买单", t, func() {
+		btcusdt.Clean()
+
+		ch := make(chan types.RemoveResult)
+		btcusdt.OnRemoveResult(func(result types.RemoveResult) {
+			ch <- result
+		})
+
+		btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112))
+		btcusdt.RemoveItem(types.OrderSideBuy, "id115", types.RemoveItemTypeByUser)
+
+		select {
+		case data := <-ch:
+			So(data.Symbol, ShouldEqual, "btcusdt")
+			So(data.UniqueId, ShouldEqual, "id115")
+			So(data.Type, ShouldEqual, types.RemoveItemTypeByUser)
+			So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
+			So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
+		case <-time.After(time.Second * 2):
+			So(true, ShouldEqual, false)
+		}
+	})
+}

@@ -15,6 +15,7 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
 	"github.com/yzimhao/trading_engine/v2/internal/types"
+	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -207,6 +208,20 @@ func (o *orderModule) create(c *gin.Context) {
 func (o *orderModule) cancel(c *gin.Context) {
 	symbol := c.Query("symbol")
 	orderId := c.Query("order_id")
-	o.orderRepo.Cancel(c, symbol, orderId, matching_types.RemoveItemTypeByUser)
+
+	data := models_types.EventNotifyCancelOrder{
+		Symbol: symbol,
+		OrderSide: func() matching_types.OrderSide {
+			if strings.HasPrefix(orderId, "A") {
+				return matching_types.OrderSideSell
+			} else {
+				return matching_types.OrderSideBuy
+			}
+		}(),
+		OrderId: orderId,
+		Type:    matching_types.RemoveItemTypeByUser,
+	}
+	body, _ := json.Marshal(data)
+	o.produce.Publish(c, models_types.TOPIC_NOTIFY_ORDER_CANCEL, body)
 	o.router.ResponseOk(c, nil)
 }
