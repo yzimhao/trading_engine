@@ -110,6 +110,8 @@ func (u *userOrderModule) unfinishedList(c *gin.Context) {
 	symbol := c.Query("symbol")
 	limit := cast.ToInt(c.Query("limit"))
 
+	userId := u.router.ParseUserID(c)
+
 	product, err := u.productRepo.Get(symbol)
 	if err != nil {
 		u.router.ResponseError(c, types.ErrInvalidParam)
@@ -117,7 +119,7 @@ func (u *userOrderModule) unfinishedList(c *gin.Context) {
 	}
 
 	u.logger.Sugar().Debugf("symbol: %s limit: %d", symbol, limit)
-	orders, err := u.orderRepo.LoadUnfinishedOrders(c, symbol, limit)
+	orders, err := u.orderRepo.GetUserUnfinishedOrders(c, userId, symbol, limit)
 	if err != nil {
 		u.router.ResponseError(c, types.ErrDatabaseError)
 		return

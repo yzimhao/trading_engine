@@ -47,6 +47,13 @@ func (o *orderRepository) LoadUnfinishedOrders(ctx context.Context, symbol strin
 	return orders, nil
 }
 
+func (o *orderRepository) GetUserUnfinishedOrders(ctx context.Context, user_id, symbol string, limit int) (orders []*entities.Order, err error) {
+	q := o.db.Model(entities.UnfinishedOrder{}).Where("symbol=?", symbol).Limit(limit)
+	q.Where("user_id=?", user_id)
+	q.Order("nano_time desc").Find(&orders)
+	return orders, nil
+}
+
 func (o *orderRepository) HistoryList(ctx context.Context, user_id, symbol string, start, end int64, limit int) (orders []*entities.Order, err error) {
 	//TODO 分批读取
 	entity := entities.Order{Symbol: symbol}
