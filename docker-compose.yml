@@ -2,17 +2,17 @@ services:
   postgres:
     image: postgres:13
     ports:
-      - '5432:5432'
+      - '15432:5432'
     restart: always
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./docker-data/postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: 'develop'
       POSTGRES_PASSWORD: 'postgres'
   redis:
     image: redis:latest
     ports:
-      - '6379:6379'
+      - '16379:6379'
     restart: always
 
   rocketmq-broker:
@@ -22,8 +22,8 @@ services:
     # container_name: rocketmq-broker
     volumes:
       # 映射本地目录权限一定要设置为 777 权限，否则启动不成功
-      - rocketmq_broker_logs:/home/rocketmq/logs
-      - rocketmq_broker_data:/home/rocketmq/store
+      - ./docker-data/rocketmq/broker_logs:/home/rocketmq/logs
+      - ./docker-data/rocketmq/broker_data:/home/rocketmq/store
       - ./conf/broker.conf:/home/rocketmq-5.3.1/conf/broker.conf
       # - ./conf:/home/rocketmq-5.3.1/conf
     environment:
@@ -46,7 +46,7 @@ services:
       #   JAVA_OPT_EXT: "-server -Xms64m -Xmx64m -Xmn64m"
     volumes:
       # 映射本地目录权限一定要设置为 777 权限，否则启动不成功
-      - rocketmq_namesrv_logs:/home/rocketmq/logs
+      - ./docker-data/rocketmq/namesrv_logs:/home/rocketmq/logs
     ports:
       - 9876:9876
     command: sh mqnamesrv
@@ -62,16 +62,4 @@ services:
     ports:
       - 8180:8180
 
-volumes:
-  rocketmq_namesrv_logs:
-    name: rocketmq_namesrv_logs
-    external: true
-  rocketmq_broker_data:
-    name: rocketmq_broker_data
-    external: true 
-  rocketmq_broker_logs:
-    name: rocketmq_broker_logs
-    external: true
-  db_data:
-    name: "db_data"
-    external: true
+## 使用本地目录作为数据卷挂载，路径位于项目根 `docker-data/` 子目录下

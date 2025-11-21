@@ -14,7 +14,8 @@ import (
 
 func NewGorm(v *viper.Viper) *gorm.DB {
 	v.SetDefault("database.host", "localhost")
-	v.SetDefault("database.port", 5432)
+	// 如果使用本仓库提供的 docker-compose，本地宿主端口映射为 15432:5432
+	v.SetDefault("database.port", 15432)
 	v.SetDefault("database.user", "postgres")
 	v.SetDefault("database.password", "postgres")
 	v.SetDefault("database.name", "develop")

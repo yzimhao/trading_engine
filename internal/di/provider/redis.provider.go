@@ -10,7 +10,8 @@ import (
 )
 
 func NewRedis(v *viper.Viper, logger *zap.Logger) *redis.Client {
-	v.SetDefault("redis.address", "localhost:6379")
+	// 如果使用本仓库提供的 docker-compose，本地宿主端口映射为 16379:6379
+	v.SetDefault("redis.address", "localhost:16379")
 	v.SetDefault("redis.db", 0)
 	v.SetDefault("redis.username", "")
 	v.SetDefault("redis.password", "")

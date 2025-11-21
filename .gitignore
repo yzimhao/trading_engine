@@ -18,3 +18,5 @@
 conf/
 temp/
 dist/
+.gemini/
+docker-data/

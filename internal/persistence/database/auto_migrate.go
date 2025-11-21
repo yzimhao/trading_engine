@@ -22,17 +22,34 @@ type inContext struct {
 
 func autoMigrate(in inContext) error {
 
-	// auto migrate
-	err := in.Db.AutoMigrate(
+	// 按模型逐表处理迁移：
+	// - 如果表不存在：使用 AutoMigrate 创建表（首次创建包含所有字段）
+	// - 如果表已存在：仅为缺失字段执行 AddColumn，跳过对已存在相同字段的任何更改
+	var err error
+
+	models := []interface{}{
 		&entities.UserAsset{},
 		&entities.UserAssetLog{},
 		&entities.UserAssetFreeze{},
 		&entities.Asset{},
 		&entities.Product{},
-	)
-	if err != nil {
-		in.Logger.Error("auto migrate error", zap.Error(err))
-		return err
+	}
+
+	for _, m := range models {
+		hasTable := in.Db.Migrator().HasTable(m)
+		if !hasTable {
+			if err := in.Db.AutoMigrate(m); err != nil {
+				in.Logger.Error("auto migrate create table error", zap.Error(err))
+				return err
+			}
+			continue
+		}
+
+		// 表已存在，仅添加缺失字段
+		if err := addMissingColumns(in.Db, m); err != nil {
+			in.Logger.Error("add missing columns error", zap.Error(err))
+			return err
+		}
 	}
 
 	//init data
@@ -40,6 +57,25 @@ func autoMigrate(in inContext) error {
 	if err != nil {
 		in.Logger.Error("init data error", zap.Error(err))
 		return err
+	}
+
+	return nil
+}
+
+// addMissingColumns 仅为模型中在数据库中不存在的字段添加列；不修改已有字段
+func addMissingColumns(db *gorm.DB, model interface{}) error {
+	stmt := &gorm.Statement{DB: db}
+	if err := stmt.Parse(model); err != nil {
+		return err
+	}
+
+	for _, field := range stmt.Schema.Fields {
+		// 使用字段名判断（GORM 的 Migrator 接受字段名）
+		if !db.Migrator().HasColumn(model, field.Name) {
+			if err := db.Migrator().AddColumn(model, field.Name); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
