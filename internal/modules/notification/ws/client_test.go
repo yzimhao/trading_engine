@@ -31,7 +31,9 @@ func init() {
 		router.Any("/ws", func(ctx *gin.Context) {
 			manager.Listen(ctx.Writer, ctx.Request, ctx.Request.Header)
 		})
-		router.Run(":8090")
+		if err := router.Run(":8090"); err != nil {
+			log.Fatalf("router.Run failed: %v", err)
+		}
 	}()
 }
 
@@ -60,14 +62,20 @@ func TestClient(t *testing.T) {
 
 		time.Sleep(time.Second * time.Duration(1))
 		So(len(manager.membersMap), ShouldEqual, 1)
-		ws.Close()
+		if err := ws.Close(); err != nil {
+			t.Errorf("ws.Close failed: %v", err)
+		}
 		time.Sleep(time.Second * time.Duration(2))
 		So(len(manager.membersMap), ShouldEqual, 0)
 	})
 
 	Convey("客户端添加属性", t, func() {
 		ws := clientConn()
-		defer ws.Close()
+		defer func() {
+			if err := ws.Close(); err != nil {
+				t.Errorf("ws.Close failed: %v", err)
+			}
+		}()
 
 		tags := []string{}
 		for _, v := range AllWebSocketMsg {

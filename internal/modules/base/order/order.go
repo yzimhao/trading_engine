@@ -120,7 +120,7 @@ func (o *orderModule) create(c *gin.Context) {
 			return q
 		}()
 
-		o.ws.SendTo(c, order.UserId, ws.MsgNewOrderTpl.Format(map[string]string{"symbol": order.Symbol}), map[string]any{
+		if err := o.ws.SendTo(c, order.UserId, ws.MsgNewOrderTpl.Format(map[string]string{"symbol": order.Symbol}), map[string]any{
 			"symbol":          order.Symbol,
 			"order_id":        order.OrderId,
 			"order_side":      order.OrderSide,
@@ -131,7 +131,9 @@ func (o *orderModule) create(c *gin.Context) {
 			"finished_qty":    order.FinishedQty,
 			"finished_amount": order.FinishedAmount,
 			"at":              order.CreatedAt.Unix(),
-		})
+		}); err != nil {
+			o.logger.Error("ws.SendTo error", zap.Error(err))
+		}
 
 	} else {
 		if req.Amount == nil && req.Quantity == nil {
@@ -222,6 +224,8 @@ func (o *orderModule) cancel(c *gin.Context) {
 		Type:    matching_types.RemoveItemTypeByUser,
 	}
 	body, _ := json.Marshal(data)
-	o.produce.Publish(c, models_types.TOPIC_NOTIFY_ORDER_CANCEL, body)
+	if err := o.produce.Publish(c, models_types.TOPIC_NOTIFY_ORDER_CANCEL, body); err != nil {
+		o.logger.Error("produce.Publish cancel error", zap.Error(err))
+	}
 	o.router.ResponseOk(c, nil)
 }

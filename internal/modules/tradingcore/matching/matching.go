@@ -116,17 +116,23 @@ func (s *Matching) InitEngine() {
 		go s.flushOrderbookToCache(context.Background(), product.Symbol)
 
 		//TODO  load order from db
-		s.loadUnfinishedOrders(context.Background(), product.Symbol)
+		if err := s.loadUnfinishedOrders(context.Background(), product.Symbol); err != nil {
+			s.logger.Sugar().Errorf("loadUnfinishedOrders error: %v", err)
+		}
 	}
 
 }
 
 func (s *Matching) Subscribe() {
 	s.consume.Subscribe(models_types.TOPIC_ORDER_NEW, func(ctx context.Context, data []byte) {
-		s.OnNewOrder(ctx, data)
+		if err := s.OnNewOrder(ctx, data); err != nil {
+			s.logger.Sugar().Errorf("OnNewOrder error: %v", err)
+		}
 	})
 	s.consume.Subscribe(models_types.TOPIC_NOTIFY_ORDER_CANCEL, func(ctx context.Context, data []byte) {
-		s.OnNotifyCancelOrder(ctx, data)
+		if err := s.OnNotifyCancelOrder(ctx, data); err != nil {
+			s.logger.Sugar().Errorf("OnNotifyCancelOrder error: %v", err)
+		}
 	})
 }
 
@@ -167,8 +173,11 @@ func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
 	}
 
 	if engine := s.engine(order.Symbol); engine != nil {
-		engine.AddItem(item)
-		s.logger.Sugar().Debugf("add item to engine %s, askLen: %d, bidLen: %d", order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
+		if err := engine.AddItem(item); err != nil {
+			s.logger.Sugar().Errorf("add item to engine %s failed: %v", order.Symbol, err)
+		} else {
+			s.logger.Sugar().Debugf("add item to engine %s, askLen: %d, bidLen: %d", order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
+		}
 	}
 	return nil
 }
@@ -285,8 +294,11 @@ func (s *Matching) loadUnfinishedOrders(ctx context.Context, symbol string) erro
 			}
 			if engine := s.engine(order.Symbol); engine != nil {
 
-				engine.AddItem(item)
-				s.logger.Sugar().Debugf("load unfinished order %s to engine %s, askLen: %d, bidLen: %d", order.OrderId, order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
+				if err := engine.AddItem(item); err != nil {
+					s.logger.Sugar().Errorf("load unfinished order %s to engine %s failed: %v", order.OrderId, order.Symbol, err)
+				} else {
+					s.logger.Sugar().Debugf("load unfinished order %s to engine %s, askLen: %d, bidLen: %d", order.OrderId, order.Symbol, engine.AskQueue().Len(), engine.BidQueue().Len())
+				}
 			}
 		}
 

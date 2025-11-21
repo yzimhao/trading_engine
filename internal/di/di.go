@@ -62,7 +62,9 @@ func App() *fx.App {
 	go func() {
 		<-ctx.Done()
 		fmt.Println("context cancelled, stopping fx app....")
-		app.Stop(context.Background())
+		if err := app.Stop(context.Background()); err != nil {
+			fmt.Printf("fx app.Stop error: %v\n", err)
+		}
 	}()
 
 	return app

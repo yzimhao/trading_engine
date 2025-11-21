@@ -130,20 +130,24 @@ func (s *SettleProcessor) flow(ctx context.Context, tradeResult matching_types.T
 		}
 
 		//推送交易页面上的最新成交记录
-		s.ws.Broadcast(ctx, notification_ws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
+		if err := s.ws.Broadcast(ctx, notification_ws.MsgTradeTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
 			map[string]any{
 				"price":    tradeLog.Price.StringFixedBank(s.productInfo.PriceDecimals),
 				"qty":      tradeLog.Quantity.StringFixedBank(s.productInfo.QtyDecimals),
 				"amount":   tradeLog.Amount.StringFixedBank(s.productInfo.PriceDecimals),
 				"trade_at": tradeResult.TradeTime,
 			},
-		)
-		s.ws.Broadcast(ctx, notification_ws.MsgLatestPriceTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
+		); err != nil {
+			s.logger.Sugar().Errorf("ws.Broadcast trade error: %v", err)
+		}
+		if err := s.ws.Broadcast(ctx, notification_ws.MsgLatestPriceTpl.Format(map[string]string{"symbol": tradeResult.Symbol}),
 			map[string]any{
 				"latest_price": tradeLog.Price.StringFixedBank(s.productInfo.PriceDecimals),
 				"at":           tradeResult.TradeTime,
 			},
-		)
+		); err != nil {
+			s.logger.Sugar().Errorf("ws.Broadcast latest price error: %v", err)
+		}
 		//TODO 推送买卖双方个人结算的成交记录
 
 		return nil

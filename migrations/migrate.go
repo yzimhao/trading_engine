@@ -93,9 +93,13 @@ func MigrateClean(db *gorm.DB, cfg *viper.Viper, logger *zap.Logger) error {
 			continue
 		}
 		for _, index := range indexes {
-			db.Migrator().DropIndex(dropTable, index.Name())
+			if err := db.Migrator().DropIndex(dropTable, index.Name()); err != nil {
+				logger.Debug("drop index failed", zap.Error(err))
+			}
 		}
-		db.Migrator().DropTable(dropTable)
+		if err := db.Migrator().DropTable(dropTable); err != nil {
+			logger.Debug("drop table failed", zap.Error(err))
+		}
 	}
 
 	return nil

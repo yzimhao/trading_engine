@@ -30,9 +30,9 @@ func TestTradePairDepth(t *testing.T) {
 
 	Convey("卖盘深度行情", t, func() {
 		btcusdt.Clean()
-		btcusdt.AddItem(matching.NewAskLimitItem("id1", d(1.01), d(2), 1112))
-		btcusdt.AddItem(matching.NewAskLimitItem("id2", d(1.01), d(2), 1113))
-		btcusdt.AddItem(matching.NewAskLimitItem("id3", d(1.1), d(2), 1114))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id1", d(1.01), d(2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id2", d(1.01), d(2), 1113)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id3", d(1.1), d(2), 1114)), ShouldBeNil)
 		time.Sleep(time.Millisecond * time.Duration(100))
 		ask := btcusdt.GetAskOrderBook(0)
 		str_ask, _ := json.Marshal(ask)
@@ -41,10 +41,10 @@ func TestTradePairDepth(t *testing.T) {
 
 	Convey("买盘深度行情", t, func() {
 		btcusdt.Clean()
-		btcusdt.AddItem(matching.NewBidLimitItem("id4", d(1.02), d(2), 1115))
-		btcusdt.AddItem(matching.NewBidLimitItem("id5", d(1.3), d(2), 1116))
-		btcusdt.AddItem(matching.NewBidLimitItem("id6", d(1.02), d(2), 1117))
-		btcusdt.AddItem(matching.NewBidLimitItem("id7", d(0.02), d(1), 1118))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id4", d(1.02), d(2), 1115)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id5", d(1.3), d(2), 1116)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id6", d(1.02), d(2), 1117)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id7", d(0.02), d(1), 1118)), ShouldBeNil)
 
 		time.Sleep(time.Millisecond * time.Duration(100))
 		bid := btcusdt.GetBidOrderBook(0)
@@ -57,7 +57,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 	//创建一个买单
 	Convey("新增一个限价买单", t, func() {
 		btcusdt.Clean()
-		btcusdt.AddItem(matching.NewBidLimitItem("id11", d(1.1), d(1.2), 1112))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id11", d(1.1), d(1.2), 1112)), ShouldBeNil)
 
 		So(btcusdt.AskQueue().Len(), ShouldEqual, 0)
 		So(btcusdt.BidQueue().Len(), ShouldEqual, 1)
@@ -69,7 +69,7 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 
 	Convey("新增一个限价卖单", t, func() {
 		btcusdt.Clean()
-		btcusdt.AddItem(matching.NewAskLimitItem("id12", d(1.1), d(1.2), 1112))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id12", d(1.1), d(1.2), 1112)), ShouldBeNil)
 
 		So(btcusdt.AskQueue().Len(), ShouldEqual, 1)
 		So(btcusdt.BidQueue().Len(), ShouldEqual, 0)
@@ -94,8 +94,8 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id13", d(1.1), d(1.2), time.Now().UnixNano()))
-		btcusdt.AddItem(matching.NewBidLimitItem("id23", d(1.1), d(1.2), time.Now().UnixNano()))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id13", d(1.1), d(1.2), time.Now().UnixNano())), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id23", d(1.1), d(1.2), time.Now().UnixNano())), ShouldBeNil)
 
 		time.Sleep(time.Second)
 		select {
@@ -119,8 +119,8 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id24", d(1.1), d(2.3), time.Now().UnixNano()))
-		btcusdt.AddItem(matching.NewAskLimitItem("id14", d(1.1), d(1.2), time.Now().UnixNano()))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id24", d(1.1), d(2.3), time.Now().UnixNano())), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id14", d(1.1), d(1.2), time.Now().UnixNano())), ShouldBeNil)
 		time.Sleep(time.Second)
 
 		select {
@@ -148,8 +148,8 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id15", d(1.1), d(2.2), 1112))
-		btcusdt.AddItem(matching.NewBidLimitItem("id25", d(1.1), d(1.3), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id15", d(1.1), d(2.2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id25", d(1.1), d(1.3), 1113)), ShouldBeNil)
 		time.Sleep(time.Second)
 
 		select {
@@ -174,10 +174,10 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id16", d(1.1), d(2.2), 1112))
-		btcusdt.AddItem(matching.NewAskLimitItem("id26", d(1.1), d(2.2), 1110))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id16", d(1.1), d(2.2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id26", d(1.1), d(2.2), 1110)), ShouldBeNil)
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id36", d(1.1), d(1.3), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id36", d(1.1), d(1.3), 1113)), ShouldBeNil)
 		time.Sleep(time.Second)
 
 		select {
@@ -203,10 +203,10 @@ func TestTradeFunc_LimitOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id17", d(1.01), d(2.2), 1112))
-		btcusdt.AddItem(matching.NewAskLimitItem("id27", d(1.1), d(2.2), 1110))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id17", d(1.01), d(2.2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id27", d(1.1), d(2.2), 1110)), ShouldBeNil)
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id37", d(1.1), d(1.3), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id37", d(1.1), d(1.3), 1113)), ShouldBeNil)
 		time.Sleep(time.Second)
 
 		select {
@@ -235,8 +235,8 @@ func TestTradeFunc_ex1(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id111", d(10.00), d(100), 1112))
-		btcusdt.AddItem(matching.NewBidMarketAmountItem("id211", d(50), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id111", d(10.00), d(100), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidMarketAmountItem("id211", d(50), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -264,8 +264,8 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id18", d(1.01), d(2.2), 1112))
-		btcusdt.AddItem(matching.NewBidMarketQtyItem("id28", d(1.1), d(100), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id18", d(1.01), d(2.2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidMarketQtyItem("id28", d(1.1), d(100), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -288,8 +288,8 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id19", d(1.01), d(2.2), 1112))
-		btcusdt.AddItem(matching.NewBidMarketQtyItem("id29", d(100), d(100), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id19", d(1.01), d(2.2), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidMarketQtyItem("id29", d(100), d(100), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -312,8 +312,8 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id110", d(100), d(20), 1112))
-		btcusdt.AddItem(matching.NewBidMarketQtyItem("id210", d(20), d(100), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id110", d(100), d(20), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidMarketQtyItem("id210", d(20), d(100), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -338,8 +338,8 @@ func TestTradeFunc_MarketBuyOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewAskLimitItem("id112", d(10.00), d(100), 1112))
-		btcusdt.AddItem(matching.NewBidMarketAmountItem("id212", d(6000), 1113))
+		So(btcusdt.AddItem(matching.NewAskLimitItem("id112", d(10.00), d(100), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewBidMarketAmountItem("id212", d(6000), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -366,8 +366,8 @@ func TestTradeFunc_ex2(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112))
-		btcusdt.AddItem(matching.NewAskMarketAmountItem("id215", d(6000), d(1000000), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskMarketAmountItem("id215", d(6000), d(1000000), 1113)), ShouldBeNil)
 		time.Sleep(time.Second)
 
 		select {
@@ -398,8 +398,8 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id113", d(10.00), d(100), 1112))
-		btcusdt.AddItem(matching.NewAskMarketQtyItem("id213", d(6), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id113", d(10.00), d(100), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskMarketQtyItem("id213", d(6), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -425,8 +425,8 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id114", d(10.00), d(100), 1112))
-		btcusdt.AddItem(matching.NewAskMarketQtyItem("id214", d(6000), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id114", d(10.00), d(100), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskMarketQtyItem("id214", d(6000), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -451,8 +451,8 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id116", d(10.00), d(50), 1112))
-		btcusdt.AddItem(matching.NewAskMarketAmountItem("id216", d(6000), d(1000000), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id116", d(10.00), d(50), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskMarketAmountItem("id216", d(6000), d(1000000), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -481,8 +481,8 @@ func TestTradeFunc_MarketSellOrder(t *testing.T) {
 			tradeCh <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id117", d(100.00), d(50), 1112))
-		btcusdt.AddItem(matching.NewAskMarketAmountItem("id217", d(500), d(3), 1113))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id117", d(100.00), d(50), 1112)), ShouldBeNil)
+		So(btcusdt.AddItem(matching.NewAskMarketAmountItem("id217", d(500), d(3), 1113)), ShouldBeNil)
 
 		select {
 		case trade := <-tradeCh:
@@ -535,7 +535,7 @@ func TestTradeFunc_ex3(t *testing.T) {
 			ch <- result
 		})
 
-		btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112))
+		So(btcusdt.AddItem(matching.NewBidLimitItem("id115", d(10.00), d(1000), 1112)), ShouldBeNil)
 		btcusdt.RemoveItem(types.OrderSideBuy, "id115", types.RemoveItemTypeByUser)
 
 		select {

@@ -46,5 +46,10 @@ func run(lc fx.Lifecycle, logger *zap.Logger, engine *gin.Engine, v *viper.Viper
 func starupGinServer(v *viper.Viper, engine *gin.Engine) {
 	v.SetDefault("listen", "127.0.0.1")
 	v.SetDefault("port", 8080)
-	go engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port")))
+	go func() {
+		if err := engine.Run(fmt.Sprintf("%s:%d", v.GetString("listen"), v.GetInt("port"))); err != nil {
+			// 可选：记录日志
+			fmt.Printf("gin engine.Run error: %v\n", err)
+		}
+	}()
 }

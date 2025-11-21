@@ -105,21 +105,18 @@ func (q *Quote) processQuote(ctx context.Context, notify models_types.EventNotif
 		}
 
 		//推送kline记录
-		q.ws.Broadcast(ctx, notification_ws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
+		if err := q.ws.Broadcast(ctx, notification_ws.MsgMarketKLineTpl.Format(map[string]string{"period": string(period), "symbol": notify.Symbol}),
 			[6]any{
 				data.OpenAt.UnixMilli(),
-				// common.FormatStrNumber(*data.Open, product.PriceDecimals),
-				// common.FormatStrNumber(*data.High, product.PriceDecimals),
-				// common.FormatStrNumber(*data.Low, product.PriceDecimals),
-				// common.FormatStrNumber(*data.Close, product.PriceDecimals),
-				// common.FormatStrNumber(*data.Volume, product.QtyDecimals),
 				data.Open.Truncate(product.PriceDecimals),
 				data.High.Truncate(product.PriceDecimals),
 				data.Low.Truncate(product.PriceDecimals),
 				data.Close.Truncate(product.PriceDecimals),
 				data.Volume.Truncate(product.QtyDecimals),
 			},
-		)
+		); err != nil {
+			q.logger.Sugar().Errorf("ws.Broadcast kline error: %v", err)
+		}
 
 	}
 

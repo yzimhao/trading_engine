@@ -46,7 +46,9 @@ func NewCancelOrderSubscriber(in inCancelOrderContext) *CancelOrderSubscriber {
 
 func (s *CancelOrderSubscriber) Subscribe() {
 	s.consume.Subscribe(types.TOPIC_PROCESS_ORDER_CANCEL, func(ctx context.Context, data []byte) {
-		s.On(ctx, data)
+		if err := s.On(ctx, data); err != nil {
+			s.logger.Sugar().Errorf("CancelOrderSubscriber.On error: %v", err)
+		}
 	})
 }
 

@@ -18,7 +18,10 @@ func BenchmarkMatchingEngine(b *testing.B) {
 	initialOrders := 10000
 	for i := 0; i < initialOrders; i++ {
 		order := matching.NewAskLimitItem(fmt.Sprintf("ask%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
-		engine.AddItem(order)
+		err := engine.AddItem(order)
+		if err != nil {
+			b.Fatalf("AddItem failed: %v", err)
+		}
 	}
 
 	engine.OnTradeResult(func(result types.TradeResult) {
@@ -28,16 +31,23 @@ func BenchmarkMatchingEngine(b *testing.B) {
 	b.ResetTimer()
 
 	var wg sync.WaitGroup
+	errCh := make(chan error, b.N)
 	for i := 0; i < b.N; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
 			order := matching.NewBidLimitItem(fmt.Sprintf("bid%d", i), decimal.NewFromInt(10), decimal.NewFromInt(1), 1)
-			engine.AddItem(order)
+			err := engine.AddItem(order)
+			if err != nil {
+				errCh <- fmt.Errorf("AddItem failed: %v", err)
+			}
 		}(i)
 	}
-
 	wg.Wait()
+	close(errCh)
+	for err := range errCh {
+		b.Fatalf("%v", err)
+	}
 	b.StopTimer()
 
 	b.Logf("Finished matching %d orders", b.N)

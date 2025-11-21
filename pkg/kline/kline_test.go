@@ -68,7 +68,8 @@ func (suite *klineTest) Test_GetKLine() {
 				suite.Equal("1.00", *kline.Close)
 				suite.Equal("10.00", *kline.Volume)
 				suite.Equal("10.00", *kline.Amount)
-				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
+				err = suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
+				suite.Require().NoError(err)
 
 			},
 		},
@@ -121,7 +122,8 @@ func (suite *klineTest) Test_GetKLine() {
 				suite.Equal("0.95", *kline.Close)
 				suite.Equal("30.00", *kline.Volume)
 				suite.Equal("39.50", *kline.Amount) //0.95 *10 + 2 *10 + 1* 10
-				suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
+				err = suite.service.CleanCache(suite.ctx, kline.OpenAt, kline.CloseAt)
+				suite.Require().NoError(err)
 
 			},
 		},

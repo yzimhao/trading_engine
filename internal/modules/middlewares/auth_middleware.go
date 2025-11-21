@@ -128,7 +128,6 @@ func (m *AuthMiddleware) authenticator() func(c *gin.Context) (interface{}, erro
 			Password: password,
 		}, nil
 
-		return nil, jwt.ErrFailedAuthentication
 	}
 }
 

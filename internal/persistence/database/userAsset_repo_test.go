@@ -48,7 +48,9 @@ func TestAssetsRepo(t *testing.T) {
 }
 
 func (suite *assetsRepoTest) TearDownTest() {
-	migrations.MigrateDown(suite.db, suite.v, suite.logger)
+	if err := migrations.MigrateDown(suite.db, suite.v, suite.logger); err != nil {
+		suite.logger.Error("MigrateDown error", zap.Error(err))
+	}
 }
 
 func (suite *assetsRepoTest) migrateUp() {
@@ -76,9 +78,13 @@ func (suite *assetsRepoTest) migrateDown() {
 			continue
 		}
 		for _, index := range indexes {
-			suite.db.Migrator().DropIndex(table, index.Name())
+			if err := suite.db.Migrator().DropIndex(table, index.Name()); err != nil {
+				suite.logger.Debug("drop index failed", zap.Error(err))
+			}
 		}
-		suite.db.Migrator().DropTable(table)
+		if err := suite.db.Migrator().DropTable(table); err != nil {
+			suite.logger.Debug("drop table failed", zap.Error(err))
+		}
 	}
 }
 
