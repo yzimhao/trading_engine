@@ -42,11 +42,7 @@ func defaultFailOptions() *options {
 	}
 }
 
-func (o *options) apply(opts ...Option) {
-	for _, opt := range opts {
-		opt(o)
-	}
-}
+// apply removed: not used in this package
 
 func Success() *options {
 	return defaultSuccessOptions()

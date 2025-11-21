@@ -65,7 +65,7 @@ func (o *orderModule) registerRouter() {
 type CreateOrderRequest struct {
 	Symbol    string                   `json:"symbol" binding:"required" example:"btcusdt"`
 	Side      matching_types.OrderSide `json:"side" binding:"required" example:"SELL/BUY"`
-	OrderType matching_types.OrderType `json:"order_type" binding:"required" example: "LIMIT/MARKET"`
+	OrderType matching_types.OrderType `json:"order_type" binding:"required" example:"LIMIT/MARKET"`
 	Price     *decimal.Decimal         `json:"price,omitempty" example:"1.00"`
 	Quantity  *decimal.Decimal         `json:"qty,omitempty" example:"12"`
 	Amount    *decimal.Decimal         `json:"amount,omitempty"`

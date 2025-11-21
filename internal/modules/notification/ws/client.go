@@ -82,12 +82,16 @@ func (c *client) readPump() {
 	defer func() {
 		c.m.unregister <- c
 		if err := c.conn.Close(); err != nil {
-			// 可选：记录日志
+			if c.m != nil && c.m.logger != nil {
+				c.m.logger.Sugar().Debugf("[ws] conn.Close error: %v", err)
+			}
 		}
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
 	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
-		// 可选：记录日志
+		if c.m != nil && c.m.logger != nil {
+			c.m.logger.Sugar().Debugf("[ws] SetReadDeadline error: %v", err)
+		}
 	}
 	c.conn.SetPongHandler(func(string) error {
 		if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
@@ -99,7 +103,9 @@ func (c *client) readPump() {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				// app.Logger.Errorf("[wss ] IsUnexpectedCloseError: %v", err)
+				if c.m != nil && c.m.logger != nil {
+					c.m.logger.Sugar().Debugf("[wss] unexpected close: %v", err)
+				}
 			}
 			break
 		}
@@ -120,19 +126,25 @@ func (c *client) writePump() {
 	defer func() {
 		ticker.Stop()
 		if err := c.conn.Close(); err != nil {
-			// 可选：记录日志
+			if c.m != nil && c.m.logger != nil {
+				c.m.logger.Sugar().Debugf("[ws] conn.Close error: %v", err)
+			}
 		}
 	}()
 	for {
 		select {
 		case message, ok := <-c.send:
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				// 可选：记录日志
+				if c.m != nil && c.m.logger != nil {
+					c.m.logger.Sugar().Debugf("[ws] SetWriteDeadline error: %v", err)
+				}
 			}
 			if !ok {
 				// The hub closed the channel.
 				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
-					// 可选：记录日志
+					if c.m != nil && c.m.logger != nil {
+						c.m.logger.Sugar().Debugf("[ws] WriteMessage Close error: %v", err)
+					}
 				}
 				return
 			}
@@ -142,17 +154,23 @@ func (c *client) writePump() {
 				return
 			}
 			if _, err := w.Write(message); err != nil {
-				// 可选：记录日志
+				if c.m != nil && c.m.logger != nil {
+					c.m.logger.Sugar().Debugf("[ws] writer.Write message error: %v", err)
+				}
 			}
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.send)
 			for i := 0; i < n; i++ {
 				if _, err := w.Write(newline); err != nil {
-					// 可选：记录日志
+					if c.m != nil && c.m.logger != nil {
+						c.m.logger.Sugar().Debugf("[ws] writer.Write newline error: %v", err)
+					}
 				}
 				if _, err := w.Write(<-c.send); err != nil {
-					// 可选：记录日志
+					if c.m != nil && c.m.logger != nil {
+						c.m.logger.Sugar().Debugf("[ws] writer.Write queued message error: %v", err)
+					}
 				}
 			}
 
@@ -161,7 +179,9 @@ func (c *client) writePump() {
 			}
 		case <-ticker.C:
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				// 可选：记录日志
+				if c.m != nil && c.m.logger != nil {
+					c.m.logger.Sugar().Debugf("[ws] SetWriteDeadline error: %v", err)
+				}
 			}
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return

@@ -132,7 +132,6 @@ func (m *WsManager) subscribe() {
 		}
 
 		m.broadcast <- msg
-		return
 	})
 }
 

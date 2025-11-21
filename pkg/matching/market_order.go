@@ -32,7 +32,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 
 				maxTradeQty := maxQty(item.GetHoldAmount(), ask.GetPrice(), item.GetQuantity())
 
-				curTradeQty := decimal.Zero
+				var curTradeQty decimal.Decimal
 
 				//市价按买入数量
 				if maxTradeQty.Cmp(e.opts.minTradeQuantity) < 0 {
@@ -93,7 +93,7 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				}
 
 				maxTradeQty := maxQty(item.GetHoldAmount(), ask.GetPrice())
-				curTradeQty := decimal.Zero
+				var curTradeQty decimal.Decimal
 
 				if maxTradeQty.Cmp(e.opts.minTradeQuantity) < 0 {
 					return false
@@ -170,7 +170,7 @@ func (e *Engine) processMarketSell(item QueueItem) {
 			bid := e.bids.Top()
 			if item.GetSubOrderType() == types.SubOrderTypeMarketByQty {
 
-				curTradeQuantity := decimal.Zero
+				var curTradeQuantity decimal.Decimal
 				//市价按买入数量
 				if item.GetQuantity().Equal(decimal.Zero) {
 					return false
@@ -214,7 +214,7 @@ func (e *Engine) processMarketSell(item QueueItem) {
 				}
 				maxTradeQty := maxQty(item.GetAmount(), bid.GetPrice(), item.GetHoldQty())
 
-				curTradeQty := decimal.Zero
+				var curTradeQty decimal.Decimal
 				if maxTradeQty.Cmp(e.opts.minTradeQuantity) < 0 {
 					return false
 				}
