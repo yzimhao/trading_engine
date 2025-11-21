@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shopspring/decimal"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
@@ -70,10 +71,28 @@ func addMissingColumns(db *gorm.DB, model interface{}) error {
 	}
 
 	for _, field := range stmt.Schema.Fields {
-		// 使用字段名判断（GORM 的 Migrator 接受字段名）
-		if !db.Migrator().HasColumn(model, field.Name) {
+		// 使用字段的 DB 列名（DBName）进行存在性判断；有些嵌入字段或未映射字段可能没有 DBName，跳过这些字段
+		colName := field.DBName
+		if colName == "" {
+			// 跳过没有映射到数据库列的字段
+			continue
+		}
+
+		// GORM 的 Migrator.HasColumn 在不同版本对参数的接受形式不完全一致，先尝试用列名判断，再尝试用字段名
+		has := false
+		if db.Migrator().HasColumn(model, colName) {
+			has = true
+		} else if db.Migrator().HasColumn(model, field.Name) {
+			has = true
+		}
+
+		if !has {
+			// 使用字段名调用 AddColumn（GORM 期望字段名或列名，两者通常都可），但避免传空字符串
+			if field.Name == "" {
+				return fmt.Errorf("cannot add column for model: empty field name for column %s", colName)
+			}
 			if err := db.Migrator().AddColumn(model, field.Name); err != nil {
-				return err
+				return fmt.Errorf("failed to add column %s: %w", colName, err)
 			}
 		}
 	}
