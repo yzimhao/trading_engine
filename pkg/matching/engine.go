@@ -86,13 +86,14 @@ func NewEngine(ctx context.Context, symbol string, opts ...Option) *Engine {
 	o.apply(opts...)
 
 	e := &Engine{
-		ctx:          ctx,
-		symbol:       symbol,
-		opts:         o,
-		asks:         NewQueue(),
-		bids:         NewQueue(),
-		resultNotify: make(chan types.TradeResult, 1),
-		removeNotify: make(chan types.RemoveResult, 1),
+		ctx:    ctx,
+		symbol: symbol,
+		opts:   o,
+		asks:   NewQueue(),
+		bids:   NewQueue(),
+		// 提高缓冲，避免在高并发下阻塞撮合主循环
+		resultNotify: make(chan types.TradeResult, 1024),
+		removeNotify: make(chan types.RemoveResult, 1024),
 		logger:       o.logger,
 	}
 	go e.matching()
@@ -133,13 +134,61 @@ func (e *Engine) AddItem(item QueueItem) error {
 		return errors.New("engine is paused")
 	}
 
+	// 限价单：先主动撮合，剩余未成交部分才入订单簿
 	if item.GetOrderType() == types.OrderTypeLimit {
-		if item.GetOrderSide() == types.OrderSideSell {
-			e.asks.Push(item)
-		} else {
-			e.bids.Push(item)
+		remain := item.GetQuantity()
+		for remain.Cmp(decimal.Zero) > 0 {
+			matched := false
+			if item.GetOrderSide() == types.OrderSideSell {
+				// 卖单主动撮合买队列
+				if e.bids.Len() > 0 {
+					bid := e.bids.Top()
+					// 价格可成交
+					if bid.GetPrice().Cmp(item.GetPrice()) >= 0 {
+						tradeQty := decimal.Min(remain, bid.GetQuantity())
+						// 成交价以买方（被动方）价格为准
+						e.bids.SetQuantity(bid, bid.GetQuantity().Sub(tradeQty))
+						remain = remain.Sub(tradeQty)
+						e.emitTradeResult(e.tradeResult(item, bid, bid.GetPrice(), tradeQty, time.Now().UnixNano(), nil))
+						if bid.GetQuantity().Equal(decimal.Zero) {
+							e.bids.Remove(bid.GetUniqueId())
+						}
+						matched = true
+					}
+				}
+			} else {
+				// 买单主动撮合卖队列
+				if e.asks.Len() > 0 {
+					ask := e.asks.Top()
+					// 价格可成交
+					if item.GetPrice().Cmp(ask.GetPrice()) >= 0 {
+						tradeQty := decimal.Min(remain, ask.GetQuantity())
+						// 成交价以卖方（被动方）价格为准
+						e.asks.SetQuantity(ask, ask.GetQuantity().Sub(tradeQty))
+						remain = remain.Sub(tradeQty)
+						e.emitTradeResult(e.tradeResult(ask, item, ask.GetPrice(), tradeQty, time.Now().UnixNano(), nil))
+						if ask.GetQuantity().Equal(decimal.Zero) {
+							e.asks.Remove(ask.GetUniqueId())
+						}
+						matched = true
+					}
+				}
+			}
+			if !matched {
+				break // 无法继续撮合
+			}
+		}
+		// 剩余未成交部分才入订单簿
+		if remain.Cmp(decimal.Zero) > 0 {
+			item.SetQuantity(remain)
+			if item.GetOrderSide() == types.OrderSideSell {
+				e.asks.Push(item)
+			} else {
+				e.bids.Push(item)
+			}
 		}
 	} else {
+		// 市价单逻辑保持原样
 		if item.GetOrderSide() == types.OrderSideSell {
 			go e.processMarketSell(item)
 		} else {
@@ -161,11 +210,11 @@ func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType type
 		e.logger.Sugar().Warnf("removeItem %s side: %s unknown", unique, side)
 	}
 
-	e.removeNotify <- types.RemoveResult{
+	e.emitRemoveResult(types.RemoveResult{
 		Symbol:   e.symbol,
 		UniqueId: unique,
 		Type:     removeType,
-	}
+	})
 }
 
 func (e *Engine) OnTradeResult(fn func(result types.TradeResult)) {
@@ -223,6 +272,30 @@ func (e *Engine) matching() {
 			e.processLimitOrder()
 		}
 	}
+}
+
+// emitTradeResult 异步发送撮合结果，避免在持锁区或处理路径上阻塞
+func (e *Engine) emitTradeResult(tr types.TradeResult) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				e.logger.Sugar().Errorf("emitTradeResult panic: %v", r)
+			}
+		}()
+		e.resultNotify <- tr
+	}()
+}
+
+// emitRemoveResult 异步发送移除/撤单通知
+func (e *Engine) emitRemoveResult(rr types.RemoveResult) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				e.logger.Sugar().Errorf("emitRemoveResult panic: %v", r)
+			}
+		}()
+		e.removeNotify <- rr
+	}()
 }
 
 func (e *Engine) tradeResult(ask, bid QueueItem, price, tradeQty decimal.Decimal, tradeAt int64, marketOrder *types.MarketOrderInfo) types.TradeResult {

@@ -67,15 +67,15 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
 					maxQty(item.GetHoldAmount(), e.asks.Top().GetPrice(), item.GetQuantity()).Cmp(e.opts.minTradeQuantity) <= 0 {
-					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: true,
-					})
+					}))
 				} else {
-					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: false,
-					})
+					}))
 				}
 
 				return true
@@ -122,15 +122,15 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 				// c.剩余资金已经不能达到最小成交需求
 				if e.asks.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) ||
 					maxQty(item.GetHoldAmount(), e.asks.Top().GetPrice()).Cmp(e.opts.minTradeQuantity) <= 0 {
-					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: true,
-					})
+					}))
 				} else {
-					e.resultNotify <- e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(ask, item, ask.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: false,
-					})
+					}))
 				}
 				return true
 			}
@@ -142,11 +142,11 @@ func (e *Engine) processMarketBuy(item QueueItem) {
 			//TODO 市价订单，需要触发一个自动取消订单操作 这里的取消可能会比成交记录先到到处理端
 			go func() {
 				// time.Sleep(time.Second)
-				e.removeNotify <- types.RemoveResult{
+				e.emitRemoveResult(types.RemoveResult{
 					Symbol:   e.symbol,
 					UniqueId: item.GetUniqueId(),
 					Type:     types.RemoveItemTypeByMarket,
-				}
+				})
 			}()
 			break
 		} else {
@@ -190,15 +190,15 @@ func (e *Engine) processMarketSell(item QueueItem) {
 				// a.对面订单空了
 				// b.市价订单完全成交了
 				if e.bids.Len() == 0 || item.GetQuantity().Equal(decimal.Zero) {
-					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: true,
-					})
+					}))
 				} else {
-					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(item, bid, bid.GetPrice(), curTradeQuantity, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: false,
-					})
+					}))
 				}
 				return true
 			} else if item.GetSubOrderType() == types.SubOrderTypeMarketByAmount {
@@ -241,15 +241,15 @@ func (e *Engine) processMarketSell(item QueueItem) {
 				// c.剩余资金不满足最小成交量
 				if e.bids.Len() == 0 ||
 					maxQty(item.GetAmount(), e.bids.Top().GetPrice(), item.GetHoldQty()).Cmp(e.opts.minTradeQuantity) <= 0 {
-					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: true,
-					})
+					}))
 				} else {
-					e.resultNotify <- e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
+					e.emitTradeResult(e.tradeResult(item, bid, bid.GetPrice(), curTradeQty, time.Now().UnixNano(), &types.MarketOrderInfo{
 						OrderId:      item.GetUniqueId(),
 						IsFinalTrade: false,
-					})
+					}))
 				}
 
 				return true
@@ -262,11 +262,11 @@ func (e *Engine) processMarketSell(item QueueItem) {
 			//市价单都需要触发一个成交后取消剩余部分的信号
 			go func() {
 				// time.Sleep(time.Second)
-				e.removeNotify <- types.RemoveResult{
+				e.emitRemoveResult(types.RemoveResult{
 					Symbol:   e.symbol,
 					UniqueId: item.GetUniqueId(),
 					Type:     types.RemoveItemTypeByMarket,
-				}
+				})
 			}()
 			break
 		} else {
