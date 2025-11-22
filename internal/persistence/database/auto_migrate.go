@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/shopspring/decimal"
@@ -54,7 +53,7 @@ func autoMigrate(in inContext) error {
 	}
 
 	//init data
-	err = initData(context.Background(), in)
+	err = initData(in)
 	if err != nil {
 		in.Logger.Error("init data error", zap.Error(err))
 		return err
@@ -100,13 +99,13 @@ func addMissingColumns(db *gorm.DB, model interface{}) error {
 	return nil
 }
 
-func initData(ctx context.Context, in inContext) error {
-	assets, err := initAsset(ctx, in.AssetRepo)
+func initData(in inContext) error {
+	assets, err := initAsset(in.AssetRepo)
 	if err != nil {
 		return err
 	}
 
-	err = initProduct(ctx, in.ProductRepo, assets)
+	err = initProduct(in.ProductRepo, assets)
 	if err != nil {
 		return err
 	}
@@ -114,7 +113,7 @@ func initData(ctx context.Context, in inContext) error {
 	return nil
 }
 
-func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*entities.Asset, error) {
+func initAsset(assetRepo persistence.AssetRepository) ([]*entities.Asset, error) {
 
 	usdt, _ := assetRepo.Get("usdt")
 	btc, _ := assetRepo.Get("btc")
@@ -147,7 +146,7 @@ func initAsset(ctx context.Context, assetRepo persistence.AssetRepository) ([]*e
 	return assets, nil
 }
 
-func initProduct(ctx context.Context, productRepo persistence.ProductRepository, assets []*entities.Asset) error {
+func initProduct(productRepo persistence.ProductRepository, assets []*entities.Asset) error {
 
 	btcusdt, _ := productRepo.Get("btcusdt")
 	if btcusdt != nil {

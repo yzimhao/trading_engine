@@ -33,6 +33,11 @@ func main() {
 				Name:        "up",
 				Description: "migrate db up",
 				Action: func(ctx context.Context, c *cli.Command) error {
+					// Migration guarded by environment variable to avoid accidental schema changes
+					if os.Getenv("ENABLE_MIGRATE") != "true" {
+						log.Println("migrations disabled; set ENABLE_MIGRATE=true to enable")
+						return nil
+					}
 					return fx.New(
 						fx.Provide(
 							provider.NewViper,
@@ -47,6 +52,10 @@ func main() {
 				Name:        "down",
 				Description: "migrate db down",
 				Action: func(ctx context.Context, c *cli.Command) error {
+					if os.Getenv("ENABLE_MIGRATE") != "true" {
+						log.Println("migrations disabled; set ENABLE_MIGRATE=true to enable")
+						return nil
+					}
 					return fx.New(
 						fx.Provide(
 							provider.NewViper,
@@ -61,6 +70,10 @@ func main() {
 				Name:        "clean",
 				Description: "clean db",
 				Action: func(ctx context.Context, c *cli.Command) error {
+					if os.Getenv("ENABLE_MIGRATE") != "true" {
+						log.Println("migrations disabled; set ENABLE_MIGRATE=true to enable")
+						return nil
+					}
 					return fx.New(
 						fx.Provide(
 							provider.NewViper,

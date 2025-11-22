@@ -202,11 +202,12 @@ func (e *Engine) RemoveItem(side types.OrderSide, unique string, removeType type
 	e.mx.Lock()
 	defer e.mx.Unlock()
 
-	if side == types.OrderSideSell {
+	switch side {
+	case types.OrderSideSell:
 		e.asks.Remove(unique)
-	} else if side == types.OrderSideBuy {
+	case types.OrderSideBuy:
 		e.bids.Remove(unique)
-	} else {
+	default:
 		e.logger.Sugar().Warnf("removeItem %s side: %s unknown", unique, side)
 	}
 

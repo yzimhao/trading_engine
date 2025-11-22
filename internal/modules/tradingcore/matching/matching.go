@@ -16,7 +16,6 @@ import (
 	"github.com/yzimhao/trading_engine/v2/internal/modules/tradingcore/orderlock"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence"
 	"github.com/yzimhao/trading_engine/v2/internal/persistence/database/entities"
-	"github.com/yzimhao/trading_engine/v2/internal/types"
 	models_types "github.com/yzimhao/trading_engine/v2/internal/types"
 	"github.com/yzimhao/trading_engine/v2/pkg/matching"
 	matching_types "github.com/yzimhao/trading_engine/v2/pkg/matching/types"
@@ -148,13 +147,15 @@ func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
 	s.logger.Sugar().Debugf("listen new order: %+v", order)
 
 	var item matching.QueueItem
-	if order.OrderType == matching_types.OrderTypeLimit {
+	switch order.OrderType {
+	case matching_types.OrderTypeLimit:
 		if order.OrderSide == matching_types.OrderSideSell {
 			item = matching.NewAskLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 		} else {
 			item = matching.NewBidLimitItem(order.OrderId, order.Price, order.Quantity, order.NanoTime)
 		}
-	} else if order.OrderType == matching_types.OrderTypeMarket {
+
+	case matching_types.OrderTypeMarket:
 		// 按成交金额
 		if order.Amount.Cmp(decimal.Zero) > 0 {
 			if order.OrderSide == matching_types.OrderSideSell {
@@ -170,6 +171,8 @@ func (s *Matching) OnNewOrder(ctx context.Context, msg []byte) error {
 				item = matching.NewBidMarketQtyItem(order.OrderId, order.Quantity, order.MaxAmount, order.NanoTime)
 			}
 		}
+	default:
+		// unknown order type; item remains nil
 	}
 
 	if engine := s.engine(order.Symbol); engine != nil {
@@ -207,7 +210,7 @@ func (s *Matching) engine(symbol string) *matching.Engine {
 }
 
 func (s *Matching) processCancelOrderResult(result matching_types.RemoveResult) {
-	data := types.EventCancelOrder{
+	data := models_types.EventCancelOrder{
 		Symbol:  result.Symbol,
 		OrderId: result.UniqueId,
 		Type:    result.Type,
