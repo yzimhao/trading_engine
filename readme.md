@@ -164,12 +164,6 @@ bids := engine.GetBidOrderBook(10)
 
 如果你希望参与核心模块（撮合/结算/迁移策略等），请先与仓库维护者讨论实现方案。
 
-## 联系方式
-
-如需协作或有问题，请通过下列渠道联系：
-
-- 微信 / 其他：见 `generated/docs/images/wechat.jpg`（项目内图片）
-- Issues：在本仓库直接提交 issue
 
 ---
 
